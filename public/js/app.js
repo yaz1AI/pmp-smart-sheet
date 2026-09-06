@@ -783,9 +783,12 @@ async function handleUploadedFile(file) {
     switchTab("daily");
 
     uploadStatus.innerHTML = `
-      <div class="text-emerald-700 bg-emerald-50 p-4 rounded-2xl border border-emerald-200 font-bold flex items-center gap-2">
-        <span>✅</span>
-        <span>تم تحليل وتفكيك مشروع (${file.name}) بنجاح وتوليد ${scheduler.tasks.length} مهمة مجدولة!</span>
+      <div class="text-emerald-700 bg-emerald-50 p-4 rounded-2xl border border-emerald-200 font-bold space-y-1">
+        <div class="flex items-center gap-2">
+          <span>✅</span>
+          <span>تم تحليل وتفكيك مشروع (${file.name}) بنجاح وتوليد ${scheduler.tasks.length} مهمة مجدولة!</span>
+        </div>
+        ${data.warning ? `<p class="text-xs font-normal text-amber-700 bg-amber-50 p-2 rounded-lg mt-2">💡 ${data.warning}</p>` : ''}
       </div>
     `;
   } catch (error) {
