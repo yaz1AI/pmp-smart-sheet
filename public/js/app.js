@@ -334,6 +334,9 @@ function renderProjectsDashboard() {
           <button onclick="handleSelectProject('${p.id}')" class="flex-1 py-2 px-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
             ⚡ فتح الشيت الذكي
           </button>
+          <button onclick="openPdfReportModal('${p.id}')" class="p-2 bg-zinc-100 hover:bg-amber-50 hover:text-amber-800 text-zinc-700 rounded-xl text-xs font-bold transition border border-zinc-200" title="تقرير تنفيذي PDF">
+            📄
+          </button>
           <button onclick="exportSingleProject('${p.id}')" class="p-2 bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 text-zinc-700 rounded-xl text-xs font-bold transition border border-zinc-200" title="تصدير Excel">
             📊
           </button>
@@ -382,6 +385,80 @@ function exportSingleProject(id) {
     const tempSched = new PMTaskScheduler(p.data);
     PMExcelExporter.exportProjectWorkbook(p.data, tempSched);
   }
+}
+
+// PDF Export & Preview Handlers
+let pdfTargetProject = null;
+let pdfTargetScheduler = null;
+
+function openPdfReportModal(projectId = null) {
+  if (projectId) {
+    const p = window.projectsStore?.getAllProjects().find(x => x.id === projectId);
+    if (p) {
+      pdfTargetProject = p.data;
+      pdfTargetScheduler = new PMTaskScheduler(p.data);
+    }
+  } else if (currentProject) {
+    pdfTargetProject = currentProject;
+    pdfTargetScheduler = scheduler;
+  } else {
+    alert("⚠️ يرجى اختيار أو فتح مشروع أولاً لتصدير التقرير التنفيذي.");
+    return;
+  }
+
+  const modal = document.getElementById("pdf-report-modal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  updatePdfLivePreview();
+}
+
+function closePdfReportModal() {
+  const modal = document.getElementById("pdf-report-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function getPdfOptionsFromUI() {
+  return {
+    reportType: document.getElementById("pdf-opt-type")?.value || "comprehensive",
+    includeFinancials: document.getElementById("pdf-opt-financials")?.checked ?? true,
+    includeProcurement: document.getElementById("pdf-opt-procurement")?.checked ?? true,
+    includeSignatures: document.getElementById("pdf-opt-signatures")?.checked ?? true,
+    customNotes: document.getElementById("pdf-opt-notes")?.value || ""
+  };
+}
+
+function updatePdfLivePreview() {
+  const container = document.getElementById("pdf-live-preview-container");
+  if (!container || !pdfTargetProject || !window.PMPdfExporter) return;
+
+  const options = getPdfOptionsFromUI();
+  container.innerHTML = window.PMPdfExporter.generateReportHTML(pdfTargetProject, pdfTargetScheduler, options);
+}
+
+async function handleDownloadPdf() {
+  if (!pdfTargetProject || !window.PMPdfExporter) return;
+  const btn = document.getElementById("btn-download-pdf-action");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳</span> <span>جاري إنشاء الـ PDF...</span>`;
+  }
+
+  try {
+    const options = getPdfOptionsFromUI();
+    await window.PMPdfExporter.downloadPdf(pdfTargetProject, pdfTargetScheduler, options);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>📥</span> <span>تنزيل PDF عالي الدقة</span>`;
+    }
+  }
+}
+
+function handlePrintPdf() {
+  if (!pdfTargetProject || !window.PMPdfExporter) return;
+  const options = getPdfOptionsFromUI();
+  window.PMPdfExporter.printReport(pdfTargetProject, pdfTargetScheduler, options);
 }
 
 function handleDeleteProject(id) {
