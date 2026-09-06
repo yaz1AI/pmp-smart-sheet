@@ -205,6 +205,9 @@ function switchTab(tabName) {
   tabBtns.forEach(b => {
     const isActive = b.dataset.tab === activeTab;
     b.classList.toggle("active", isActive);
+    if (isActive) {
+      b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   });
   renderCurrentTab();
 }
@@ -260,9 +263,9 @@ function renderProjectsDashboard() {
     const isActive = p.id === activeId;
 
     return `
-      <div class="bg-white rounded-2xl border ${isActive ? 'border-2 border-zinc-950 shadow-md ring-1 ring-zinc-900/10' : 'border-zinc-200/80 shadow-sm'} p-6 flex flex-col justify-between hover:shadow-md transition relative">
+      <div class="bg-white rounded-2xl border ${isActive ? 'border-2 border-zinc-950 shadow-md ring-1 ring-zinc-900/10' : 'border-zinc-200/80 shadow-sm'} p-4 sm:p-6 flex flex-col justify-between hover:shadow-md transition relative">
         ${isActive ? `
-          <div class="absolute -top-3 right-6 bg-zinc-950 text-amber-300 text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow border border-amber-400/20">
+          <div class="absolute -top-3 right-4 sm:right-6 bg-zinc-950 text-amber-300 text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow border border-amber-400/20">
             المشروع النشط حالياً
           </div>
         ` : ''}
@@ -476,20 +479,20 @@ function renderSingleTaskCard(task) {
   const isChecked = task.status === 'Completed' ? 'checked' : '';
 
   return `
-    <div class="p-4 bg-white rounded-2xl border border-zinc-200/80 shadow-sm hover:border-zinc-400 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-      <div class="flex items-start gap-3 flex-1">
-        <input type="checkbox" ${isChecked} onchange="toggleTaskStatus('${task.id}', this.checked)" class="mt-1.5 w-5 h-5 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 cursor-pointer">
-        <div class="space-y-1">
-          <div class="flex flex-wrap items-center gap-2">
+    <div class="p-3.5 sm:p-4 bg-white rounded-2xl border border-zinc-200/80 shadow-sm hover:border-zinc-400 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4">
+      <div class="flex items-start gap-2.5 sm:gap-3 flex-1 w-full">
+        <input type="checkbox" ${isChecked} onchange="toggleTaskStatus('${task.id}', this.checked)" class="mt-1 w-5 h-5 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 cursor-pointer flex-shrink-0">
+        <div class="space-y-1 flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <span class="text-xs font-mono font-bold text-zinc-400">${task.id}</span>
-            <span class="text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${task.priority}</span>
-            <span class="text-xs px-2 py-0.5 rounded-lg ${statusClass}">${task.status}</span>
-            <span class="text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 font-medium">📅 ${task.date}</span>
-            <span class="text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-800 font-medium border border-zinc-200">${task.phase}</span>
+            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${task.priority}</span>
+            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg ${statusClass}">${task.status}</span>
+            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 font-medium">📅 ${task.date}</span>
+            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-800 font-medium border border-zinc-200">${task.phase}</span>
           </div>
-          <h4 class="text-base font-bold text-zinc-950 leading-snug ${task.status === 'Completed' ? 'line-through text-zinc-400' : ''}">${task.titleAr || task.titleEn}</h4>
-          ${task.titleEn && task.titleAr ? `<p class="text-xs text-zinc-400 font-mono">${task.titleEn}</p>` : ''}
-          <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-500 pt-1">
+          <h4 class="text-sm sm:text-base font-bold text-zinc-950 leading-snug break-words ${task.status === 'Completed' ? 'line-through text-zinc-400' : ''}">${task.titleAr || task.titleEn}</h4>
+          ${task.titleEn && task.titleAr ? `<p class="text-[11px] sm:text-xs text-zinc-400 font-mono truncate">${task.titleEn}</p>` : ''}
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-xs text-zinc-500 pt-1">
             <span>👤 <strong>المسؤول:</strong> ${task.owner}</span>
             <span>📍 <strong>الموقع:</strong> ${task.facility}</span>
             <span>📦 <strong>المخرج:</strong> ${task.deliverable}</span>
@@ -497,9 +500,9 @@ function renderSingleTaskCard(task) {
         </div>
       </div>
 
-      <div class="flex items-center gap-3 self-end md:self-center">
-        <div class="text-left w-24">
-          <span class="text-[11px] text-zinc-500">الإنجاز: <strong>${task.progress || 0}%</strong></span>
+      <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
+        <div class="flex items-center gap-2 flex-1 md:flex-initial md:w-28 text-left">
+          <span class="text-[11px] text-zinc-500 whitespace-nowrap">الإنجاز: <strong class="text-zinc-950">${task.progress || 0}%</strong></span>
           <input type="range" min="0" max="100" value="${task.progress || 0}" onchange="updateTaskProgress('${task.id}', this.value)" class="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-950">
         </div>
       </div>
