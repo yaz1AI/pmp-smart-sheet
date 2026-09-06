@@ -14,7 +14,7 @@ class PMExcelExporter {
 
     // 1. Dashboard Tab (لوحة المشروع)
     const dashboardData = [
-      ["نظام إدارة المشاريع الذكي بالذكاء الاصطناعي - ملخص المشروع التنفيذي", ""],
+      ["YAZ AI - المنصة التنفيذية لإدارة وجدولة المشاريع الذكية (Executive Summary)", ""],
       ["", ""],
       ["اسم المشروع:", projectData.projectInfo.projectNameAr || projectData.projectInfo.projectName],
       ["Project Name:", projectData.projectInfo.projectName],
