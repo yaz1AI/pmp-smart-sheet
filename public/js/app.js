@@ -351,6 +351,24 @@ function handleSelectProject(id) {
   switchTab("daily");
 }
 
+function exportCurrentProject() {
+  const activeId = window.projectsStore?.getActiveProjectId();
+  if (activeId) {
+    exportSingleProject(activeId);
+  } else if (currentProject && scheduler) {
+    PMExcelExporter.exportProjectWorkbook(currentProject, scheduler);
+  }
+}
+
+function handleDeleteCurrentProject() {
+  const activeId = window.projectsStore?.getActiveProjectId();
+  if (activeId) {
+    handleDeleteProject(activeId);
+  } else {
+    alert("لا يوجد مشروع نشط حالياً للحذف.");
+  }
+}
+
 function exportSingleProject(id) {
   const p = window.projectsStore.getAllProjects().find(x => x.id === id);
   if (p) {

@@ -85,9 +85,19 @@
           <p id="project-subtitle" class="text-xs sm:text-sm text-zinc-400 font-mono">
             <!-- Subtitle -->
           </p>
-          <div class="flex flex-wrap gap-y-2 gap-x-6 text-xs text-zinc-400 pt-2 border-t border-white/10">
-            <span id="client-contractor"></span>
-            <span id="project-dates"></span>
+          <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-400 pt-3 border-t border-white/10">
+            <div class="flex flex-wrap gap-y-2 gap-x-6">
+              <span id="client-contractor"></span>
+              <span id="project-dates"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="exportCurrentProject()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition border border-white/10 flex items-center gap-1.5" title="تصدير هذا المشروع إلى Excel">
+                📊 تصدير Excel
+              </button>
+              <button onclick="handleDeleteCurrentProject()" class="px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 hover:text-rose-200 rounded-lg text-xs font-semibold transition border border-rose-500/30 flex items-center gap-1.5" title="حذف هذا المشروع">
+                🗑️ حذف المشروع
+              </button>
+            </div>
           </div>
         </div>
 
