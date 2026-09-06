@@ -1,6 +1,6 @@
 ﻿/**
- * YAZ AI - Executive PDF Report Exporter
- * يقوم بتوليد تقرير تنفيذي هندسي رسمي وفخم بدقة عالية بصيغة PDF قابلة للطباعة والتنزيل
+ * YAZ AI - Executive PDF Report Exporter (Arabic Native High-Fidelity Engine)
+ * يقوم بتوليد تقرير تنفيذي هندسي رسمي متناسق تماماً مع الخطوط العربية ومعايير الطباعة A4
  */
 
 class PMPdfExporter {
@@ -13,10 +13,9 @@ class PMPdfExporter {
     const kpis = scheduler ? scheduler.getProjectKPIs() : { totalTasks: 0, completedTasks: 0, inProgressTasks: 0, pendingTasks: 0, criticalTasks: 0, completionRate: 0 };
     const cf = projectData?.cashFlow || {};
     const submittals = projectData?.materialSubmittals || [];
-    const milestones = projectData?.keyMilestones || [];
     const allTasks = scheduler ? scheduler.getAllTasks() : [];
 
-    const reportType = options.reportType || "comprehensive"; // 'comprehensive' or 'weekly'
+    const reportType = options.reportType || "comprehensive";
     const includeFinancials = options.includeFinancials !== false;
     const includeProcurement = options.includeProcurement !== false;
     const includeSignatures = options.includeSignatures !== false;
@@ -29,290 +28,316 @@ class PMPdfExporter {
     const sym = cf.currency || "ر.س";
     const formattedContractVal = cf.contractValue ? new Intl.NumberFormat('en-US').format(cf.contractValue) : (info.budget ? new Intl.NumberFormat('en-US').format(info.budget) : 'غير محدد');
 
-    // Upcoming critical tasks (next 10 tasks or critical ones)
+    // Upcoming critical tasks
     const criticalOrUpcomingTasks = allTasks
       .filter(t => t.priority === 'Critical' || t.status === 'In Progress' || t.status === 'Pending')
       .slice(0, reportType === 'weekly' ? 8 : 12);
 
-    // Critical procurement items (Lead Time 8-12 weeks or critical)
+    // Critical procurement items
     const criticalProcurement = submittals.filter(m => m.critical || (m.leadTime || '').includes('8-12')).slice(0, 8);
 
     return `
-      <div id="yaz-pdf-report-content" class="yaz-pdf-document" dir="rtl" style="font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; color: #0f172a; background: #ffffff; padding: 28px 32px; box-sizing: border-box; width: 100%; max-width: 800px; margin: 0 auto; line-height: 1.4; font-size: 11px;">
+      <div id="yaz-pdf-report-content" class="yaz-pdf-document" dir="rtl" style="font-family: 'Cairo', system-ui, -apple-system, sans-serif; color: #0f172a; background: #ffffff; padding: 24px 28px; box-sizing: border-box; width: 100%; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 11px; direction: rtl; text-align: right;">
         
         <!-- HEADER / BRANDING -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #090a0f; padding-bottom: 14px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #090a0f; padding-bottom: 12px; margin-bottom: 14px;">
+          
+          <!-- Logo & Brand Title -->
           <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="assets/logo.jpg" alt="YAZ AI" style="width: 46px; height: 46px; border-radius: 12px; object-fit: cover; border: 1px solid #06b6d4;" />
+            <img src="assets/logo.jpg" alt="YAZ AI" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid #06b6d4; flex-shrink: 0;" />
             <div>
-              <div style="font-size: 18px; font-weight: 900; color: #090a0f; letter-spacing: -0.5px;">YAZ AI <span style="font-size: 12px; color: #0891b2; font-weight: 700;">| المنظومة التنفيذية لإدارة المشاريع</span></div>
-              <div style="font-size: 10px; color: #64748b; font-weight: 600;">Executive Engineering Project Status Report</div>
+              <div style="font-size: 17px; font-weight: 900; color: #090a0f; margin-bottom: 1px;">
+                YAZ AI <span style="font-size: 12px; color: #0891b2; font-weight: 700;">- المنظومة التنفيذية لإدارة المشاريع</span>
+              </div>
+              <div style="font-size: 10px; color: #64748b; font-weight: 600; direction: ltr; text-align: right;">
+                Executive Engineering Project Status Report
+              </div>
             </div>
           </div>
 
-          <div style="text-align: left; font-size: 10px; color: #475569;">
-            <div style="font-weight: 800; color: #090a0f;">المرجع: <span style="font-family: monospace; color: #0284c7;">${refNumber}</span></div>
-            <div>تاريخ الإصدار: <strong>${formattedDate}</strong></div>
-            <div style="display: inline-block; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: 700; color: #334155; margin-top: 3px;">
-              ${reportType === 'weekly' ? 'ملخص الموقف الأسبوعي (Weekly Summary)' : 'تقرير الحالة التنفيذي الشامل (Comprehensive Report)'}
+          <!-- Metadata & Issue Date -->
+          <div style="text-align: left; font-size: 10px; color: #475569; direction: rtl;">
+            <div style="margin-bottom: 2px;">
+              <span style="color: #64748b;">المرجع:</span> <strong style="color: #0284c7; font-family: monospace;">${refNumber}</strong>
+            </div>
+            <div style="margin-bottom: 3px;">
+              <span style="color: #64748b;">تاريخ الإصدار:</span> <strong style="color: #0f172a;">${formattedDate}</strong>
+            </div>
+            <div style="display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 6px; font-weight: 700; color: #334155; font-size: 9.5px;">
+              ${reportType === 'weekly' ? 'ملخص الموقف الأسبوعي' : 'تقرير الحالة التنفيذي الشامل'}
             </div>
           </div>
+
         </div>
 
         <!-- PROJECT SUMMARY CARD -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div>
               <div style="font-size: 15px; font-weight: 900; color: #0f172a;">${info.projectNameAr || info.projectName || 'مشروع هندسي'}</div>
-              <div style="font-size: 10px; color: #64748b; font-family: monospace;">${info.projectName || ''} | رقم العقد: <strong>${info.projectNumber || 'PRJ-2026'}</strong></div>
+              <div style="font-size: 10.5px; color: #64748b; margin-top: 1px;">
+                <span>${info.projectName || ''}</span>
+                ${info.projectNumber ? ` <span style="color: #94a3b8;">|</span> <span>رقم العقد: <strong>${info.projectNumber}</strong></span>` : ''}
+              </div>
             </div>
-            <div style="background: #090a0f; color: #fef08a; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800;">
+            <div style="background: #090a0f; color: #fef08a; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; white-space: nowrap;">
               ${info.status || 'Active - قيد التنفيذ'}
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr 0.8fr; gap: 8px; font-size: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
             <div>
-              <span style="color: #64748b; display: block;">المالك / العميل:</span>
+              <span style="color: #64748b; display: block; margin-bottom: 1px;">المالك / العميل:</span>
               <strong style="color: #0f172a;">${info.client || 'غير محدد'}</strong>
             </div>
             <div>
-              <span style="color: #64748b; display: block;">المقاول الرئيسي:</span>
+              <span style="color: #64748b; display: block; margin-bottom: 1px;">المقاول الرئيسي:</span>
               <strong style="color: #0f172a;">${info.contractor || 'غير محدد'}</strong>
             </div>
             <div>
-              <span style="color: #64748b; display: block;">الجدول الزمني:</span>
-              <strong style="color: #0f172a;">${info.startDate || '-'} ⬅ ${info.finishDate || '-'}</strong>
+              <span style="color: #64748b; display: block; margin-bottom: 1px;">الجدول الزمني المخطط:</span>
+              <strong style="color: #0f172a;">${info.startDate || '-'} إلى ${info.finishDate || '-'}</strong>
             </div>
             <div>
-              <span style="color: #64748b; display: block;">المدة الكلية:</span>
-              <strong style="color: #0f172a;">${info.totalScheduleDays || 365} يوماً تقويمياً</strong>
+              <span style="color: #64748b; display: block; margin-bottom: 1px;">المدة الكلية:</span>
+              <strong style="color: #0f172a;">${info.totalScheduleDays || 365} يوماً</strong>
             </div>
           </div>
+
         </div>
 
         <!-- EXECUTIVE KPIS & PROGRESS SECTION -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 900; color: #090a0f; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span>📊</span> <span>مؤشرات الإنجاز والأداء الرئيسية (Project KPIs)</span>
+        <div style="margin-bottom: 14px;">
+          
+          <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
+            📊 مؤشرات الإنجاز والأداء الرئيسية (Project KPIs)
           </div>
 
           <!-- Progress Bar -->
-          <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; font-weight: 800;">
-              <span>نسبة الإنجاز العامة المخططة (Overall Planned Completion Rate):</span>
-              <span style="color: #090a0f; font-size: 13px;">${kpis.completionRate}%</span>
+          <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 11px; font-weight: 800;">
+              <span>نسبة الإنجاز العامة المخططة:</span>
+              <span style="color: #090a0f; font-size: 13px; font-weight: 900;">${kpis.completionRate}%</span>
             </div>
-            <div style="background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; width: 100%;">
-              <div style="background: linear-gradient(90deg, #0284c7, #06b6d4, #10b981); height: 100%; width: ${kpis.completionRate}%; border-radius: 5px;"></div>
+            <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+              <div style="background: #0284c7; height: 100%; width: ${kpis.completionRate}%; border-radius: 4px;"></div>
             </div>
           </div>
 
           <!-- KPI Mini Grid -->
-          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center;">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px;">
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 2px;">
               <div style="font-size: 9px; color: #64748b; font-weight: 700;">إجمالي المهام</div>
-              <div style="font-size: 15px; font-weight: 900; color: #0f172a; margin-top: 2px;">${kpis.totalTasks}</div>
+              <div style="font-size: 14px; font-weight: 900; color: #0f172a; margin-top: 2px;">${kpis.totalTasks}</div>
             </div>
-            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 4px;">
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 6px 2px;">
               <div style="font-size: 9px; color: #065f46; font-weight: 700;">المهام المكتملة</div>
-              <div style="font-size: 15px; font-weight: 900; color: #047857; margin-top: 2px;">${kpis.completedTasks}</div>
+              <div style="font-size: 14px; font-weight: 900; color: #047857; margin-top: 2px;">${kpis.completedTasks}</div>
             </div>
-            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 4px;">
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 2px;">
               <div style="font-size: 9px; color: #1e40af; font-weight: 700;">جاري التنفيذ</div>
-              <div style="font-size: 15px; font-weight: 900; color: #1d4ed8; margin-top: 2px;">${kpis.inProgressTasks}</div>
+              <div style="font-size: 14px; font-weight: 900; color: #1d4ed8; margin-top: 2px;">${kpis.inProgressTasks}</div>
             </div>
-            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 4px;">
+            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 2px;">
               <div style="font-size: 9px; color: #92400e; font-weight: 700;">المهام المخططة</div>
-              <div style="font-size: 15px; font-weight: 900; color: #b45309; margin-top: 2px;">${kpis.pendingTasks}</div>
+              <div style="font-size: 14px; font-weight: 900; color: #b45309; margin-top: 2px;">${kpis.pendingTasks}</div>
             </div>
-            <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 8px 4px;">
+            <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 6px 2px;">
               <div style="font-size: 9px; color: #9f1239; font-weight: 700;">🚨 المسار الحرج</div>
-              <div style="font-size: 15px; font-weight: 900; color: #be123c; margin-top: 2px;">${kpis.criticalTasks}</div>
+              <div style="font-size: 14px; font-weight: 900; color: #be123c; margin-top: 2px;">${kpis.criticalTasks}</div>
             </div>
           </div>
+
         </div>
 
         ${includeFinancials ? `
         <!-- FINANCIAL & CASH FLOW SUMMARY -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 900; color: #090a0f; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span>💵</span> <span>الموقف المالي والتدفقات النقدية (Financial Summary & Cash Flow)</span>
+        <div style="margin-bottom: 14px;">
+          
+          <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
+            💵 الموقف المالي والتدفقات النقدية (Financial Summary)
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px;">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
               <div style="font-size: 9px; color: #64748b; font-weight: 700;">قيمة العقد الإجمالية</div>
-              <div style="font-size: 12px; font-weight: 900; color: #0f172a; margin-top: 2px;">${formattedContractVal} ${sym}</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #0f172a; margin-top: 1px;">${formattedContractVal} ${sym}</div>
             </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
               <div style="font-size: 9px; color: #64748b; font-weight: 700;">الدفعة المقدمة</div>
-              <div style="font-size: 12px; font-weight: 900; color: #0284c7; margin-top: 2px;">${cf.advancePaymentPct || 10}% (${cf.advancePayment ? new Intl.NumberFormat('en-US').format(cf.advancePayment) : '-'} ${sym})</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #0284c7; margin-top: 1px;">${cf.advancePaymentPct || 10}% (${cf.advancePayment ? new Intl.NumberFormat('en-US').format(cf.advancePayment) : '-'} ${sym})</div>
             </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
-              <div style="font-size: 9px; color: #64748b; font-weight: 700;">نسبة الضمان والاستقطاع</div>
-              <div style="font-size: 12px; font-weight: 900; color: #d97706; margin-top: 2px;">${cf.retentionPct || 10}% (تُصرف عند التسليم)</div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
+              <div style="font-size: 9px; color: #64748b; font-weight: 700;">نسبة الاستقطاع والضمان</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #d97706; margin-top: 1px;">${cf.retentionPct || 10}% (تُصرف عند التسليم)</div>
             </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
               <div style="font-size: 9px; color: #64748b; font-weight: 700;">هامش الربح المستهدف</div>
-              <div style="font-size: 12px; font-weight: 900; color: #059669; margin-top: 2px;">${cf.marginPct || 20}%</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #059669; margin-top: 1px;">${cf.marginPct || 20}%</div>
             </div>
           </div>
 
           <!-- Mini Monthly Breakdown Preview -->
           ${(cf.monthlyBreakdown && cf.monthlyBreakdown.length > 0) ? `
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
             <thead style="background: #090a0f; color: #ffffff;">
               <tr>
-                <th style="padding: 5px;">الشهر</th>
-                <th style="padding: 5px;">الفترة</th>
-                <th style="padding: 5px;">الإنجاز الشهري</th>
-                <th style="padding: 5px;">التراكمي %</th>
-                <th style="padding: 5px;">المستخلص المتوقع (${sym})</th>
-                <th style="padding: 5px;">التكاليف التشغيلية (${sym})</th>
-                <th style="padding: 5px;">صافي التدفق (${sym})</th>
-                <th style="padding: 5px;">الحالة</th>
+                <th style="padding: 4px;">الشهر</th>
+                <th style="padding: 4px;">الفترة</th>
+                <th style="padding: 4px;">الإنجاز</th>
+                <th style="padding: 4px;">التراكمي %</th>
+                <th style="padding: 4px;">المستخلص المتوقع</th>
+                <th style="padding: 4px;">التكاليف التشغيلية</th>
+                <th style="padding: 4px;">صافي التدفق (${sym})</th>
+                <th style="padding: 4px;">الحالة</th>
               </tr>
             </thead>
             <tbody>
-              ${cf.monthlyBreakdown.slice(0, 6).map((m, idx) => `
+              ${cf.monthlyBreakdown.slice(0, 5).map((m, idx) => `
                 <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 4px; font-weight: 700;">M${String(m.monthIndex).padStart(2, '0')}</td>
-                  <td style="padding: 4px; color: #475569;">${m.monthLabel}</td>
-                  <td style="padding: 4px; font-weight: 700;">${m.progressPct}%</td>
-                  <td style="padding: 4px; font-weight: 800; color: #d97706;">${m.cumulativeProgressPct}%</td>
-                  <td style="padding: 4px; font-weight: 700; color: #059669;">${new Intl.NumberFormat('en-US').format(m.inflow)}</td>
-                  <td style="padding: 4px; font-weight: 700; color: #dc2626;">${new Intl.NumberFormat('en-US').format(m.outflow)}</td>
-                  <td style="padding: 4px; font-weight: 800; color: ${m.netFlow >= 0 ? '#059669' : '#dc2626'};">${m.netFlow >= 0 ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)}</td>
-                  <td style="padding: 4px; font-size: 8.5px;">${m.statusAr || m.status}</td>
+                  <td style="padding: 3.5px; font-weight: 700;">M${String(m.monthIndex).padStart(2, '0')}</td>
+                  <td style="padding: 3.5px; color: #475569;">${m.monthLabel}</td>
+                  <td style="padding: 3.5px; font-weight: 700;">${m.progressPct}%</td>
+                  <td style="padding: 3.5px; font-weight: 800; color: #d97706;">${m.cumulativeProgressPct}%</td>
+                  <td style="padding: 3.5px; font-weight: 700; color: #059669;">${new Intl.NumberFormat('en-US').format(m.inflow)}</td>
+                  <td style="padding: 3.5px; font-weight: 700; color: #dc2626;">${new Intl.NumberFormat('en-US').format(m.outflow)}</td>
+                  <td style="padding: 3.5px; font-weight: 800; color: ${m.netFlow >= 0 ? '#059669' : '#dc2626'};">${m.netFlow >= 0 ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)}</td>
+                  <td style="padding: 3.5px; font-size: 8.5px;">${m.statusAr || m.status}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-          ${cf.monthlyBreakdown.length > 6 ? `<div style="text-align: left; font-size: 8.5px; color: #94a3b8; margin-top: 3px;">* تم عرض أول 6 دورات مالية، باقي الجداول متوفرة في شيت المنظومة.</div>` : ''}
           ` : ''}
+
         </div>
         ` : ''}
 
         ${(includeProcurement && criticalProcurement.length > 0) ? `
         <!-- CRITICAL PROCUREMENT MATRIX -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 900; color: #090a0f; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span>🚢</span> <span>التوريدات الحرجة طويلة الأجل (Long-Lead Critical Procurement Items)</span>
+        <div style="margin-bottom: 14px;">
+          
+          <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
+            🚢 التوريدات الحرجة طويلة الأجل (Critical Procurement Items)
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #e2e8f0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #cbd5e1;">
             <thead style="background: #1e293b; color: #ffffff;">
               <tr>
-                <th style="padding: 5px; text-align: right;">البند / المادة (Material Item)</th>
-                <th style="padding: 5px; text-align: center;">تاريخ التقديم</th>
-                <th style="padding: 5px; text-align: center;">حالة الاعتماد</th>
-                <th style="padding: 5px; text-align: center;">مدة التوريد (Lead Time)</th>
-                <th style="padding: 5px; text-align: center;">المطلوب بالموقع</th>
-                <th style="padding: 5px; text-align: center;">أمر الشراء (PO)</th>
+                <th style="padding: 4px; text-align: right;">البند والمادة المطلوبة</th>
+                <th style="padding: 4px; text-align: center;">تاريخ التقديم</th>
+                <th style="padding: 4px; text-align: center;">حالة الاعتماد</th>
+                <th style="padding: 4px; text-align: center;">مدة التوريد</th>
+                <th style="padding: 4px; text-align: center;">المطلوب بالموقع</th>
+                <th style="padding: 4px; text-align: center;">أمر الشراء (PO)</th>
               </tr>
             </thead>
             <tbody>
               ${criticalProcurement.map((m, idx) => `
                 <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 5px; font-weight: 700; color: #0f172a;">${m.item}</td>
-                  <td style="padding: 5px; text-align: center; color: #64748b;">${m.submissionDate || '-'}</td>
-                  <td style="padding: 5px; text-align: center;"><strong style="color: ${m.status === 'A' ? '#059669' : m.status === 'B' ? '#d97706' : '#dc2626'};">Code ${m.status || 'B'}</strong></td>
-                  <td style="padding: 5px; text-align: center; font-weight: 700; color: #b45309;">${m.leadTime || '8-12 أسبوع'} ⚠️</td>
-                  <td style="padding: 5px; text-align: center; font-weight: 800; color: #0f172a;">${m.requiredSite || '-'}</td>
-                  <td style="padding: 5px; text-align: center; color: #475569;">${m.poStatus || 'Planned'}</td>
+                  <td style="padding: 4px 6px; font-weight: 700; color: #0f172a;">${m.item}</td>
+                  <td style="padding: 4px; text-align: center; color: #64748b;">${m.submissionDate || '-'}</td>
+                  <td style="padding: 4px; text-align: center;"><strong style="color: ${m.status === 'A' ? '#059669' : m.status === 'B' ? '#d97706' : '#dc2626'};">Code ${m.status || 'B'}</strong></td>
+                  <td style="padding: 4px; text-align: center; font-weight: 700; color: #b45309;">${m.leadTime || '8-12 أسبوع'} ⚠️</td>
+                  <td style="padding: 4px; text-align: center; font-weight: 800; color: #0f172a;">${m.requiredSite || '-'}</td>
+                  <td style="padding: 4px; text-align: center; color: #475569;">${m.poStatus || 'Planned'}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
+
         </div>
         ` : ''}
 
         <!-- UPCOMING TASKS & IMMEDIATE PRIORITIES -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 900; color: #090a0f; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span>⚡</span> <span>مهام وأولويات المرحلة القادمة (Immediate Action Priorities)</span>
+        <div style="margin-bottom: 14px;">
+          
+          <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
+            ⚡ مهام وأولويات المرحلة القادمة (Action Priorities)
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #e2e8f0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #cbd5e1;">
             <thead style="background: #0f172a; color: #ffffff;">
               <tr>
-                <th style="padding: 5px; text-align: center; width: 60px;">الرمز</th>
-                <th style="padding: 5px; text-align: center; width: 75px;">التاريخ</th>
-                <th style="padding: 5px; text-align: right;">المهمة والتسليمات المطلوبة</th>
-                <th style="padding: 5px; text-align: center; width: 85px;">المسؤول</th>
-                <th style="padding: 5px; text-align: center; width: 60px;">الأولوية</th>
-                <th style="padding: 5px; text-align: center; width: 50px;">الإنجاز</th>
+                <th style="padding: 4px; text-align: center; width: 65px;">الرمز</th>
+                <th style="padding: 4px; text-align: center; width: 75px;">التاريخ</th>
+                <th style="padding: 4px; text-align: right;">المهمة والتسليمات</th>
+                <th style="padding: 4px; text-align: center; width: 85px;">المسؤول</th>
+                <th style="padding: 4px; text-align: center; width: 60px;">الأولوية</th>
+                <th style="padding: 4px; text-align: center; width: 50px;">الإنجاز</th>
               </tr>
             </thead>
             <tbody>
               ${criticalOrUpcomingTasks.map((t, idx) => `
                 <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 5px; text-align: center; font-family: monospace; font-weight: 700; color: #64748b;">${t.id}</td>
-                  <td style="padding: 5px; text-align: center; font-weight: 700; color: #334155;">${t.date}</td>
-                  <td style="padding: 5px;">
+                  <td style="padding: 4px; text-align: center; font-family: monospace; font-weight: 700; color: #64748b;">${t.id}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: 700; color: #334155;">${t.date}</td>
+                  <td style="padding: 4px 6px;">
                     <div style="font-weight: 800; color: #0f172a;">${t.titleAr || t.titleEn}</div>
                     <div style="font-size: 8.5px; color: #64748b;">${t.deliverable || ''}</div>
                   </td>
-                  <td style="padding: 5px; text-align: center; color: #475569;">${t.owner}</td>
-                  <td style="padding: 5px; text-align: center;">
+                  <td style="padding: 4px; text-align: center; color: #475569;">${t.owner}</td>
+                  <td style="padding: 4px; text-align: center;">
                     <span style="display: inline-block; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 8.5px; ${t.priority === 'Critical' ? 'background: #ffe4e6; color: #be123c;' : 'background: #f1f5f9; color: #334155;'}">
                       ${t.priority}
                     </span>
                   </td>
-                  <td style="padding: 5px; text-align: center; font-weight: 800; color: ${t.progress === 100 ? '#059669' : '#0f172a'};">${t.progress || 0}%</td>
+                  <td style="padding: 4px; text-align: center; font-weight: 800; color: ${t.progress === 100 ? '#059669' : '#0f172a'};">${t.progress || 0}%</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
+
         </div>
 
         ${customNotes ? `
         <!-- CUSTOM EXECUTIVE NOTES -->
-        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 10px;">
-          <strong style="color: #92400e; display: block; margin-bottom: 4px;">📝 ملاحظات وتوجيهات الإدارة التنفيذية:</strong>
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; font-size: 10px;">
+          <strong style="color: #92400e; display: block; margin-bottom: 2px;">📝 توجيهات وملاحظات الإدارة:</strong>
           <p style="color: #78350f; margin: 0; white-space: pre-wrap;">${customNotes}</p>
         </div>
         ` : ''}
 
         ${includeSignatures ? `
         <!-- OFFICIAL SIGNATURES & APPROVALS BLOCK -->
-        <div style="border-top: 2px solid #cbd5e1; padding-top: 14px; margin-top: 16px;">
-          <div style="font-size: 10.5px; font-weight: 800; color: #475569; margin-bottom: 12px; text-align: center;">
-            الاعتمادات والمصادقة الرسمية (Formal Project Approvals & Signatures)
+        <div style="border-top: 2px solid #cbd5e1; padding-top: 10px; margin-top: 12px;">
+          
+          <div style="font-size: 10px; font-weight: 800; color: #475569; margin-bottom: 8px; text-align: center;">
+            الاعتمادات والمصادقة الرسمية (Formal Project Approvals)
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; text-align: center; font-size: 9.5px;">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; font-size: 9px;">
             
-            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px;">
               <div style="font-weight: 800; color: #0f172a;">مدير المشروع (Project Manager)</div>
-              <div style="color: #64748b; font-size: 9px; margin-top: 2px;">${info.contractor || 'المقاول المنفذ'}</div>
-              <div style="height: 36px; border-bottom: 1px solid #94a3b8; margin: 8px 16px 4px;"></div>
-              <div style="color: #94a3b8; font-size: 8.5px;">التوقيع والتاريخ</div>
+              <div style="color: #64748b; font-size: 8.5px; margin-top: 1px;">${info.contractor || 'المقاول المنفذ'}</div>
+              <div style="height: 28px; border-bottom: 1px solid #94a3b8; margin: 4px 12px 2px;"></div>
+              <div style="color: #94a3b8; font-size: 8px;">التوقيع والتاريخ</div>
             </div>
 
-            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px;">
               <div style="font-weight: 800; color: #0f172a;">مهندس التخطيط والتحكم (Lead Planner)</div>
-              <div style="color: #64748b; font-size: 9px; margin-top: 2px;">Planning & PMO Team</div>
-              <div style="height: 36px; border-bottom: 1px solid #94a3b8; margin: 8px 16px 4px;"></div>
-              <div style="color: #94a3b8; font-size: 8.5px;">التوقيع والتاريخ</div>
+              <div style="color: #64748b; font-size: 8.5px; margin-top: 1px;">Planning & PMO Team</div>
+              <div style="height: 28px; border-bottom: 1px solid #94a3b8; margin: 4px 12px 2px;"></div>
+              <div style="color: #94a3b8; font-size: 8px;">التوقيع والتاريخ</div>
             </div>
 
-            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px;">
               <div style="font-weight: 800; color: #0f172a;">استشاري المشروع / المالك (Consultant / Client)</div>
-              <div style="color: #64748b; font-size: 9px; margin-top: 2px;">${info.client || 'جهة الإشراف والاعتماد'}</div>
-              <div style="height: 36px; border-bottom: 1px solid #94a3b8; margin: 8px 16px 4px;"></div>
-              <div style="color: #94a3b8; font-size: 8.5px;">الختم والاعتماد</div>
+              <div style="color: #64748b; font-size: 8.5px; margin-top: 1px;">${info.client || 'جهة الإشراف والاعتماد'}</div>
+              <div style="height: 28px; border-bottom: 1px solid #94a3b8; margin: 4px 12px 2px;"></div>
+              <div style="color: #94a3b8; font-size: 8px;">الختم والاعتماد</div>
             </div>
 
           </div>
+
         </div>
         ` : ''}
 
         <!-- DOCUMENT FOOTER -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 16px; font-size: 8.5px; color: #94a3b8;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 12px; font-size: 8.5px; color: #94a3b8;">
           <div>تم التوليد آلياً عبر منظومة <strong>YAZ AI</strong> لإدارة المشاريع الذكية والجدولة الهندسية</div>
-          <div>وثيقة مشروع رسمية وسرية | Confidential Engineering Status Document</div>
+          <div style="direction: ltr; font-family: monospace;">Confidential Project Document</div>
         </div>
 
       </div>
@@ -320,66 +345,18 @@ class PMPdfExporter {
   }
 
   /**
-   * تنزيل التقرير بصيغة PDF عالية الدقة
+   * فتح نافذة الطباعة / الحفظ كـ PDF عبر محرك المتصفح العالي الدقة (Zero Overlap & Vector Arabic Font)
    */
-  static async downloadPdf(projectData, scheduler, options = {}) {
-    if (typeof html2pdf === 'undefined') {
-      alert("⚠️ مكتبة توليد PDF غير متوفرة. يرجى التأكد من اتصال الإنترنت.");
-      return;
-    }
-
+  static printReport(projectData, scheduler, options = {}) {
     const info = projectData?.projectInfo || {};
     const projectName = (info.projectNameAr || info.projectName || "Project").replace(/[/\\?%*:|"<>]/g, '_');
     const dateStr = new Date().toISOString().split('T')[0];
-    const filename = `YAZ_AI_Executive_Report_${projectName}_${dateStr}.pdf`;
+    const docTitle = `YAZ_AI_Executive_Report_${projectName}_${dateStr}`;
 
-    // Create a hidden container for rendering
-    const tempContainer = document.createElement("div");
-    tempContainer.style.position = "fixed";
-    tempContainer.style.left = "-9999px";
-    tempContainer.style.top = "0";
-    tempContainer.style.width = "800px";
-    tempContainer.innerHTML = this.generateReportHTML(projectData, scheduler, options);
-    document.body.appendChild(tempContainer);
-
-    const element = tempContainer.querySelector("#yaz-pdf-report-content");
-
-    const opt = {
-      margin: [8, 8, 8, 8],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true, 
-        logging: false,
-        letterRendering: true
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait' 
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (err) {
-      console.error("PDF generation error:", err);
-      alert("⚠️ حدث خطأ أثناء تنزيل ملف الـ PDF: " + err.message);
-    } finally {
-      document.body.removeChild(tempContainer);
-    }
-  }
-
-  /**
-   * فتح نافذة الطباعة المباشرة
-   */
-  static printReport(projectData, scheduler, options = {}) {
     const reportHTML = this.generateReportHTML(projectData, scheduler, options);
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert("⚠️ يرجى السماح بالنوافذ المنبثقة لطباعة التقرير.");
+      alert("⚠️ يرجى السماح بالنوافذ المنبثقة (Popups) لتصدير وحفظ ملف الـ PDF.");
       return;
     }
 
@@ -388,13 +365,36 @@ class PMPdfExporter {
       <html lang="ar" dir="rtl">
       <head>
         <meta charset="UTF-8">
-        <title>YAZ AI - Executive Project Report</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${docTitle}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
         <style>
-          @page { size: A4 portrait; margin: 10mm; }
-          body { margin: 0; padding: 0; font-family: 'Cairo', sans-serif; background: #fff; }
+          @page {
+            size: A4 portrait;
+            margin: 8mm 8mm 8mm 8mm;
+          }
+          * {
+            box-sizing: border-box;
+            font-family: 'Cairo', system-ui, sans-serif !important;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #0f172a;
+            direction: rtl;
+            text-align: right;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .no-print { display: none !important; }
           }
         </style>
       </head>
@@ -404,14 +404,21 @@ class PMPdfExporter {
           window.onload = function() {
             setTimeout(function() {
               window.print();
-              window.close();
-            }, 500);
+            }, 400);
           };
         </script>
       </body>
       </html>
     `);
     printWindow.document.close();
+  }
+
+  /**
+   * التنزيل المباشر كـ PDF
+   */
+  static async downloadPdf(projectData, scheduler, options = {}) {
+    // We trigger the native Vector PDF Print / Save engine which preserves perfect Arabic shaping and crisp vector quality
+    this.printReport(projectData, scheduler, options);
   }
 }
 
