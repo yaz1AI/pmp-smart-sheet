@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI PM Smart Sheet | أول منصة ذكية لجدولة مهام المشاريع بالذكاء الاصطناعي</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Cairo', system-ui, sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 antialiased selection:bg-blue-600 selection:text-white min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION -->
+  <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-500/30">
+          ⚡
+        </div>
+        <div>
+          <span class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+            AI PM Smart Sheet
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">PMP Pro</span>
+          </span>
+          <span class="text-[11px] text-slate-400 block">نظام الذكاء الاصطناعي لمدراء المشاريع</span>
+        </div>
+      </div>
+
+      <!-- Quick Nav Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-xs font-bold text-slate-300 hover:text-white transition px-3 py-2">
+          لوحة التحكم
+        </a>
+        <button onclick="openRegisterModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black transition shadow-lg shadow-blue-600/30 flex items-center gap-1.5">
+          <span>🚀</span> ابدأ الآن مجاناً
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="relative pt-12 pb-20 overflow-hidden hero-glow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-8">
+      
+      <!-- Announcement Tag -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        مدعوم بنماذج Gemini AI الهندسية لمعايير PMI / PMP
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-tight">
+        ضع ملف مشروعك، ودع <span class="gradient-text">الذكاء الاصطناعي</span> يجدول لك مهام كل يوم حتى التسليم
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-sm sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        المنصة الأولى المخصصة لمدراء المشاريع ومهندسي التخطيط؛ ارفع عروض الـ Kick-off أو جداول الـ Primavera أو كراسات الشروط، لتحصل فوراً على <strong>جدول مهام يومي تفصيلي، مصفوفة مشتريات، وشيت Excel جاهز</strong>.
+      </p>
+
+      <!-- CTA Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+        <button onclick="openRegisterModal()" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl transition shadow-xl shadow-blue-600/40 flex items-center gap-2 transform hover:-translate-y-0.5">
+          <span>⚡</span> أنشئ حسابك وابدأ أول مشروع
+        </button>
+        <button onclick="loadSampleProjectAndGo()" class="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm rounded-2xl transition flex items-center gap-2">
+          <span>📂</span> تجربة نموذج حي (مشروع تجريبي)
+        </button>
+      </div>
+
+      <!-- Trust Metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-10 border-t border-slate-800/80 text-right sm:text-center">
+        <div class="p-3">
+          <div class="text-2xl font-black text-white">100%</div>
+          <div class="text-xs text-slate-400 font-semibold mt-0.5">مطابقة لمعايير PMP / PMI</div>
+        </div>
+        <div class="p-3">
+          <div class="text-2xl font-black text-blue-400">8–12 أسبوع</div>
+          <div class="text-xs text-slate-400 font-semibold mt-0.5">كشف فترات التوريد الطويلة</div>
+        </div>
+        <div class="p-3">
+          <div class="text-2xl font-black text-emerald-400">يومي تفصيلي</div>
+          <div class="text-xs text-slate-400 font-semibold mt-0.5">توزيع المهام حتى الـ Handover</div>
+        </div>
+        <div class="p-3">
+          <div class="text-2xl font-black text-indigo-400">تصدير .xlsx</div>
+          <div class="text-xs text-slate-400 font-semibold mt-0.5">شيت إكسل متعدد التبويبات</div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE PLATFORM PREVIEW -->
+      <div class="pt-6 max-w-5xl mx-auto">
+        <div class="bg-slate-800/90 border border-slate-700 rounded-3xl p-4 sm:p-6 shadow-2xl relative text-right">
+          
+          <div class="flex items-center justify-between border-b border-slate-700/80 pb-4 mb-6">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+            </div>
+            <div class="text-xs font-mono font-bold text-slate-400">
+              📊 معاينة حية: مشروع برج الأفق الذكي للأعمال والفندقة (Horizon Smart Tower)
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+              نشط ومجدول
+            </span>
+          </div>
+
+          <!-- Preview Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+              <div class="text-xs text-slate-400 font-bold">المشروع والمدة</div>
+              <div class="text-sm font-black text-white mt-1">Horizon Smart Tower & Suites</div>
+              <div class="text-xs text-blue-400 font-mono mt-1">📅 450 إلى 560 يوماً</div>
+            </div>
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+              <div class="text-xs text-amber-400 font-bold">⚠️ توريدات حرجة (Long-Lead)</div>
+              <div class="text-sm font-black text-white mt-1">12 مادة (8–12 أسبوع)</div>
+              <div class="text-xs text-slate-400 mt-1">أنظمة AV, Traka, GRMS, AI CCTV</div>
+            </div>
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+              <div class="text-xs text-emerald-400 font-bold">مخرجات الجدولة</div>
+              <div class="text-sm font-black text-white mt-1">جدول يومي متكامل للمهندسين</div>
+              <div class="text-xs text-slate-400 mt-1">شامل اعتمادات المواد وفحص التسليم TOC</div>
+            </div>
+          </div>
+
+          <div class="text-center pt-2">
+            <button onclick="openRegisterModal()" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition underline underline-offset-4">
+              اضغط هنا لتجربة النظام بنفسك ورفع ملفاتك الخاصة ⬅
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS (3 STEPS) -->
+  <section class="py-16 bg-slate-950 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div class="text-center space-y-3">
+        <h2 class="text-2xl sm:text-4xl font-black text-white">كيف يعمل النظام في 3 خطوات بسيطة؟</h2>
+        <p class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">من لحظة رفع الملف وحتى استلام جدول المهام اليومي في أقل من دقيقة واحدة</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-right">
+        <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-xl font-black border border-blue-500/30">
+            1
+          </div>
+          <h3 class="text-lg font-black text-white">ارفع ملف المشروع</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            اسحب وأفلت أي ملف (PDF، عرض تقديمي، كراسة شروط، أو جدول إكسل). يتعرف النظام على محتويات المشروع تلقائياً.
+          </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-xl font-black border border-indigo-500/30">
+            2
+          </div>
+          <h3 class="text-lg font-black text-white">دراسة الذكاء الاصطناعي</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            يقوم الذكاء الاصطناعي باستخراج النطاق الهندسي، المعالم (Milestones)، وتواريخ المشتريات وموافقات الجهات الحكومية (MOI).
+          </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-xl font-black border border-emerald-500/30">
+            3
+          </div>
+          <h3 class="text-lg font-black text-white">جدول يومي وتصدير Excel</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            توليد جدول مهام يومي للمهندسين وفريق العمل، مع إمكانية متابعة الإنجاز يوماً بيوم وتصدير الشيت بضغطة زر.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-8 bg-slate-950 border-t border-slate-900 mt-auto text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      AI PM Smart Sheet © 2026 | المنصة الهندسية الذكية لمدراء المشاريع الاحترافيين
+    </div>
+  </footer>
+
+  <!-- ONBOARDING & REGISTRATION MODAL -->
+  <div id="register-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-right space-y-6 relative">
+      
+      <button onclick="closeRegisterModal()" class="absolute top-6 left-6 text-slate-400 hover:text-white font-bold text-lg">
+        ✕
+      </button>
+
+      <!-- Wizard Header -->
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[11px] font-bold">
+          ⚡ الخطوة 1 من 2: إنشاء حساب مدير المشروع
+        </div>
+        <h3 class="text-xl font-black text-white">مرحباً بك في AI PM Smart Sheet</h3>
+        <p class="text-xs text-slate-400">سجل بياناتك للوصول إلى لوحة التحكم وحفظ مشروعاتك الهندسية</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="onboarding-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1.5">الاسم الكريم واللقب:</label>
+          <input type="text" id="reg-name" required placeholder="مثال: م. أحمد الشهري" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1.5">البريد الإلكتروني المهني:</label>
+          <input type="email" id="reg-email" required placeholder="ahmed@company.com" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1.5">الدور في المشروع:</label>
+            <select id="reg-role" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <option value="Senior Project Manager (PMP)">Project Manager (مدير مشروع)</option>
+              <option value="Planning & Controls Lead">Planning Engineer (مهندس تخطيط)</option>
+              <option value="Technical Manager">Technical Manager (مدير فني)</option>
+              <option value="Site Engineer">Site Engineer (مهندس موقع)</option>
+              <option value="Project Director">Project Director (مدير قطاع)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-300 mb-1.5">الشركة أو الجهة:</label>
+            <input type="text" id="reg-company" placeholder="شركة المقاولات / الاستشاري" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm rounded-xl transition shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 mt-4">
+          <span>🚀</span> تأكيد الحساب والدخول للشيت الذكي
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/sample-project-data.js"></script>
+  <script src="js/auth-service.js"></script>
+  <script src="js/projects-store.js"></script>
+  <script>
+    function openRegisterModal() {
+      document.getElementById('register-modal').classList.remove('hidden');
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('register-modal').classList.add('hidden');
+    }
+
+    function loadSampleProjectAndGo() {
+      if (window.authService) {
+        window.authService.login("pm@horizon-smart.sa");
+      }
+      if (window.projectsStore) {
+        window.projectsStore.loadDemoProject();
+      }
+      window.location.href = "index.html";
+    }
+
+    document.getElementById('onboarding-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const role = document.getElementById('reg-role').value;
+      const company = document.getElementById('reg-company').value;
+
+      try {
+        if (window.authService) {
+          window.authService.register(name, email, role, company);
+        }
+        // Redirect directly to clean upload screen
+        window.location.href = "index.html";
+      } catch (err) {
+        alert("⚠️ " + err.message);
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>

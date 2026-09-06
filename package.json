@@ -1,0 +1,28 @@
+{
+  "name": "ai-pm-smart-sheet",
+  "version": "1.0.0",
+  "description": "AI-Powered Project Management Smart Sheet & Daily Scheduler for Project Managers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "generate-sample": "node scripts/generate_excel.js"
+  },
+  "keywords": [
+    "pmp",
+    "project-management",
+    "gemini-ai",
+    "daily-scheduler",
+    "excel",
+    "sheets"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
+  }
+}
