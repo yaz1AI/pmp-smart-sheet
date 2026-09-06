@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initShareModal();
   initWorkPlanGeneratorModal();
   initBudgetModal();
+  initAttachFilesModal();
 });
 
 function refreshAppState() {
@@ -869,7 +870,96 @@ function saveActiveProjectState() {
   }
 }
 
-// 13. File Upload and AI Analysis
+// 13. Multi-File Upload and AI Analysis System
+let selectedUploadFiles = [];
+
+function getFileIcon(filename) {
+  const ext = (filename || '').split('.').pop().toLowerCase();
+  if (ext === 'pdf') return '📄';
+  if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') return '📊';
+  if (ext === 'docx' || ext === 'doc') return '📝';
+  if (ext === 'txt' || ext === 'json') return '📑';
+  return '📁';
+}
+
+function getFileCategoryLabel(filename) {
+  const name = (filename || '').toLowerCase();
+  if (name.includes('boq') || name.includes('كميات') || name.includes('جدول') || name.includes('تسعير')) return 'جدول كميات ومشتريات (BOQ)';
+  if (name.includes('spec') || name.includes('شروط') || name.includes('مواصفات') || name.includes('كراسة')) return 'كراسة شروط ومواصفات';
+  if (name.includes('schedule') || name.includes('زمني') || name.includes('خطة') || name.includes('primavera') || name.includes('mpp')) return 'جدول زمني ومسار حرج';
+  if (name.includes('contract') || name.includes('عقد') || name.includes('اتفاقية')) return 'عقد ومشروع';
+  if (name.includes('mom') || name.includes('اجتماع') || name.includes('محضر') || name.includes('قرارات')) return 'محضر وقرارات معلقة';
+  return 'مستند مشروع عام';
+}
+
+function addFilesToUploadQueue(files) {
+  if (!files || files.length === 0) return;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!selectedUploadFiles.some(f => f.name === file.name && f.size === file.size)) {
+      selectedUploadFiles.push(file);
+    }
+  }
+  renderUploadFilesQueue();
+}
+
+function removeFileFromUploadQueue(index) {
+  selectedUploadFiles.splice(index, 1);
+  renderUploadFilesQueue();
+}
+
+function clearSelectedFilesQueue() {
+  selectedUploadFiles = [];
+  const fileInput = document.getElementById("file-input");
+  if (fileInput) fileInput.value = "";
+  renderUploadFilesQueue();
+}
+
+function renderUploadFilesQueue() {
+  const queueContainer = document.getElementById("selected-files-queue");
+  const listEl = document.getElementById("selected-files-list");
+  const countBadge = document.getElementById("selected-files-count-badge");
+  const startBtn = document.getElementById("btn-start-multi-analysis");
+
+  if (!queueContainer || !listEl) return;
+
+  if (selectedUploadFiles.length === 0) {
+    queueContainer.classList.add("hidden");
+    return;
+  }
+
+  queueContainer.classList.remove("hidden");
+  if (countBadge) countBadge.innerText = `${selectedUploadFiles.length} ملفات`;
+  if (startBtn) startBtn.innerHTML = `<span>🚀</span> بدء التحليل والدمج الذكي (${selectedUploadFiles.length} ملفات)`;
+
+  listEl.innerHTML = selectedUploadFiles.map((file, idx) => {
+    const sizeKB = (file.size / 1024).toFixed(1);
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    const sizeStr = file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+    const icon = getFileIcon(file.name);
+    const tag = getFileCategoryLabel(file.name);
+
+    return `
+      <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-zinc-200 shadow-xs hover:border-zinc-300 transition">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <span class="text-xl shrink-0">${icon}</span>
+          <div class="truncate">
+            <div class="font-bold text-zinc-950 text-xs truncate">${file.name}</div>
+            <div class="flex items-center gap-2 text-[10px] text-zinc-400 mt-0.5">
+              <span>${sizeStr}</span>
+              <span>•</span>
+              <span class="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">${tag}</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="removeFileFromUploadQueue(${idx})" class="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0 font-bold" title="إزالة الملف">
+          ✕
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
 function initUploadHandlers() {
   const dropZone = document.getElementById("drop-zone");
   const fileInput = document.getElementById("file-input");
@@ -880,24 +970,24 @@ function initUploadHandlers() {
 
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropZone.classList.add("border-blue-500", "bg-blue-50");
+    dropZone.classList.add("border-zinc-800", "bg-zinc-100/80");
   });
 
   dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("border-blue-500", "bg-blue-50");
+    dropZone.classList.remove("border-zinc-800", "bg-zinc-100/80");
   });
 
   dropZone.addEventListener("drop", (e) => {
     e.preventDefault();
-    dropZone.classList.remove("border-blue-500", "bg-blue-50");
+    dropZone.classList.remove("border-zinc-800", "bg-zinc-100/80");
     if (e.dataTransfer.files.length > 0) {
-      handleUploadedFile(e.dataTransfer.files[0]);
+      addFilesToUploadQueue(e.dataTransfer.files);
     }
   });
 
   fileInput.addEventListener("change", (e) => {
     if (e.target.files.length > 0) {
-      handleUploadedFile(e.target.files[0]);
+      addFilesToUploadQueue(e.target.files);
     }
   });
 
@@ -910,25 +1000,33 @@ function initUploadHandlers() {
   });
 }
 
-async function handleUploadedFile(file) {
+async function startMultiFileAnalysis() {
+  if (selectedUploadFiles.length === 0) {
+    alert("⚠️ يرجى اختيار ملف واحد على الأقل للبدء في التحليل.");
+    return;
+  }
+
   const uploadStatus = document.getElementById("upload-status");
   uploadStatus.classList.remove("hidden");
-  
+
   const apiKey = geminiService.getApiKey();
+  const fileCount = selectedUploadFiles.length;
 
   uploadStatus.innerHTML = `
-    <div class="flex items-center gap-3 text-blue-700 bg-blue-50 p-4 rounded-2xl border border-blue-200">
-      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-700"></div>
-      <div>
-        <p class="font-bold">جاري قراءة محتوى الملف (${file.name}) ودراسة المشروع بالذكاء الاصطناعي...</p>
-        <p class="text-xs text-blue-600 mt-0.5">يتم استخراج المهام الحقيقية، المعالم، النطاق، والمشتريات الخاصة بملفك فقط...</p>
+    <div class="flex items-start gap-3 text-zinc-900 bg-amber-50/80 p-5 rounded-2xl border border-amber-200 shadow-sm">
+      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600 shrink-0 mt-0.5"></div>
+      <div class="space-y-1">
+        <p class="font-black text-xs sm:text-sm text-zinc-950">جاري قراءة واستخراج نصوص (${fileCount} مستندات)...</p>
+        <p class="text-xs text-zinc-600">يقوم المحلل بربط كراسة المواصفات مع جدول الكميات BOQ والجدول الزمني بالذكاء الاصطناعي...</p>
       </div>
     </div>
   `;
 
   try {
     const formData = new FormData();
-    formData.append("projectFile", file);
+    selectedUploadFiles.forEach(file => {
+      formData.append("projectFiles", file);
+    });
 
     const headers = {};
     if (apiKey) {
@@ -943,36 +1041,43 @@ async function handleUploadedFile(file) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || err.message || "فشل تحليل الملف");
+      throw new Error(err.error || err.message || "فشل تحليل ودمج الملفات");
     }
 
     const data = await res.json();
     const newProjectRecord = window.projectsStore?.createProject(data.projectData);
-    
+
+    // Clear queue after success
+    clearSelectedFilesQueue();
     refreshAppState();
     switchTab("daily");
 
     uploadStatus.innerHTML = `
-      <div class="text-emerald-700 bg-emerald-50 p-4 rounded-2xl border border-emerald-200 font-bold space-y-1">
+      <div class="text-emerald-800 bg-emerald-50 p-4 rounded-2xl border border-emerald-200 font-bold space-y-1">
         <div class="flex items-center gap-2">
           <span>✅</span>
-          <span>تم تحليل وتفكيك مشروع (${file.name}) بنجاح وتوليد ${scheduler.tasks.length} مهمة مجدولة!</span>
+          <span>تم تحليل ودمج (${fileCount}) ملفات بنجاح وتوليد ${scheduler.tasks.length} مهمة مجدولة والمشتريات والتدفق النقدي!</span>
         </div>
         ${data.warning ? `<p class="text-xs font-normal text-amber-700 bg-amber-50 p-2 rounded-lg mt-2">💡 ${data.warning}</p>` : ''}
       </div>
     `;
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("Multi-upload error:", error);
     uploadStatus.innerHTML = `
-      <div class="text-red-700 bg-red-50 p-4 rounded-2xl border border-red-200 space-y-2">
-        <p class="font-bold">❌ حدث خطأ أثناء تحليل الملف بالذكاء الاصطناعي:</p>
+      <div class="text-rose-800 bg-rose-50 p-4 rounded-2xl border border-rose-200 space-y-2">
+        <p class="font-bold">❌ حدث خطأ أثناء تحليل ودمج الملفات:</p>
         <p class="text-xs">${error.message}</p>
-        <p class="text-xs text-slate-600 pt-1 border-t border-red-200">
-          💡 تلميح: تأكد من إدخال مفتاح <strong>Gemini API Key</strong> من أيقونة الإعدادات (⚙️) بالأعلى لقراءة أي ملف PDF/Word بدقة تامة.
+        <p class="text-xs text-zinc-600 pt-1 border-t border-rose-200">
+          💡 تلميح: تأكد من إدخال مفتاح <strong>Gemini API Key</strong> من أيقونة الإعدادات (⚙️) بالأعلى لقراءة ودمج الملفات الضخمة بدقة قصوى.
         </p>
       </div>
     `;
   }
+}
+
+async function handleUploadedFile(file) {
+  addFilesToUploadQueue([file]);
+  startMultiFileAnalysis();
 }
 
 // 14. Modals (Auth, Settings, Share, New Project)
@@ -1256,4 +1361,162 @@ function openBudgetModal() {
   if (symLabel) symLabel.innerText = CURRENCY_SYMBOLS[cur] || cur;
 
   modal.classList.remove("hidden");
+}
+
+// 17. Attach Additional Files to Existing Project
+let selectedAttachFiles = [];
+
+function initAttachFilesModal() {
+  const modal = document.getElementById("attach-files-modal");
+  const closeBtn = document.getElementById("btn-close-attach-modal");
+  const dropZone = document.getElementById("attach-drop-zone");
+  const fileInput = document.getElementById("attach-file-input");
+
+  closeBtn?.addEventListener("click", () => modal?.classList.add("hidden"));
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.add("hidden");
+  });
+
+  dropZone?.addEventListener("click", () => fileInput?.click());
+
+  dropZone?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("border-zinc-800", "bg-zinc-100");
+  });
+
+  dropZone?.addEventListener("dragleave", () => {
+    dropZone.classList.remove("border-zinc-800", "bg-zinc-100");
+  });
+
+  dropZone?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("border-zinc-800", "bg-zinc-100");
+    if (e.dataTransfer.files.length > 0) {
+      addAttachFiles(e.dataTransfer.files);
+    }
+  });
+
+  fileInput?.addEventListener("change", (e) => {
+    if (e.target.files.length > 0) {
+      addAttachFiles(e.target.files);
+    }
+  });
+}
+
+function openAttachFilesModal() {
+  if (!currentProject) {
+    alert("⚠️ يرجى اختيار أو فتح مشروع أولاً لإرفاق ملفات إضافية إليه.");
+    return;
+  }
+  selectedAttachFiles = [];
+  renderAttachFilesQueue();
+  const statusEl = document.getElementById("attach-status");
+  if (statusEl) statusEl.classList.add("hidden");
+  document.getElementById("attach-files-modal")?.classList.remove("hidden");
+}
+
+function addAttachFiles(files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!selectedAttachFiles.some(f => f.name === file.name && f.size === file.size)) {
+      selectedAttachFiles.push(file);
+    }
+  }
+  renderAttachFilesQueue();
+}
+
+function removeAttachFile(idx) {
+  selectedAttachFiles.splice(idx, 1);
+  renderAttachFilesQueue();
+}
+
+function renderAttachFilesQueue() {
+  const container = document.getElementById("attach-files-list-container");
+  const itemsEl = document.getElementById("attach-files-items");
+  const countEl = document.getElementById("attach-files-count");
+
+  if (!container || !itemsEl) return;
+
+  if (selectedAttachFiles.length === 0) {
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+  if (countEl) countEl.innerText = `${selectedAttachFiles.length} ملفات`;
+
+  itemsEl.innerHTML = selectedAttachFiles.map((f, i) => `
+    <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-zinc-200 shadow-xs">
+      <div class="flex items-center gap-2 truncate">
+        <span>${getFileIcon(f.name)}</span>
+        <span class="font-bold text-zinc-900 text-xs truncate">${f.name}</span>
+        <span class="text-[10px] text-zinc-400">(${(f.size / 1024).toFixed(1)} KB)</span>
+      </div>
+      <button type="button" onclick="removeAttachFile(${i})" class="text-zinc-400 hover:text-rose-600 font-bold p-1">✕</button>
+    </div>
+  `).join('');
+}
+
+async function handleEnrichCurrentProject() {
+  if (!currentProject) return;
+  if (selectedAttachFiles.length === 0) {
+    alert("⚠️ يرجى اختيار ملف إضافي واحد على الأقل للإرفاق.");
+    return;
+  }
+
+  const statusEl = document.getElementById("attach-status");
+  const submitBtn = document.getElementById("btn-submit-attach");
+  if (statusEl) statusEl.classList.remove("hidden");
+
+  statusEl.innerHTML = `
+    <div class="flex items-center gap-2 text-zinc-800 bg-amber-50 p-3 rounded-xl border border-amber-200 font-bold">
+      <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-950"></div>
+      <span>جاري قراءة الملفات الجديدة ودمجها مع نطاق المشروع بالذكاء الاصطناعي...</span>
+    </div>
+  `;
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    selectedAttachFiles.forEach(f => formData.append("projectFiles", f));
+    formData.append("existingProject", JSON.stringify(currentProject));
+
+    const apiKey = geminiService.getApiKey();
+    const headers = {};
+    if (apiKey) headers["x-gemini-key"] = apiKey;
+
+    const res = await fetch("/api/enrich-project", {
+      method: "POST",
+      headers: headers,
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.message || "فشل إرفاق ودمج الملفات");
+    }
+
+    const data = await res.json();
+    if (data.projectData) {
+      currentProject = data.projectData;
+      scheduler = new PMTaskScheduler(currentProject);
+      saveActiveProjectState();
+      refreshAppState();
+    }
+
+    document.getElementById("attach-files-modal")?.classList.add("hidden");
+    alert(`🎉 تم إرفاق ودمج (${selectedAttachFiles.length}) ملفات بنجاح في المشروع الحالي! تم تحديث المهام وجداول المشتريات والمعالم.`);
+    selectedAttachFiles = [];
+  } catch (err) {
+    console.error("Enrich error:", err);
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <div class="text-rose-700 bg-rose-50 p-3 rounded-xl border border-rose-200">
+          ❌ خطأ: ${err.message}
+        </div>
+      `;
+    }
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 }

@@ -91,6 +91,9 @@
               <span id="project-dates"></span>
             </div>
             <div class="flex items-center gap-2 pt-1 sm:pt-0 flex-wrap sm:flex-nowrap">
+              <button onclick="openAttachFilesModal()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 rounded-xl text-xs font-semibold transition border border-blue-500/30 flex items-center justify-center gap-1.5" title="إرفاق ملفات إضافية لهذا المشروع لدمج النطاق أو جداول BOQ">
+                📎 إرفاق ملفات
+              </button>
               <button onclick="openWorkPlanGeneratorModal()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold transition border border-amber-400/30 flex items-center justify-center gap-1.5" title="توليد أو إعادة جدولة خطة العمل بالذكاء الاصطناعي">
                 🪄 توليد خطة العمل (AI Plan)
               </button>
@@ -454,28 +457,56 @@
 
     </div>
 
-    <!-- TAB 7: AI FILE UPLOADER & WELCOME SCREEN -->
+    <!-- TAB 7: AI MULTI-FILE UPLOADER & WELCOME SCREEN -->
     <div id="tab-content-upload" class="space-y-6">
-      <div class="bg-white p-5 sm:p-12 rounded-3xl border border-zinc-200/90 shadow-sm text-center max-w-3xl mx-auto space-y-5 sm:space-y-6">
+      <div class="bg-white p-5 sm:p-10 rounded-3xl border border-zinc-200/90 shadow-sm text-center max-w-3xl mx-auto space-y-5 sm:space-y-6">
         
         <div class="space-y-2">
           <div class="w-14 h-14 sm:w-16 sm:h-16 bg-zinc-950 text-amber-300 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mx-auto shadow-md shadow-zinc-900/10">
-            📑
+            📚
           </div>
-          <h3 class="text-xl sm:text-2xl font-black text-zinc-950">مرحباً بك! ارفع ملف مشروعك للبدء في الجدولة اليومية</h3>
+          <h3 class="text-xl sm:text-2xl font-black text-zinc-950">رفع ملفات المشروع (دمج وتحليل متعدد الوثائق)</h3>
           <p class="text-xs sm:text-sm text-zinc-500 max-w-xl mx-auto leading-relaxed">
-            قم بإسقاط كراسة الشروط، عرض الـ Kick-off، جدول Primavera أو ملف إكسل لمشروعك، وسيقوم المحلل الذكي بدراسة النطاق وتوليد خطة المهام وجداول المشتريات فوراً.
+            يمكنك رفع <strong>ملف واحد أو عدة ملفات معاً</strong> (كراسة الشروط + جدول الكميات BOQ + الجدول الزمني + العقد)، وسيقوم الذكاء الاصطناعي بربطها وتوليد شيت متكامل 100%.
           </p>
         </div>
 
         <!-- Drag and Drop Zone -->
-        <div id="drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-800 bg-zinc-50/70 hover:bg-zinc-100/70 rounded-3xl p-6 sm:p-10 cursor-pointer transition flex flex-col items-center justify-center gap-3 group">
-          <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.xlsx,.xls,.txt,.json">
+        <div id="drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-800 bg-zinc-50/70 hover:bg-zinc-100/70 rounded-3xl p-6 sm:p-8 cursor-pointer transition flex flex-col items-center justify-center gap-3 group">
+          <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.json,.csv">
           <div class="w-12 h-12 rounded-xl bg-white shadow-sm border border-zinc-200 flex items-center justify-center text-2xl group-hover:scale-105 transition">
             📤
           </div>
-          <div class="text-xs sm:text-sm font-bold text-zinc-900">اضغط لاختيار ملف المشروع أو اسحبه وأفلته هنا</div>
-          <div class="text-[11px] sm:text-xs text-zinc-400 font-mono">يدعم ملفات: PDF, DOCX, XLSX, TXT (حتى 50 ميجابايت)</div>
+          <div class="text-xs sm:text-sm font-bold text-zinc-900">اضغط لاختيار ملفات المشروع أو اسحبها وأفلتها هنا دفعة واحدة</div>
+          <div class="text-[11px] sm:text-xs text-zinc-400 font-mono">يدعم رفع عدة ملفات معاً: PDF, DOCX, XLSX, XLS, TXT, CSV</div>
+        </div>
+
+        <!-- Selected Multi-File Queue -->
+        <div id="selected-files-queue" class="hidden text-right space-y-3 bg-zinc-50/90 p-4 sm:p-5 rounded-2xl border border-zinc-200">
+          <div class="flex items-center justify-between border-b border-zinc-200/80 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-zinc-900">قائمة الملفات المحددة للدمج:</span>
+              <span id="selected-files-count-badge" class="px-2.5 py-0.5 rounded-full bg-zinc-950 text-amber-300 text-[11px] font-black shadow-sm">0 ملفات</span>
+            </div>
+            <button type="button" onclick="clearSelectedFilesQueue()" class="text-xs text-rose-600 hover:text-rose-800 font-bold transition flex items-center gap-1">
+              <span>✕</span> تفريغ القائمة
+            </button>
+          </div>
+
+          <!-- File items list -->
+          <div id="selected-files-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <!-- Dynamic cards rendered via JS -->
+          </div>
+
+          <!-- Action buttons -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center gap-2">
+            <button type="button" onclick="document.getElementById('file-input').click()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+              <span>➕</span> إضافة ملفات أخرى
+            </button>
+            <button type="button" id="btn-start-multi-analysis" onclick="startMultiFileAnalysis()" class="w-full sm:flex-1 py-3 bg-zinc-950 hover:bg-black text-amber-300 text-xs sm:text-sm font-black rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+              <span>🚀</span> بدء التحليل المدمج والشامل للمشروع بالذكاء الاصطناعي
+            </button>
+          </div>
         </div>
 
         <div id="upload-status" class="hidden text-right">
@@ -485,7 +516,7 @@
         <!-- Work Plan Generator & Demo Options -->
         <div class="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onclick="openWorkPlanGeneratorModal()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-950 hover:bg-black text-amber-300 border border-amber-400/30 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-            <span>🪄</span> توليد خطة عمل وجدول زمني ذكي (بدون جدول مسبق)
+            <span>🪄</span> توليد خطة عمل وجدول زمني ذكي (بدون ملفات)
           </button>
           <button onclick="handleLoadDemoProject()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
             <span>📂</span> تجربة نموذج استعراضي جاهز
@@ -775,6 +806,49 @@
         </div>
       </form>
 
+    </div>
+  </div>
+
+  <!-- ATTACH ADDITIONAL FILES MODAL -->
+  <div id="attach-files-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-3xl w-[94vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 font-bold text-[10px] mb-1 border border-blue-200">
+            📎 Multi-File Project Enrichment
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950">إرفاق ملفات إضافية للمشروع النشط</h3>
+          <p class="text-xs text-zinc-500">ارفق جدول كميات BOQ، أو كراسة شروط لدمج بنودها مع المشروع الحالي</p>
+        </div>
+        <button id="btn-close-attach-modal" class="text-zinc-400 hover:text-zinc-950 font-bold p-1 text-sm">✕</button>
+      </div>
+
+      <div id="attach-drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-800 bg-zinc-50/70 hover:bg-zinc-100/70 rounded-2xl p-6 cursor-pointer transition flex flex-col items-center justify-center gap-2 group">
+        <input type="file" id="attach-file-input" class="hidden" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.json,.csv">
+        <div class="text-2xl group-hover:scale-110 transition">📤</div>
+        <div class="text-xs font-bold text-zinc-800">اضغط أو اسحب الملفات الإضافية هنا</div>
+        <div class="text-[10px] text-zinc-400 font-mono">يدعم عدة ملفات: PDF, Excel, Word, Text</div>
+      </div>
+
+      <!-- Attach Files Queue -->
+      <div id="attach-files-list-container" class="hidden space-y-2 bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
+        <div class="flex justify-between items-center pb-1 border-b border-zinc-200 text-[11px] font-bold text-zinc-700">
+          <span>الملفات المحددة للإرفاق:</span>
+          <span id="attach-files-count" class="font-black text-zinc-950">0 ملفات</span>
+        </div>
+        <div id="attach-files-items" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
+      </div>
+
+      <div id="attach-status" class="hidden text-xs"></div>
+
+      <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2">
+        <button type="button" id="btn-submit-attach" onclick="handleEnrichCurrentProject()" class="w-full sm:flex-1 py-3 bg-zinc-950 hover:bg-black text-amber-300 font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2">
+          <span>🚀</span> دمج الملفات وتحديث المشروع
+        </button>
+        <button type="button" onclick="document.getElementById('attach-files-modal').classList.add('hidden')" class="w-full sm:w-auto px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs transition">
+          إلغاء
+        </button>
+      </div>
     </div>
   </div>
 
