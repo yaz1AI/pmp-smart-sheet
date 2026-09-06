@@ -10,6 +10,17 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Auth Guard: If visitor is not logged in, redirect directly to landing / registration page
+    (function() {
+      try {
+        var user = localStorage.getItem("AI_PM_CURRENT_USER");
+        if (!user) {
+          window.location.replace("landing.html");
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#f8f9fa] text-zinc-900 antialiased min-h-screen flex flex-col">
 

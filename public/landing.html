@@ -47,7 +47,7 @@
         <a href="index.html" class="text-xs font-bold text-zinc-400 hover:text-white transition px-2.5 sm:px-3 py-2">
           لوحة التحكم
         </a>
-        <button onclick="openRegisterModal()" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white hover:bg-zinc-100 text-zinc-950 rounded-xl text-xs font-black transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+        <button id="landing-nav-cta" onclick="openRegisterModal()" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white hover:bg-zinc-100 text-zinc-950 rounded-xl text-xs font-black transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
           <span>🚀</span> <span class="hidden xs:inline">ابدأ الآن مجاناً</span><span class="xs:hidden">ابدأ الآن</span>
         </button>
       </div>
@@ -76,7 +76,7 @@
 
       <!-- CTA Action Buttons -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto sm:max-w-none pt-2">
-        <button onclick="openRegisterModal()" class="px-6 sm:px-8 py-3.5 sm:py-4 bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs sm:text-sm rounded-2xl transition shadow-xl flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+        <button id="landing-hero-cta" onclick="openRegisterModal()" class="px-6 sm:px-8 py-3.5 sm:py-4 bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs sm:text-sm rounded-2xl transition shadow-xl flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
           <span>⚡</span> أنشئ حسابك وابدأ أول مشروع
         </button>
         <button onclick="loadSampleProjectAndGo()" class="px-5 sm:px-6 py-3.5 sm:py-4 bg-[#14161f] hover:bg-[#1f2230] text-zinc-200 border border-[#242736] font-bold text-xs sm:text-sm rounded-2xl transition flex items-center justify-center gap-2">
@@ -165,9 +165,9 @@
           <div class="w-12 h-12 rounded-2xl bg-zinc-900 text-amber-300 flex items-center justify-center text-xl font-black border border-zinc-800">
             1
           </div>
-          <h3 class="text-lg font-black text-white">ارفع ملف المشروع</h3>
+          <h3 class="text-lg font-black text-white">ارفع ملفات المشروع</h3>
           <p class="text-xs text-zinc-400 leading-relaxed">
-            اسحب وأفلت أي ملف (PDF، عرض تقديمي، كراسة شروط، أو جدول إكسل). يتعرف المحلل الذكي على محتويات المشروع تلقائياً.
+            اسحب وأفلت كراسة الشروط، جدول الكميات BOQ، والبرنامج الزمني. يتعرف المحلل الذكي على محتويات المشروع ويربطها تلقائياً.
           </p>
         </div>
 
@@ -175,9 +175,9 @@
           <div class="w-12 h-12 rounded-2xl bg-zinc-900 text-amber-300 flex items-center justify-center text-xl font-black border border-zinc-800">
             2
           </div>
-          <h3 class="text-lg font-black text-white">دراسة الذكاء الاصطناعي</h3>
+          <h3 class="text-lg font-black text-white">دراسة الذكاء الاصطناعي والـ Cash Flow</h3>
           <p class="text-xs text-zinc-400 leading-relaxed">
-            يقوم الذكاء الاصطناعي باستخراج النطاق الهندسي، المعالم (Milestones)، وتواريخ المشتريات وموافقات الجهات.
+            يقوم الذكاء الاصطناعي باستخراج النطاق، المعالم، التدفقات النقدية، وتواريخ المشتريات وموافقات الجهات.
           </p>
         </div>
 
@@ -203,7 +203,7 @@
 
   <!-- ONBOARDING & REGISTRATION MODAL -->
   <div id="register-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#12141c] border border-[#242736] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-right space-y-6 relative">
+    <div class="bg-[#12141c] border border-[#242736] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-right space-y-5 relative">
       
       <button onclick="closeRegisterModal()" class="absolute top-6 left-6 text-zinc-400 hover:text-white font-bold text-lg p-1">
         ✕
@@ -212,17 +212,27 @@
       <!-- Wizard Header -->
       <div class="space-y-1">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-amber-300 text-[11px] font-bold">
-          ⚡ الخطوة 1 من 2: إنشاء حساب مدير المشروع
+          ⚡ بوابة الدخول لمدراء المشاريع
         </div>
         <h3 class="text-xl font-black text-white">مرحباً بك في AI PM Smart Sheet</h3>
-        <p class="text-xs text-zinc-400">سجل بياناتك للوصول إلى لوحة التحكم وحفظ مشروعاتك الهندسية</p>
+        <p class="text-xs text-zinc-400">سجل بياناتك للوصول إلى لوحة التحكم والبدء في جدولة مشاريعك</p>
+      </div>
+
+      <!-- Mode Switcher (Register vs Quick Login) -->
+      <div class="flex rounded-xl bg-[#181a24] p-1 border border-[#2d303e] text-xs font-bold">
+        <button type="button" id="tab-btn-register" onclick="switchAuthMode('register')" class="flex-1 py-2 rounded-lg bg-white text-zinc-950 transition text-center shadow-sm">
+          👤 حساب جديد
+        </button>
+        <button type="button" id="tab-btn-login" onclick="switchAuthMode('login')" class="flex-1 py-2 rounded-lg text-zinc-400 hover:text-white transition text-center">
+          🔑 تسجيل الدخول
+        </button>
       </div>
 
       <!-- Registration Form -->
-      <form id="onboarding-form" class="space-y-4 text-xs">
-        <div>
+      <form id="onboarding-form" class="space-y-3.5 text-xs">
+        <div id="field-name-container">
           <label class="block font-bold text-zinc-300 mb-1.5">الاسم الكريم واللقب:</label>
-          <input type="text" id="reg-name" required placeholder="مثال: م. أحمد الشهري" class="w-full bg-[#181a24] border border-[#2d303e] text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-amber-400 focus:outline-none">
+          <input type="text" id="reg-name" placeholder="مثال: م. أحمد الشهري" class="w-full bg-[#181a24] border border-[#2d303e] text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-amber-400 focus:outline-none">
         </div>
 
         <div>
@@ -230,7 +240,7 @@
           <input type="email" id="reg-email" required placeholder="ahmed@company.com" class="w-full bg-[#181a24] border border-[#2d303e] text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-amber-400 focus:outline-none">
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div id="extra-fields-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-zinc-300 mb-1.5">الدور في المشروع:</label>
             <select id="reg-role" class="w-full bg-[#181a24] border border-[#2d303e] text-white rounded-xl p-3 text-xs font-semibold focus:ring-2 focus:ring-amber-400 focus:outline-none">
@@ -248,8 +258,8 @@
           </div>
         </div>
 
-        <button type="submit" class="w-full py-3.5 bg-white hover:bg-zinc-100 text-zinc-950 font-black text-sm rounded-xl transition shadow-xl flex items-center justify-center gap-2 mt-4">
-          <span>🚀</span> تأكيد الحساب والدخول للشيت الذكي
+        <button type="submit" id="btn-auth-submit" class="w-full py-3.5 bg-white hover:bg-zinc-100 text-zinc-950 font-black text-sm rounded-xl transition shadow-xl flex items-center justify-center gap-2 mt-4">
+          <span>🚀</span> <span id="auth-btn-label">تأكيد الحساب والدخول للشيت الذكي</span>
         </button>
       </form>
     </div>
@@ -260,7 +270,33 @@
   <script src="js/auth-service.js"></script>
   <script src="js/projects-store.js"></script>
   <script>
-    function openRegisterModal() {
+    let authMode = "register";
+
+    function switchAuthMode(mode) {
+      authMode = mode;
+      const regTab = document.getElementById("tab-btn-register");
+      const logTab = document.getElementById("tab-btn-login");
+      const nameContainer = document.getElementById("field-name-container");
+      const extraContainer = document.getElementById("extra-fields-container");
+      const btnLabel = document.getElementById("auth-btn-label");
+
+      if (mode === "login") {
+        regTab.className = "flex-1 py-2 rounded-lg text-zinc-400 hover:text-white transition text-center";
+        logTab.className = "flex-1 py-2 rounded-lg bg-white text-zinc-950 transition text-center shadow-sm";
+        nameContainer.classList.add("hidden");
+        extraContainer.classList.add("hidden");
+        btnLabel.innerText = "تسجيل الدخول وفتح الشيت الذكي";
+      } else {
+        regTab.className = "flex-1 py-2 rounded-lg bg-white text-zinc-950 transition text-center shadow-sm";
+        logTab.className = "flex-1 py-2 rounded-lg text-zinc-400 hover:text-white transition text-center";
+        nameContainer.classList.remove("hidden");
+        extraContainer.classList.remove("hidden");
+        btnLabel.innerText = "تأكيد الحساب والدخول للشيت الذكي";
+      }
+    }
+
+    function openRegisterModal(mode = 'register') {
+      switchAuthMode(mode);
       document.getElementById('register-modal').classList.remove('hidden');
     }
 
@@ -278,18 +314,36 @@
       window.location.href = "index.html";
     }
 
+    document.addEventListener("DOMContentLoaded", () => {
+      // Check if user is already logged in
+      if (window.authService && window.authService.isLoggedIn()) {
+        const user = window.authService.getCurrentUser();
+        const navBtn = document.getElementById("landing-nav-cta");
+        const heroBtn = document.getElementById("landing-hero-cta");
+        if (navBtn) {
+          navBtn.innerHTML = `<span>⚡</span> لوحة التحكم (${user.name})`;
+          navBtn.onclick = () => window.location.href = "index.html";
+        }
+        if (heroBtn) {
+          heroBtn.innerHTML = `<span>⚡</span> مرحباً بك يا ${user.name} - الدخول للشيت`;
+          heroBtn.onclick = () => window.location.href = "index.html";
+        }
+      }
+    });
+
     document.getElementById('onboarding-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
-      const role = document.getElementById('reg-role').value;
-      const company = document.getElementById('reg-company').value;
 
       try {
-        if (window.authService) {
-          window.authService.register(name, email, role, company);
+        if (authMode === "login") {
+          window.authService?.login(email);
+        } else {
+          const name = document.getElementById('reg-name').value || email.split('@')[0];
+          const role = document.getElementById('reg-role').value;
+          const company = document.getElementById('reg-company').value;
+          window.authService?.register(name, email, role, company);
         }
-        // Redirect directly to clean upload screen
         window.location.href = "index.html";
       } catch (err) {
         alert("⚠️ " + err.message);

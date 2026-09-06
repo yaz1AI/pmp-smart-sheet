@@ -1114,9 +1114,7 @@ function openAuthModal() {
 function handleLogout() {
   if (confirm("هل تريد تسجيل الخروج؟")) {
     window.authService.logout();
-    renderUserBadge();
-    refreshAppState();
-    alert("تم تسجيل الخروج بنجاح.");
+    window.location.replace("landing.html");
   }
 }
 
