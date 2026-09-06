@@ -139,6 +139,71 @@ class PMExcelExporter {
     wsAction['!cols'] = [{ wch: 10 }, { wch: 45 }, { wch: 45 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, wsAction, "Action_Items_القرارات_المعلقة");
 
+    // 6. Cash Flow & Financial S-Curve Tab (التدفقات النقدية ومنحنى S-Curve)
+    if (scheduler && typeof scheduler.getCashFlowForecast === 'function') {
+      const cf = scheduler.getCashFlowForecast();
+      const sym = cf.currency || "SAR";
+
+      const cfData = [
+        ["تقرير وجدول التدفقات النقدية ومنحنى S-Curve المالي للمشروع", ""],
+        ["", ""],
+        ["قيمة العقد / الميزانية الإجمالية:", `${cf.contractValue.toLocaleString()} ${sym}`],
+        ["إجمالي التدفقات الداخلة (Inflows):", `${cf.totalInflow.toLocaleString()} ${sym}`],
+        ["إجمالي المصروفات والتكاليف (Outflows):", `${cf.totalOutflow.toLocaleString()} ${sym}`],
+        ["صافي السيولة النقدية (Net Cash Flow):", `${cf.netCashFlow.toLocaleString()} ${sym}`],
+        ["صافي الربح المتوقع:", `${cf.totalProfit.toLocaleString()} ${sym}`],
+        ["هامش الربح المستهدف:", `${cf.profitMarginPct}%`],
+        ["الدفعة المقدمة:", `${cf.advancePaymentPct}% (${cf.advancePaymentAmount.toLocaleString()} ${sym})`],
+        ["نسبة الاستقطاع والضمان (Retention):", `${cf.retentionPct}% (${cf.totalRetentionAmount.toLocaleString()} ${sym})`],
+        ["", ""],
+        [
+          "الشهر (Month)",
+          "الفترة الزمنية (Period)",
+          "نسبة الإنجاز الشهري %",
+          "منحنى S-Curve التراكمي %",
+          `القيمة المخططة PV (${sym})`,
+          `المستخلص الداخل Inflow (${sym})`,
+          `المصروفات والتكاليف Outflow (${sym})`,
+          `صافي التدفق الشهري Net (${sym})`,
+          `التدفق التراكمي الداخل (${sym})`,
+          `التكاليف التراكمية (${sym})`,
+          `السيولة التراكمية Cumulative Net (${sym})`,
+          "الحالة (Status)"
+        ],
+        ...cf.monthlyBreakdown.map(m => [
+          `M${String(m.monthIndex).padStart(2, '0')}`,
+          m.monthLabel,
+          `${m.progressPct}%`,
+          `${m.cumulativeProgressPct}%`,
+          m.plannedValue,
+          m.inflow,
+          m.outflow,
+          m.netFlow,
+          m.cumulativeInflow,
+          m.cumulativeOutflow,
+          m.cumulativeNet,
+          m.statusAr || m.status
+        ])
+      ];
+
+      const wsCF = XLSX.utils.aoa_to_sheet(cfData);
+      wsCF['!cols'] = [
+        { wch: 14 },
+        { wch: 25 },
+        { wch: 20 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 25 },
+        { wch: 18 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsCF, "CashFlow_التدفقات_النقدية");
+    }
+
     // Generate filename and trigger download
     const cleanName = (projectData.projectInfo.projectName || "Project").replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, "_");
     const fileName = `${cleanName}_Daily_Schedule.xlsx`;

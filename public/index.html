@@ -132,6 +132,9 @@
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="milestones">
         📈 المعالم والمسار الزمني (Milestones)
       </button>
+      <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="cashflow">
+        💵 التدفقات النقدية (Cash Flow)
+      </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="actions">
         ⚡ القرارات وبنود العمل (Action Items)
       </button>
@@ -340,9 +343,118 @@
           </table>
         </div>
       </div>
+    <!-- TAB 6: CASH FLOW & S-CURVE FINANCIALS -->
+    <div id="tab-content-cashflow" class="hidden space-y-4 sm:space-y-6">
+      
+      <!-- Financial Header Toolbar -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] mb-1 border border-emerald-200">
+            💵 PMP Financial & Cash Flow Intelligence
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950">التدفقات النقدية ومنحنى S-Curve المالي</h3>
+          <p class="text-xs text-zinc-500">تحليل وتوقع المستخلصات المعتمدة، التكاليف التشغيلية، وصافي السيولة النقدية شهرياً</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="openBudgetModal()" class="flex-1 sm:flex-initial px-3.5 py-2 bg-zinc-950 hover:bg-black text-amber-300 font-bold text-xs rounded-xl transition shadow-sm flex items-center justify-center gap-1.5">
+            <span>⚙️</span> تعديل ميزانية المشروع
+          </button>
+          <button onclick="exportCurrentProject()" class="flex-1 sm:flex-initial px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+            <span>📊</span> تصدير Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Financial KPI Cards Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm space-y-1">
+          <span class="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">قيمة العقد / الميزانية</span>
+          <div class="text-xl sm:text-2xl font-black text-zinc-950" id="cf-contract-value">0 ر.س</div>
+          <span class="text-[10px] text-zinc-400 block font-medium" id="cf-currency-badge">العملة: ريال سعودي (SAR)</span>
+        </div>
+
+        <div class="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-100 shadow-sm space-y-1">
+          <span class="text-[10px] sm:text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">إجمالي التدفقات الداخلة (Inflows)</span>
+          <div class="text-xl sm:text-2xl font-black text-emerald-700" id="cf-total-inflows">0 ر.س</div>
+          <span class="text-[10px] text-emerald-600 block font-medium" id="cf-inflow-note">المستخلصات والدفعة المقدمة</span>
+        </div>
+
+        <div class="bg-rose-50/60 p-4 rounded-2xl border border-rose-100 shadow-sm space-y-1">
+          <span class="text-[10px] sm:text-[11px] font-bold text-rose-800 uppercase tracking-wider block">إجمالي المصروفات (Outflows)</span>
+          <div class="text-xl sm:text-2xl font-black text-rose-700" id="cf-total-outflows">0 ر.س</div>
+          <span class="text-[10px] text-rose-600 block font-medium" id="cf-cost-ratio-badge">تكاليف الموقع والتوريدات</span>
+        </div>
+
+        <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 shadow-sm space-y-1">
+          <span class="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider block">صافي الأرباح المتوقعة</span>
+          <div class="text-xl sm:text-2xl font-black text-amber-800" id="cf-net-profit">0 ر.س</div>
+          <span class="text-[10px] text-amber-700 font-bold block" id="cf-margin-badge">هامش الربح: 20%</span>
+        </div>
+      </div>
+
+      <!-- Interactive S-Curve Visual Chart Container -->
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-zinc-200/80 shadow-sm space-y-4">
+        <div class="flex flex-wrap justify-between items-center gap-2 border-b border-zinc-100 pb-3">
+          <div>
+            <h4 class="text-sm sm:text-base font-black text-zinc-950 flex items-center gap-2">
+              <span>📈</span> المخطط البياني للتدفقات الشهرية ومنحنى S-Curve
+            </h4>
+            <p class="text-[11px] text-zinc-400">مقارنة التدفقات الداخلة بالمصروفات التشغيلية لكل شهر</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-bold">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span>
+              <span class="text-zinc-600">التدفقات الداخلة (Inflow)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded bg-zinc-800 inline-block"></span>
+              <span class="text-zinc-600">التكاليف الخارجة (Outflow)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+              <span class="text-amber-800">منحنى S-Curve (%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Bar / S-Curve Chart -->
+        <div id="cashflow-chart-container" class="w-full overflow-x-auto no-scrollbar pt-2 pb-2">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Monthly Breakdown Cash Flow Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden space-y-0">
+        <div class="p-4 border-b border-zinc-100 flex flex-wrap justify-between items-center bg-zinc-50/50 gap-2">
+          <h4 class="text-xs sm:text-sm font-bold text-zinc-900">جدول التدفقات النقدية والمستخلصات الشهرية التفصيلي (Cash Flow Schedule)</h4>
+          <span id="cashflow-table-count" class="text-xs text-zinc-500 font-bold"></span>
+        </div>
+        <div class="table-container max-h-[600px] overflow-y-auto">
+          <table>
+            <thead class="sticky top-0 z-10 bg-zinc-50 shadow-sm">
+              <tr>
+                <th class="text-center">الشهر</th>
+                <th>الفترة الزمنية</th>
+                <th class="text-center">الإنجاز الشهري</th>
+                <th class="text-center">S-Curve التراكمي</th>
+                <th>القيمة المخططة (PV)</th>
+                <th>المستخلص (Inflow)</th>
+                <th>المصروفات (Outflow)</th>
+                <th>صافي الشهر (Net)</th>
+                <th>السيولة التراكمية</th>
+                <th class="text-center">الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="cashflow-table-body">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
-    <!-- TAB 6: AI FILE UPLOADER & WELCOME SCREEN -->
+    <!-- TAB 7: AI FILE UPLOADER & WELCOME SCREEN -->
     <div id="tab-content-upload" class="space-y-6">
       <div class="bg-white p-5 sm:p-12 rounded-3xl border border-zinc-200/90 shadow-sm text-center max-w-3xl mx-auto space-y-5 sm:space-y-6">
         
@@ -570,6 +682,95 @@
         <div class="pt-2">
           <button type="submit" class="w-full py-3 bg-zinc-950 hover:bg-black text-amber-300 font-black rounded-xl text-xs sm:text-sm transition shadow-lg flex items-center justify-center gap-2">
             <span>🚀</span> توليد خطة العمل والمهام اليومية والمشتريات فوراً
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- BUDGET & CASH FLOW SETTINGS MODAL -->
+  <div id="budget-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-3xl w-[94vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] mb-1 border border-emerald-200">
+            💵 PMP Budget & Financial Parameters
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950">⚙️ إعدادات الميزانية والتدفق النقدي</h3>
+          <p class="text-xs text-zinc-500">تخصيص قيمة العقد، الدفعة المقدمة، نسبة الاستقطاع، وهوامش التكلفة</p>
+        </div>
+        <button id="btn-close-budget" class="text-zinc-400 hover:text-zinc-950 font-bold p-1 text-sm">✕</button>
+      </div>
+
+      <form id="budget-form" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-800 mb-1">قيمة العقد الإجمالية (Contract Value):</label>
+          <div class="relative">
+            <input type="number" id="budget-contract-value" required min="1000" step="1000" placeholder="مثال: 5400000" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-950 focus:ring-2 focus:ring-zinc-950 focus:outline-none pl-16">
+            <span id="budget-currency-symbol-label" class="absolute left-3 top-2.5 text-xs font-bold text-zinc-400">ر.س</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-zinc-800 mb-1">عملة المشروع (Project Currency):</label>
+          <select id="budget-currency" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
+            <option value="SAR" selected>ريال سعودي (SAR - ر.س)</option>
+            <option value="USD">دولار أمريكي (USD - $)</option>
+            <option value="AED">درهم إماراتي (AED - د.إ)</option>
+            <option value="QAR">ريال قطري (QAR - ر.ق)</option>
+            <option value="KWD">دينار كويتي (KWD - د.ك)</option>
+            <option value="BHD">دينار بحريني (BHD - د.ب)</option>
+            <option value="OMR">ريال عماني (OMR - ر.ع)</option>
+            <option value="EGP">جنيه مصري (EGP - ج.م)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">الدفعة المقدمة (Advance Payment %):</label>
+            <div class="relative">
+              <input type="number" id="budget-advance-percent" required min="0" max="50" step="1" value="10" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-950 focus:ring-2 focus:ring-zinc-950 focus:outline-none pl-8">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-zinc-400">%</span>
+            </div>
+            <p class="text-[10px] text-zinc-400 mt-1">تُصرف بالشهر 1 وتُسترد بالأشهر التالية</p>
+          </div>
+
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">نسبة الاستقطاع والضمان (Retention %):</label>
+            <div class="relative">
+              <input type="number" id="budget-retention-percent" required min="0" max="30" step="1" value="10" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-950 focus:ring-2 focus:ring-zinc-950 focus:outline-none pl-8">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-zinc-400">%</span>
+            </div>
+            <p class="text-[10px] text-zinc-400 mt-1">تُقتطع شهرياً وتُصرف مع التسليم النهائي (TOC)</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">هامش الربح المستهدف (Target Margin %):</label>
+            <div class="relative">
+              <input type="number" id="budget-profit-margin" required min="0" max="80" step="1" value="20" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-emerald-700 focus:ring-2 focus:ring-zinc-950 focus:outline-none pl-8">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-emerald-600">%</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">نسبة التكاليف التشغيلية (Cost Ratio %):</label>
+            <div class="relative">
+              <input type="number" id="budget-cost-ratio" required min="10" max="100" step="1" value="80" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-rose-700 focus:ring-2 focus:ring-zinc-950 focus:outline-none pl-8">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-rose-600">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row items-center gap-2">
+          <button type="submit" class="w-full sm:flex-1 py-3 bg-zinc-950 hover:bg-black text-amber-300 font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2">
+            <span>💾</span> حفظ وتطبيق إعدادات التدفق النقدي
+          </button>
+          <button type="button" onclick="document.getElementById('budget-modal').classList.add('hidden')" class="w-full sm:w-auto px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold rounded-xl text-xs transition">
+            إلغاء
           </button>
         </div>
       </form>

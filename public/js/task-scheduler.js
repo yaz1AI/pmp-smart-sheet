@@ -569,6 +569,130 @@ class PMTaskScheduler {
       totalDurationDays: this.project.projectInfo?.totalScheduleDays || 365
     };
   }
+
+  // PMP Cash Flow & S-Curve Financial Engine
+  getCashFlowForecast(config = {}) {
+    const info = this.project.projectInfo || {};
+    const budgetConfig = this.project.financialConfig || config;
+    
+    const contractValue = parseFloat(budgetConfig.contractValue || info.budget || 5400000);
+    const currency = budgetConfig.currency || "SAR";
+    const advancePaymentPct = parseFloat(budgetConfig.advancePaymentPct !== undefined ? budgetConfig.advancePaymentPct : 10);
+    const retentionPct = parseFloat(budgetConfig.retentionPct !== undefined ? budgetConfig.retentionPct : 10);
+    const costRatio = parseFloat(budgetConfig.costRatio !== undefined ? budgetConfig.costRatio : 0.80);
+
+    const startDateStr = info.startDate || "2026-01-01";
+    const finishDateStr = info.finishDate || "2026-06-30";
+    const start = new Date(startDateStr);
+    const finish = new Date(finishDateStr);
+    
+    let totalMonths = (finish.getFullYear() - start.getFullYear()) * 12 + (finish.getMonth() - start.getMonth()) + 1;
+    if (totalMonths < 2) totalMonths = 6;
+    if (totalMonths > 36) totalMonths = 36;
+
+    // S-Curve Bell Curve weights
+    let rawWeights = [];
+    let weightSum = 0;
+    for (let i = 0; i < totalMonths; i++) {
+      const angle = (Math.PI * (i + 0.5)) / totalMonths;
+      const w = Math.sin(angle) ** 1.8;
+      rawWeights.push(w);
+      weightSum += w;
+    }
+
+    const monthlyPct = rawWeights.map(w => (w / weightSum) * 100);
+    const advancePaymentAmount = (contractValue * advancePaymentPct) / 100;
+    const totalRetentionAmount = (contractValue * retentionPct) / 100;
+    const recoveryMonths = Math.max(1, totalMonths - 2);
+    const monthlyAdvanceRecovery = advancePaymentAmount / recoveryMonths;
+
+    let cumulativePlannedValue = 0;
+    let cumulativeInflow = 0;
+    let cumulativeOutflow = 0;
+    let cumulativeNet = 0;
+    let cumulativeProgressPct = 0;
+
+    const monthlyBreakdown = [];
+
+    for (let m = 0; m < totalMonths; m++) {
+      const monthDate = new Date(start.getFullYear(), start.getMonth() + m, 1);
+      const monthLabel = monthDate.toLocaleDateString('ar-SA', { month: 'short', year: 'numeric' });
+      const monthLabelEn = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const pct = monthlyPct[m];
+      cumulativeProgressPct += pct;
+
+      const plannedValue = (contractValue * pct) / 100;
+      cumulativePlannedValue += plannedValue;
+
+      // Inflow calculation
+      let grossIPC = plannedValue;
+      let advanceRecovery = (m > 0 && m <= recoveryMonths) ? monthlyAdvanceRecovery : 0;
+      let retentionDeduction = (grossIPC * retentionPct) / 100;
+      let monthlyInflow = grossIPC - advanceRecovery - retentionDeduction;
+
+      if (m === 0 && advancePaymentAmount > 0) {
+        monthlyInflow += advancePaymentAmount;
+      }
+      if (m === totalMonths - 1 && totalRetentionAmount > 0) {
+        monthlyInflow += totalRetentionAmount;
+      }
+
+      let monthlyOutflow = plannedValue * costRatio;
+      if (m === 0) monthlyOutflow += advancePaymentAmount * 0.35;
+
+      const netMonthlyCashFlow = monthlyInflow - monthlyOutflow;
+      cumulativeInflow += monthlyInflow;
+      cumulativeOutflow += monthlyOutflow;
+      cumulativeNet += netMonthlyCashFlow;
+
+      const today = new Date();
+      let status = "Planned";
+      let statusAr = "مخطط";
+      if (monthDate <= today) {
+        status = "Paid / Invoiced";
+        statusAr = "معتمد ومفوتر";
+      } else if (m === 0 || m === 1) {
+        status = "Under Review";
+        statusAr = "قيد المعالجة";
+      }
+
+      monthlyBreakdown.push({
+        monthIndex: m + 1,
+        monthDate: monthDate.toISOString().split('T')[0],
+        monthLabel: `${monthLabel} (${monthLabelEn})`,
+        progressPct: Math.round(pct * 10) / 10,
+        cumulativeProgressPct: Math.min(100, Math.round(cumulativeProgressPct * 10) / 10),
+        plannedValue: Math.round(plannedValue),
+        inflow: Math.round(monthlyInflow),
+        outflow: Math.round(monthlyOutflow),
+        netFlow: Math.round(netMonthlyCashFlow),
+        cumulativeInflow: Math.round(cumulativeInflow),
+        cumulativeOutflow: Math.round(cumulativeOutflow),
+        cumulativeNet: Math.round(cumulativeNet),
+        status,
+        statusAr
+      });
+    }
+
+    const totalProfit = cumulativeInflow - cumulativeOutflow;
+    const profitMarginPct = Math.round((totalProfit / contractValue) * 100);
+
+    return {
+      currency,
+      contractValue,
+      totalInflow: Math.round(cumulativeInflow),
+      totalOutflow: Math.round(cumulativeOutflow),
+      netCashFlow: Math.round(cumulativeNet),
+      totalProfit: Math.round(totalProfit),
+      profitMarginPct,
+      advancePaymentAmount,
+      advancePaymentPct,
+      totalRetentionAmount,
+      retentionPct,
+      totalMonths,
+      monthlyBreakdown
+    };
+  }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

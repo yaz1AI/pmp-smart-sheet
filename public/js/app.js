@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNewProjectModal();
   initShareModal();
   initWorkPlanGeneratorModal();
+  initBudgetModal();
 });
 
 function refreshAppState() {
@@ -214,7 +215,7 @@ function switchTab(tabName) {
 }
 
 function renderCurrentTab() {
-  const sections = ["projects", "daily", "grid", "mts", "milestones", "actions", "upload"];
+  const sections = ["projects", "daily", "grid", "mts", "milestones", "cashflow", "actions", "upload"];
   sections.forEach(s => {
     const el = document.getElementById(`tab-content-${s}`);
     if (el) el.classList.toggle("hidden", s !== activeTab);
@@ -225,6 +226,7 @@ function renderCurrentTab() {
   else if (activeTab === "grid") renderGridView();
   else if (activeTab === "mts") renderMTSView();
   else if (activeTab === "milestones") renderMilestonesView();
+  else if (activeTab === "cashflow") renderCashFlowView();
   else if (activeTab === "actions") renderActionsView();
 }
 
@@ -644,6 +646,157 @@ function renderActionsView() {
   }).join('');
 }
 
+// 12.1 Cash Flow & S-Curve Financial View
+const CURRENCY_SYMBOLS = {
+  SAR: "ر.س",
+  USD: "$",
+  AED: "د.إ",
+  QAR: "ر.ق",
+  KWD: "د.ك",
+  BHD: "د.ب",
+  OMR: "ر.ع",
+  EGP: "ج.م"
+};
+
+function renderCashFlowView() {
+  if (!scheduler || !currentProject) return;
+
+  const cf = scheduler.getCashFlowForecast();
+  const sym = CURRENCY_SYMBOLS[cf.currency] || cf.currency || "ر.س";
+
+  const valEl = document.getElementById("cf-contract-value");
+  const inEl = document.getElementById("cf-total-inflows");
+  const outEl = document.getElementById("cf-total-outflows");
+  const profitEl = document.getElementById("cf-net-profit");
+  const currBadge = document.getElementById("cf-currency-badge");
+  const marginBadge = document.getElementById("cf-margin-badge");
+  const inflowNote = document.getElementById("cf-inflow-note");
+  const costRatioBadge = document.getElementById("cf-cost-ratio-badge");
+
+  if (valEl) valEl.innerText = `${new Intl.NumberFormat('en-US').format(cf.contractValue)} ${sym}`;
+  if (inEl) inEl.innerText = `${new Intl.NumberFormat('en-US').format(cf.totalInflow)} ${sym}`;
+  if (outEl) outEl.innerText = `${new Intl.NumberFormat('en-US').format(cf.totalOutflow)} ${sym}`;
+  if (profitEl) profitEl.innerText = `${new Intl.NumberFormat('en-US').format(cf.totalProfit)} ${sym}`;
+  if (currBadge) currBadge.innerText = `العملة: ${cf.currency} (${sym})`;
+  if (marginBadge) marginBadge.innerText = `هامش الربح: ${cf.profitMarginPct}% (${new Intl.NumberFormat('en-US').format(cf.totalProfit)} ${sym})`;
+  if (inflowNote) inflowNote.innerText = `المستخلصات + الدفعة المقدمة (${cf.advancePaymentPct}%)`;
+  if (costRatioBadge) costRatioBadge.innerText = `تكاليف التنفيذ والتوريد (${Math.round((cf.totalOutflow / cf.contractValue) * 100)}%)`;
+
+  renderCashFlowChart(cf);
+  renderCashFlowTable(cf);
+}
+
+function renderCashFlowChart(cf) {
+  const container = document.getElementById("cashflow-chart-container");
+  if (!container) return;
+
+  const months = cf.monthlyBreakdown || [];
+  if (months.length === 0) {
+    container.innerHTML = `<div class="text-center py-6 text-zinc-400 text-xs">لا توجد بيانات تدفقات نقدية مسجلة.</div>`;
+    return;
+  }
+
+  const maxVal = Math.max(...months.map(m => Math.max(m.inflow, m.outflow)), 1);
+  const sym = CURRENCY_SYMBOLS[cf.currency] || cf.currency || "ر.س";
+
+  container.innerHTML = `
+    <div class="flex items-end gap-3 min-w-[700px] pb-4 pt-6 px-2 border-b border-zinc-100">
+      ${months.map(m => {
+        const inflowHeightPct = Math.max(12, Math.round((m.inflow / maxVal) * 100));
+        const outflowHeightPct = Math.max(12, Math.round((m.outflow / maxVal) * 100));
+        const isNetPositive = m.netFlow >= 0;
+
+        return `
+          <div class="flex-1 flex flex-col items-center gap-2 group relative">
+            <!-- S-Curve Progress Pill -->
+            <div class="text-[10px] font-black text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 whitespace-nowrap shadow-xs flex items-center gap-1">
+              <span>📈</span>
+              <span>${m.cumulativeProgressPct}%</span>
+            </div>
+
+            <!-- Dual Bars Box -->
+            <div class="w-full h-44 flex items-end justify-center gap-1.5 bg-zinc-50 rounded-2xl p-2 border border-zinc-200/60 group-hover:border-zinc-300 group-hover:bg-zinc-100/60 transition">
+              <!-- Inflow Bar -->
+              <div class="w-1/2 bg-emerald-500 hover:bg-emerald-600 rounded-t-lg transition-all relative flex items-center justify-center cursor-pointer group/bar shadow-sm" style="height: ${inflowHeightPct}%;">
+                <div class="opacity-0 group-hover/bar:opacity-100 transition absolute -top-8 bg-zinc-950 text-white text-[9px] font-bold px-2 py-1 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                  داخل: ${new Intl.NumberFormat('en-US').format(m.inflow)} ${sym}
+                </div>
+              </div>
+              <!-- Outflow Bar -->
+              <div class="w-1/2 bg-zinc-800 hover:bg-zinc-950 rounded-t-lg transition-all relative flex items-center justify-center cursor-pointer group/bar shadow-sm" style="height: ${outflowHeightPct}%;">
+                <div class="opacity-0 group-hover/bar:opacity-100 transition absolute -top-8 bg-zinc-950 text-white text-[9px] font-bold px-2 py-1 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                  خارج: ${new Intl.NumberFormat('en-US').format(m.outflow)} ${sym}
+                </div>
+              </div>
+            </div>
+
+            <!-- Net Flow Tag -->
+            <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md ${isNetPositive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} whitespace-nowrap">
+              ${isNetPositive ? '+' : ''}${new Intl.NumberFormat('en-US').format(Math.round(m.netFlow / 1000))}k
+            </span>
+
+            <!-- Month Title -->
+            <div class="text-center">
+              <span class="text-[11px] font-black text-zinc-900 block">شهر ${m.monthIndex}</span>
+              <span class="text-[9px] text-zinc-400 font-mono block">${m.monthDate.substring(0, 7)}</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderCashFlowTable(cf) {
+  const tbody = document.getElementById("cashflow-table-body");
+  const countBadge = document.getElementById("cashflow-table-count");
+  if (!tbody) return;
+
+  const months = cf.monthlyBreakdown || [];
+  if (countBadge) countBadge.innerText = `(إجمالي دورات المشروع: ${months.length} أشهر مالية)`;
+
+  if (months.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-xs text-zinc-400">لا توجد بيانات تدفقات نقدية مسجلة.</td></tr>`;
+    return;
+  }
+
+  const sym = CURRENCY_SYMBOLS[cf.currency] || cf.currency || "ر.س";
+
+  tbody.innerHTML = months.map(m => {
+    const isNetPositive = m.netFlow >= 0;
+    const isCumulativePositive = m.cumulativeNet >= 0;
+    const statusClass = m.status.includes('Paid') ? 'badge-completed' : m.status.includes('Review') ? 'badge-inprogress' : 'badge-pending';
+
+    return `
+      <tr class="hover:bg-zinc-50 transition">
+        <td class="text-center font-mono text-xs font-bold text-zinc-400">M${String(m.monthIndex).padStart(2, '0')}</td>
+        <td class="text-xs font-bold text-zinc-900 whitespace-nowrap">${m.monthLabel}</td>
+        <td class="text-center font-bold text-xs text-zinc-700">${m.progressPct}%</td>
+        <td class="text-center">
+          <div class="inline-flex items-center gap-1.5">
+            <div class="w-12 bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-amber-500 h-full rounded-full" style="width: ${m.cumulativeProgressPct}%"></div>
+            </div>
+            <span class="text-xs font-black text-amber-800">${m.cumulativeProgressPct}%</span>
+          </div>
+        </td>
+        <td class="font-mono text-xs font-medium text-zinc-600 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.plannedValue)} ${sym}</td>
+        <td class="font-mono text-xs font-bold text-emerald-700 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.inflow)} ${sym}</td>
+        <td class="font-mono text-xs font-bold text-rose-700 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.outflow)} ${sym}</td>
+        <td class="font-mono text-xs font-black whitespace-nowrap ${isNetPositive ? 'text-emerald-700' : 'text-rose-700'}">
+          ${isNetPositive ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)} ${sym}
+        </td>
+        <td class="font-mono text-xs font-bold whitespace-nowrap ${isCumulativePositive ? 'text-zinc-900' : 'text-rose-600'}">
+          ${new Intl.NumberFormat('en-US').format(m.cumulativeNet)} ${sym}
+        </td>
+        <td class="text-center">
+          <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${statusClass}">${m.statusAr || m.status}</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
 // Filter Logic
 function initFilterControls() {
   document.getElementById("filter-search")?.addEventListener("input", (e) => {
@@ -1011,6 +1164,96 @@ function openWorkPlanGeneratorModal(prefill = {}) {
   } else {
     if (startDateInput && !startDateInput.value) startDateInput.value = new Date().toISOString().split('T')[0];
   }
+
+  modal.classList.remove("hidden");
+}
+
+// 16. Budget & Cash Flow Settings Modal
+function initBudgetModal() {
+  const modal = document.getElementById("budget-modal");
+  const closeBtn = document.getElementById("btn-close-budget");
+  const form = document.getElementById("budget-form");
+  const currencySelect = document.getElementById("budget-currency");
+  const marginInput = document.getElementById("budget-profit-margin");
+  const costInput = document.getElementById("budget-cost-ratio");
+
+  closeBtn?.addEventListener("click", () => modal?.classList.add("hidden"));
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.add("hidden");
+  });
+
+  currencySelect?.addEventListener("change", (e) => {
+    const sym = CURRENCY_SYMBOLS[e.target.value] || e.target.value;
+    const label = document.getElementById("budget-currency-symbol-label");
+    if (label) label.innerText = sym;
+  });
+
+  marginInput?.addEventListener("input", (e) => {
+    const margin = parseFloat(e.target.value) || 0;
+    if (costInput && margin >= 0 && margin <= 90) {
+      costInput.value = 100 - margin;
+    }
+  });
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!currentProject) return;
+
+    const contractValue = parseFloat(document.getElementById("budget-contract-value")?.value) || 5400000;
+    const currency = document.getElementById("budget-currency")?.value || "SAR";
+    const advancePaymentPct = parseFloat(document.getElementById("budget-advance-percent")?.value) || 10;
+    const retentionPct = parseFloat(document.getElementById("budget-retention-percent")?.value) || 10;
+    const marginPct = parseFloat(document.getElementById("budget-profit-margin")?.value) || 20;
+    const costRatioPct = parseFloat(document.getElementById("budget-cost-ratio")?.value) || 80;
+
+    currentProject.financialConfig = {
+      contractValue: contractValue,
+      currency: currency,
+      advancePaymentPct: advancePaymentPct,
+      retentionPct: retentionPct,
+      marginPct: marginPct,
+      costRatio: costRatioPct / 100
+    };
+
+    if (currentProject.projectInfo) {
+      currentProject.projectInfo.budget = contractValue;
+    }
+
+    saveActiveProjectState();
+    modal?.classList.add("hidden");
+    renderCashFlowView();
+    alert("✅ تم حفظ وتطبيق إعدادات ميزانية المشروع والتدفق النقدي بنجاح!");
+  });
+}
+
+function openBudgetModal() {
+  if (!currentProject) {
+    alert("⚠️ يرجى اختيار أو رفع مشروع أولاً لتعديل ميزانيته.");
+    return;
+  }
+  const modal = document.getElementById("budget-modal");
+  if (!modal) return;
+
+  const cfg = currentProject.financialConfig || {};
+  const info = currentProject.projectInfo || {};
+
+  const contractValInput = document.getElementById("budget-contract-value");
+  const currencySelect = document.getElementById("budget-currency");
+  const advInput = document.getElementById("budget-advance-percent");
+  const retInput = document.getElementById("budget-retention-percent");
+  const marginInput = document.getElementById("budget-profit-margin");
+  const costInput = document.getElementById("budget-cost-ratio");
+  const symLabel = document.getElementById("budget-currency-symbol-label");
+
+  if (contractValInput) contractValInput.value = cfg.contractValue || info.budget || 5400000;
+  if (currencySelect) currencySelect.value = cfg.currency || "SAR";
+  if (advInput) advInput.value = cfg.advancePaymentPct !== undefined ? cfg.advancePaymentPct : 10;
+  if (retInput) retInput.value = cfg.retentionPct !== undefined ? cfg.retentionPct : 10;
+  if (marginInput) marginInput.value = cfg.marginPct !== undefined ? cfg.marginPct : 20;
+  if (costInput) costInput.value = cfg.costRatio !== undefined ? Math.round(cfg.costRatio * 100) : 80;
+
+  const cur = currencySelect ? currencySelect.value : "SAR";
+  if (symLabel) symLabel.innerText = CURRENCY_SYMBOLS[cur] || cur;
 
   modal.classList.remove("hidden");
 }
