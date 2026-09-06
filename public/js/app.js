@@ -205,11 +205,6 @@ function switchTab(tabName) {
   tabBtns.forEach(b => {
     const isActive = b.dataset.tab === activeTab;
     b.classList.toggle("active", isActive);
-    b.classList.toggle("border-blue-600", isActive);
-    b.classList.toggle("text-blue-600", isActive);
-    if (!isActive) {
-      b.classList.remove("border-blue-600", "text-blue-600");
-    }
   });
   renderCurrentTab();
 }
@@ -239,18 +234,18 @@ function renderProjectsDashboard() {
 
   if (projects.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300 space-y-4">
-        <div class="text-5xl">📁</div>
-        <h3 class="text-lg font-black text-slate-800">ليس لديك أي مشروع محفوظ حالياً</h3>
-        <p class="text-xs text-slate-500 max-w-md mx-auto">
-          ابدأ برفع ملف مشروعك الأول (PDF / Word / Excel) ليقوم الذكاء الاصطناعي بدراسته وبناء شيت المهام اليومية، أو جرب النموذج الاستعراضي.
+      <div class="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-zinc-300 space-y-4 shadow-sm">
+        <div class="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-2xl flex items-center justify-center text-3xl mx-auto border border-zinc-200">📁</div>
+        <h3 class="text-lg font-black text-zinc-950">ليس لديك أي مشروع محفوظ حالياً</h3>
+        <p class="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
+          ابدأ برفع ملف مشروعك الأول (PDF / Word / Excel) ليقوم المحلل الذكي بدراسته وبناء خطة المهام اليومية وجداول المشتريات.
         </p>
         <div class="flex flex-wrap justify-center gap-3 pt-2">
-          <button onclick="switchTab('upload')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20">
+          <button onclick="switchTab('upload')" class="px-5 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
             ➕ رفع ملف مشروعي الأول
           </button>
-          <button onclick="handleLoadDemoProject()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
-            📂 تجربة مشروع تجريبي نموذجي
+          <button onclick="handleLoadDemoProject()" class="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold transition">
+            📂 تجربة نموذج استعراضي
           </button>
         </div>
       </div>
@@ -265,9 +260,9 @@ function renderProjectsDashboard() {
     const isActive = p.id === activeId;
 
     return `
-      <div class="bg-white rounded-2xl border ${isActive ? 'border-2 border-blue-600 shadow-md ring-2 ring-blue-100' : 'border-slate-200 shadow-sm'} p-6 flex flex-col justify-between hover:shadow-lg transition relative">
+      <div class="bg-white rounded-2xl border ${isActive ? 'border-2 border-zinc-950 shadow-md ring-1 ring-zinc-900/10' : 'border-zinc-200/80 shadow-sm'} p-6 flex flex-col justify-between hover:shadow-md transition relative">
         ${isActive ? `
-          <div class="absolute -top-3 right-6 bg-blue-600 text-white text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
+          <div class="absolute -top-3 right-6 bg-zinc-950 text-amber-300 text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow border border-amber-400/20">
             المشروع النشط حالياً
           </div>
         ` : ''}
@@ -275,67 +270,67 @@ function renderProjectsDashboard() {
         <div>
           <div class="flex justify-between items-start gap-3 mb-3">
             <div>
-              <span class="text-xs font-mono font-bold text-slate-400">${info.projectNumber || 'PRJ'}</span>
-              <h3 class="text-lg font-black text-slate-900 leading-snug">${info.projectNameAr || info.projectName}</h3>
-              <p class="text-xs text-slate-500 font-mono">${info.projectName}</p>
+              <span class="text-xs font-mono font-bold text-zinc-400">${info.projectNumber || 'PRJ'}</span>
+              <h3 class="text-lg font-black text-zinc-950 leading-snug">${info.projectNameAr || info.projectName}</h3>
+              <p class="text-xs text-zinc-400 font-mono">${info.projectName}</p>
             </div>
-            <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-blue-50 text-blue-700">
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-zinc-100 text-zinc-800 border border-zinc-200">
               ${info.status || 'Active'}
             </span>
           </div>
 
-          <p class="text-xs text-slate-600 mb-4 line-clamp-2">${info.description || 'مشروع هندسي مجدول بالذكاء الاصطناعي'}</p>
+          <p class="text-xs text-zinc-600 mb-4 line-clamp-2 leading-relaxed">${info.description || 'مشروع هندسي مجدول بالذكاء الاصطناعي'}</p>
 
-          <div class="space-y-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl mb-4">
+          <div class="space-y-2 text-xs text-zinc-600 bg-zinc-50 p-3.5 rounded-xl mb-4 border border-zinc-100">
             <div class="flex justify-between">
-              <span class="text-slate-400">العميل / المالك:</span>
-              <strong class="text-slate-800">${info.client || 'N/A'}</strong>
+              <span class="text-zinc-400">العميل / المالك:</span>
+              <strong class="text-zinc-900">${info.client || 'N/A'}</strong>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">المقاول المنفذ:</span>
-              <strong class="text-slate-800">${info.contractor || 'N/A'}</strong>
+              <span class="text-zinc-400">المقاول المنفذ:</span>
+              <strong class="text-zinc-900">${info.contractor || 'N/A'}</strong>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">المدة الزمنية:</span>
-              <strong>${info.startDate} ⬅ ${info.finishDate} (${info.totalScheduleDays || 365} يوم)</strong>
+              <span class="text-zinc-400">المدة الزمنية:</span>
+              <strong class="text-zinc-900">${info.startDate} ⬅ ${info.finishDate} (${info.totalScheduleDays || 365} يوم)</strong>
             </div>
           </div>
 
           <!-- Progress -->
           <div class="mb-4">
             <div class="flex justify-between text-xs font-bold mb-1">
-              <span class="text-slate-600">نسبة الإنجاز المخططة:</span>
-              <span class="text-blue-600">${kpis.completionRate}%</span>
+              <span class="text-zinc-500">نسبة الإنجاز المخططة:</span>
+              <span class="text-zinc-950 font-black">${kpis.completionRate}%</span>
             </div>
-            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div class="bg-blue-600 h-full rounded-full transition-all" style="width: ${kpis.completionRate}%"></div>
+            <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-zinc-950 h-full rounded-full transition-all" style="width: ${kpis.completionRate}%"></div>
             </div>
           </div>
 
           <div class="grid grid-cols-3 gap-2 text-center text-xs mb-4">
-            <div class="bg-slate-50 p-2 rounded-lg">
-              <div class="font-black text-slate-800">${kpis.totalTasks}</div>
-              <div class="text-[10px] text-slate-500">إجمالي المهام</div>
+            <div class="bg-zinc-50 p-2.5 rounded-xl border border-zinc-100">
+              <div class="font-black text-zinc-950 text-sm">${kpis.totalTasks}</div>
+              <div class="text-[10px] text-zinc-400">إجمالي المهام</div>
             </div>
-            <div class="bg-emerald-50 p-2 rounded-lg">
-              <div class="font-black text-emerald-600">${kpis.completedTasks}</div>
-              <div class="text-[10px] text-emerald-700">مكتملة</div>
+            <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100">
+              <div class="font-black text-emerald-700 text-sm">${kpis.completedTasks}</div>
+              <div class="text-[10px] text-emerald-800">مكتملة</div>
             </div>
-            <div class="bg-red-50 p-2 rounded-lg">
-              <div class="font-black text-red-600">${kpis.criticalTasks}</div>
-              <div class="text-[10px] text-red-700">حرجة</div>
+            <div class="bg-rose-50/60 p-2.5 rounded-xl border border-rose-100">
+              <div class="font-black text-rose-700 text-sm">${kpis.criticalTasks}</div>
+              <div class="text-[10px] text-rose-800">حرجة</div>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
-          <button onclick="handleSelectProject('${p.id}')" class="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+        <div class="flex items-center gap-2 pt-3 border-t border-zinc-100">
+          <button onclick="handleSelectProject('${p.id}')" class="flex-1 py-2 px-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
             ⚡ فتح الشيت الذكي
           </button>
-          <button onclick="exportSingleProject('${p.id}')" class="p-2 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded-xl text-xs font-bold transition" title="تصدير Excel">
+          <button onclick="exportSingleProject('${p.id}')" class="p-2 bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 text-zinc-700 rounded-xl text-xs font-bold transition border border-zinc-200" title="تصدير Excel">
             📊
           </button>
-          <button onclick="handleDeleteProject('${p.id}')" class="p-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 rounded-xl text-xs font-bold transition" title="حذف المشروع">
+          <button onclick="handleDeleteProject('${p.id}')" class="p-2 bg-zinc-100 hover:bg-rose-50 hover:text-rose-600 text-zinc-400 rounded-xl text-xs font-bold transition border border-zinc-200" title="حذف المشروع">
             🗑️
           </button>
         </div>
@@ -424,17 +419,17 @@ function renderDailyView() {
     const upcoming = all.filter(t => t.date >= selectedDate).slice(0, 5);
     
     container.innerHTML = `
-      <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+      <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-zinc-300 shadow-sm">
         <div class="text-4xl mb-3">☕</div>
-        <h3 class="text-base font-bold text-slate-700 mb-1">لا توجد مهام مجدولة بالتحديد في تاريخ ${selectedDate}</h3>
-        <p class="text-xs text-slate-500 mb-4">يمكنك إضافة مهمة جديدة لهذا اليوم أو استعراض أقرب المهام القادمة أدناه:</p>
-        <button onclick="openAddTaskModal('${selectedDate}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+        <h3 class="text-base font-bold text-zinc-800 mb-1">لا توجد مهام مجدولة بالتحديد في تاريخ ${selectedDate}</h3>
+        <p class="text-xs text-zinc-500 mb-4">يمكنك إضافة مهمة جديدة لهذا اليوم أو استعراض أقرب المهام القادمة أدناه:</p>
+        <button onclick="openAddTaskModal('${selectedDate}')" class="px-4 py-2 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold shadow-sm transition">
           ➕ إضافة مهمة جديدة لهذا اليوم
         </button>
       </div>
       ${upcoming.length > 0 ? `
         <div class="mt-6">
-          <h4 class="text-xs font-bold text-slate-500 mb-3">📌 أقرب المهام القادمة في الجدول الزمني:</h4>
+          <h4 class="text-xs font-bold text-zinc-500 mb-3">📌 أقرب المهام القادمة في الجدول الزمني:</h4>
           <div class="space-y-3">
             ${upcoming.map(t => renderSingleTaskCard(t)).join('')}
           </div>
@@ -446,8 +441,8 @@ function renderDailyView() {
 
   container.innerHTML = `
     <div class="flex justify-between items-center mb-4">
-      <span class="text-xs font-bold text-slate-600">عدد المهام اليومية: ${tasks.length}</span>
-      <button onclick="openAddTaskModal('${selectedDate}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition">
+      <span class="text-xs font-bold text-zinc-600">عدد المهام اليومية: ${tasks.length}</span>
+      <button onclick="openAddTaskModal('${selectedDate}')" class="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold transition border border-zinc-200">
         ➕ إضافة مهمة لهذا اليوم
       </button>
     </div>
@@ -463,20 +458,20 @@ function renderSingleTaskCard(task) {
   const isChecked = task.status === 'Completed' ? 'checked' : '';
 
   return `
-    <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="p-4 bg-white rounded-2xl border border-zinc-200/80 shadow-sm hover:border-zinc-400 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div class="flex items-start gap-3 flex-1">
-        <input type="checkbox" ${isChecked} onchange="toggleTaskStatus('${task.id}', this.checked)" class="mt-1.5 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer">
+        <input type="checkbox" ${isChecked} onchange="toggleTaskStatus('${task.id}', this.checked)" class="mt-1.5 w-5 h-5 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 cursor-pointer">
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs font-mono font-bold text-slate-400">${task.id}</span>
-            <span class="text-xs px-2 py-0.5 rounded font-bold ${priorityClass}">${task.priority}</span>
-            <span class="text-xs px-2 py-0.5 rounded font-bold ${statusClass}">${task.status}</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">📅 ${task.date}</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">${task.phase}</span>
+            <span class="text-xs font-mono font-bold text-zinc-400">${task.id}</span>
+            <span class="text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${task.priority}</span>
+            <span class="text-xs px-2 py-0.5 rounded-lg ${statusClass}">${task.status}</span>
+            <span class="text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 font-medium">📅 ${task.date}</span>
+            <span class="text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-800 font-medium border border-zinc-200">${task.phase}</span>
           </div>
-          <h4 class="text-base font-bold text-slate-800 leading-snug ${task.status === 'Completed' ? 'line-through text-slate-400' : ''}">${task.titleAr || task.titleEn}</h4>
-          ${task.titleEn && task.titleAr ? `<p class="text-xs text-slate-400 font-mono">${task.titleEn}</p>` : ''}
-          <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+          <h4 class="text-base font-bold text-zinc-950 leading-snug ${task.status === 'Completed' ? 'line-through text-zinc-400' : ''}">${task.titleAr || task.titleEn}</h4>
+          ${task.titleEn && task.titleAr ? `<p class="text-xs text-zinc-400 font-mono">${task.titleEn}</p>` : ''}
+          <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-500 pt-1">
             <span>👤 <strong>المسؤول:</strong> ${task.owner}</span>
             <span>📍 <strong>الموقع:</strong> ${task.facility}</span>
             <span>📦 <strong>المخرج:</strong> ${task.deliverable}</span>
@@ -486,8 +481,8 @@ function renderSingleTaskCard(task) {
 
       <div class="flex items-center gap-3 self-end md:self-center">
         <div class="text-left w-24">
-          <span class="text-[11px] text-slate-500">الإنجاز: <strong>${task.progress || 0}%</strong></span>
-          <input type="range" min="0" max="100" value="${task.progress || 0}" onchange="updateTaskProgress('${task.id}', this.value)" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+          <span class="text-[11px] text-zinc-500">الإنجاز: <strong>${task.progress || 0}%</strong></span>
+          <input type="range" min="0" max="100" value="${task.progress || 0}" onchange="updateTaskProgress('${task.id}', this.value)" class="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-950">
         </div>
       </div>
     </div>
@@ -507,26 +502,26 @@ function renderGridView() {
     const statusClass = t.status === 'Completed' ? 'badge-completed' : t.status === 'In Progress' ? 'badge-inprogress' : 'badge-pending';
 
     return `
-      <tr class="hover:bg-blue-50/40 transition">
-        <td class="font-mono text-xs font-bold text-slate-400">${t.id}</td>
+      <tr class="hover:bg-zinc-50 transition">
+        <td class="font-mono text-xs font-bold text-zinc-400">${t.id}</td>
         <td class="font-mono text-xs whitespace-nowrap">${t.date}</td>
-        <td class="text-xs font-semibold text-blue-700 whitespace-nowrap">${t.phase}</td>
-        <td class="text-xs font-medium text-slate-800">
+        <td class="text-xs font-semibold text-zinc-900 whitespace-nowrap">${t.phase}</td>
+        <td class="text-xs font-medium text-zinc-950">
           <div>${t.titleAr || t.titleEn}</div>
-          <div class="text-[11px] text-slate-400 font-mono">${t.titleEn || ''}</div>
+          <div class="text-[11px] text-zinc-400 font-mono">${t.titleEn || ''}</div>
         </td>
-        <td class="text-xs font-medium text-slate-700 whitespace-nowrap">${t.owner}</td>
-        <td class="text-xs text-slate-600 whitespace-nowrap">${t.facility}</td>
-        <td><span class="text-xs px-2 py-0.5 rounded font-bold ${priorityClass}">${t.priority}</span></td>
+        <td class="text-xs font-medium text-zinc-700 whitespace-nowrap">${t.owner}</td>
+        <td class="text-xs text-zinc-600 whitespace-nowrap">${t.facility}</td>
+        <td><span class="text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${t.priority}</span></td>
         <td>
-          <select onchange="updateTaskStatusDirect('${t.id}', this.value)" class="text-xs font-bold rounded px-2 py-1 border border-slate-300 focus:ring-blue-500 ${statusClass}">
+          <select onchange="updateTaskStatusDirect('${t.id}', this.value)" class="text-xs font-bold rounded-lg px-2 py-1 border border-zinc-300 focus:ring-zinc-950 ${statusClass}">
             <option value="Completed" ${t.status === 'Completed' ? 'selected' : ''}>Completed</option>
             <option value="In Progress" ${t.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
             <option value="Pending" ${t.status === 'Pending' ? 'selected' : ''}>Pending</option>
           </select>
         </td>
         <td class="text-center font-bold text-xs">${t.progress || 0}%</td>
-        <td class="text-xs text-slate-500 max-w-xs truncate" title="${t.deliverable}">${t.deliverable}</td>
+        <td class="text-xs text-zinc-500 max-w-xs truncate" title="${t.deliverable}">${t.deliverable}</td>
       </tr>
     `;
   }).join('');
@@ -539,7 +534,7 @@ function renderMTSView() {
 
   const items = currentProject.materialSubmittals || [];
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-xs text-slate-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-xs text-zinc-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
     return;
   }
 
@@ -549,18 +544,18 @@ function renderMTSView() {
 
     return `
       <tr>
-        <td class="text-center font-bold text-xs text-slate-400">${m.sn || 1}</td>
-        <td class="font-bold text-xs text-slate-800">${m.item}</td>
+        <td class="text-center font-bold text-xs text-zinc-400">${m.sn || 1}</td>
+        <td class="font-bold text-xs text-zinc-950">${m.item}</td>
         <td class="font-mono text-xs whitespace-nowrap">${m.submissionDate || '-'}</td>
         <td class="text-center"><span class="px-2 py-0.5 rounded text-xs font-bold ${codeClass}">Code ${m.status || 'B'}</span></td>
-        <td class="text-xs font-medium text-slate-700">${m.codeName || 'Under Review'}</td>
+        <td class="text-xs font-medium text-zinc-700">${m.codeName || 'Under Review'}</td>
         <td>
-          <span class="text-xs px-2 py-0.5 rounded font-bold ${isLongLead ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700'}">
+          <span class="text-xs px-2 py-0.5 rounded font-bold ${isLongLead ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-zinc-100 text-zinc-700'}">
             ${m.leadTime || 'Standard'} ${isLongLead ? '⚠️' : ''}
           </span>
         </td>
-        <td class="font-mono text-xs font-bold text-blue-700 whitespace-nowrap">${m.requiredSite || '-'}</td>
-        <td><span class="text-xs px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-800">${m.poStatus || 'Planned'}</span></td>
+        <td class="font-mono text-xs font-bold text-zinc-950 whitespace-nowrap">${m.requiredSite || '-'}</td>
+        <td><span class="text-xs px-2 py-0.5 rounded font-semibold bg-zinc-100 text-zinc-800">${m.poStatus || 'Planned'}</span></td>
         <td class="text-center font-bold text-xs">${m.critical ? '🚨 حرج' : 'عادي'}</td>
       </tr>
     `;
@@ -574,22 +569,22 @@ function renderMilestonesView() {
 
   const milestones = currentProject.keyMilestones || [];
   if (milestones.length === 0) {
-    container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">لا توجد معالم رئيسية مدخلة.</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-xs text-zinc-400">لا توجد معالم رئيسية مدخلة.</div>`;
     return;
   }
 
   container.innerHTML = `
-    <div class="relative border-r-2 border-blue-200 mr-4 space-y-8 py-4">
+    <div class="relative border-r-2 border-zinc-200 mr-4 space-y-8 py-4">
       ${milestones.map((m) => `
         <div class="relative pr-8">
-          <div class="absolute -right-2.5 top-1 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow"></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+          <div class="absolute -right-2.5 top-1 w-5 h-5 rounded-full bg-zinc-950 border-4 border-white shadow-md"></div>
+          <div class="bg-white p-5 rounded-2xl border border-zinc-200/80 shadow-sm hover:shadow-md transition">
             <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
-              <span class="text-xs font-mono font-bold text-blue-600">${m.id} (وزن المعلم: ${m.weight || '10%'})</span>
+              <span class="text-xs font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">${m.id} (وزن المعلم: ${m.weight || '10%'})</span>
               <span class="text-xs px-2 py-0.5 rounded font-bold ${m.status === 'Completed' ? 'badge-completed' : m.status === 'Critical' ? 'badge-critical' : 'badge-inprogress'}">${m.status || 'Planned'}</span>
             </div>
-            <h4 class="text-base font-bold text-slate-800 mb-1">${m.name}</h4>
-            <div class="flex flex-wrap gap-4 text-xs text-slate-500">
+            <h4 class="text-base font-bold text-zinc-950 mb-1">${m.name}</h4>
+            <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
               <span>📅 من: <strong>${m.startDate}</strong> إلى: <strong>${m.finishDate}</strong></span>
               <span>👤 المسؤول: <strong>${m.owner || 'Project Lead'}</strong></span>
             </div>

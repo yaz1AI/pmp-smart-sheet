@@ -11,30 +11,30 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="bg-[#f8f9fa] text-zinc-900 antialiased min-h-screen flex flex-col">
 
-  <!-- Top Navbar -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+  <!-- Top Luxury Navbar -->
+  <header class="bg-[#090a0f] border-b border-[#1e2029] sticky top-0 z-40 shadow-sm text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap justify-between items-center gap-4">
       
       <!-- Brand & Project Switcher -->
       <div class="flex items-center gap-4 flex-wrap">
         <a href="landing.html" class="flex items-center gap-2.5 cursor-pointer" title="العودة للصفحة التعريفية">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-md shadow-blue-500/20">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center text-zinc-950 text-sm font-black shadow-md shadow-amber-500/10">
             ⚡
           </div>
           <div>
-            <h1 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+            <h1 class="text-sm font-black text-white tracking-tight flex items-center gap-1.5">
               AI PM Smart Sheet
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold">PMP Pro</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-bold">Executive</span>
             </h1>
           </div>
         </a>
 
         <!-- Project Switcher Select -->
-        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-          <span class="text-xs px-2 text-slate-500 font-bold hidden md:inline">المشروع:</span>
-          <select id="project-select-dropdown" class="bg-transparent text-xs font-bold text-slate-800 border-none focus:ring-0 cursor-pointer pr-6 pl-2 py-1 max-w-[200px] sm:max-w-[260px] truncate">
+        <div class="flex items-center gap-1.5 bg-[#14161f] px-2 py-1 rounded-xl border border-[#242736]">
+          <span class="text-[11px] px-1 text-zinc-400 font-bold hidden md:inline">المشروع:</span>
+          <select id="project-select-dropdown" class="bg-transparent text-xs font-bold text-zinc-200 border-none focus:ring-0 cursor-pointer pr-5 pl-1 py-0.5 max-w-[200px] sm:max-w-[240px] truncate">
             <!-- Dynamic projects -->
           </select>
         </div>
@@ -42,19 +42,19 @@
 
       <!-- Quick Action Buttons & User Menu -->
       <div class="flex items-center flex-wrap gap-2">
-        <a href="landing.html" class="px-2.5 py-1.5 text-slate-600 hover:text-slate-900 text-xs font-bold rounded-xl hover:bg-slate-100 transition hidden sm:inline">
+        <a href="landing.html" class="px-2.5 py-1.5 text-zinc-400 hover:text-white text-xs font-bold rounded-xl hover:bg-[#14161f] transition hidden sm:inline">
           🏠 الرئيسية
         </a>
-        <button id="btn-open-new-project" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+        <button id="btn-open-new-project" class="px-3 py-1.5 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-black rounded-xl transition flex items-center gap-1.5 shadow-sm">
           <span>➕</span> مشروع جديد
         </button>
-        <button id="btn-export-excel" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20">
+        <button id="btn-export-excel" class="px-3 py-1.5 bg-[#122b1f] hover:bg-[#183a2a] text-emerald-300 border border-emerald-700/50 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
           <span>📥</span> تصدير Excel
         </button>
-        <button onclick="openShareModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="مشاركة المشروع">
+        <button onclick="openShareModal()" class="px-3 py-1.5 bg-[#14161f] hover:bg-[#1f2230] text-zinc-300 border border-[#242736] text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="مشاركة المشروع">
           <span>👥</span> مشاركة
         </button>
-        <button id="btn-open-settings" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition" title="إعدادات الذكاء الاصطناعي">
+        <button id="btn-open-settings" class="p-1.5 bg-[#14161f] hover:bg-[#1f2230] text-zinc-300 border border-[#242736] rounded-xl text-xs font-bold transition" title="إعدادات الذكاء الاصطناعي">
           ⚙️
         </button>
 
@@ -70,75 +70,75 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
 
     <!-- Active Project Header Banner (Hidden if no active project) -->
-    <div id="project-header-banner" class="hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
-      <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div id="project-header-banner" class="hidden bg-gradient-to-r from-[#090a0f] via-[#14161f] to-[#090a0f] text-white rounded-2xl p-6 shadow-xl border border-[#242736] relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
       
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
         <div class="space-y-2 max-w-3xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blue-200 text-xs font-semibold backdrop-blur-md">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-amber-300 text-xs font-semibold backdrop-blur-md">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             مشروع نشط ومجدول بالذكاء الاصطناعي
           </div>
           <h2 id="project-title" class="text-2xl sm:text-3xl font-black tracking-tight text-white">
             <!-- Project Title -->
           </h2>
-          <p id="project-subtitle" class="text-xs sm:text-sm text-slate-300 font-mono">
+          <p id="project-subtitle" class="text-xs sm:text-sm text-zinc-400 font-mono">
             <!-- Subtitle -->
           </p>
-          <div class="flex flex-wrap gap-y-2 gap-x-6 text-xs text-slate-300 pt-2 border-t border-white/10">
+          <div class="flex flex-wrap gap-y-2 gap-x-6 text-xs text-zinc-400 pt-2 border-t border-white/10">
             <span id="client-contractor"></span>
             <span id="project-dates"></span>
           </div>
         </div>
 
         <!-- Overall Progress Ring / Metric -->
-        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 text-center min-w-[170px] self-stretch sm:self-auto">
-          <div class="text-xs font-semibold text-slate-300 mb-1">نسبة الإنجاز المخططة</div>
-          <div id="kpi-progress-text" class="text-3xl font-black text-emerald-400">0%</div>
-          <div class="w-full bg-white/20 h-2 rounded-full mt-2 overflow-hidden">
-            <div id="kpi-progress-bar" class="bg-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        <div class="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-center min-w-[170px] self-stretch sm:self-auto">
+          <div class="text-xs font-semibold text-zinc-400 mb-1">نسبة الإنجاز المخططة</div>
+          <div id="kpi-progress-text" class="text-3xl font-black text-amber-300">0%</div>
+          <div class="w-full bg-white/10 h-2 rounded-full mt-2 overflow-hidden">
+            <div id="kpi-progress-bar" class="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div id="project-tabs-bar" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1.5 flex flex-wrap gap-1">
-      <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="projects">
+    <div id="project-tabs-bar" class="bg-[#e9ecef] rounded-2xl p-1.5 flex flex-wrap gap-1 border border-zinc-200/70">
+      <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="projects">
         📁 لوحة مشاريعي (My Projects)
       </button>
-      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="daily">
+      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="daily">
         📅 المهام اليومية (Daily Agenda)
       </button>
-      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="grid">
+      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="grid">
         📊 شيت البيانات التفاعلي (Spreadsheet Grid)
       </button>
-      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="mts">
+      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="mts">
         📑 سجل الاعتمادات والمشتريات (MTS & POs)
       </button>
-      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="milestones">
+      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="milestones">
         📈 المعالم والمسار الزمني (Milestones)
       </button>
-      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition" data-tab="actions">
-        ⚡ القرارات وبنود العمل المعلقة (Action Items)
+      <button class="tab-btn project-specific-tab px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition" data-tab="actions">
+        ⚡ القرارات وبنود العمل (Action Items)
       </button>
-      <button class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 border-b-2 border-indigo-600 hover:bg-indigo-50 transition mr-auto" data-tab="upload">
+      <button class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold text-zinc-950 bg-white shadow-sm border border-zinc-200 transition mr-auto" data-tab="upload">
         📂 رفع ملف مشروع جديد (AI Analyzer)
       </button>
     </div>
 
     <!-- TAB 0: MY PROJECTS DASHBOARD -->
     <div id="tab-content-projects" class="hidden space-y-6">
-      <div class="flex flex-wrap justify-between items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex flex-wrap justify-between items-center gap-4 bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
         <div>
-          <h3 class="text-lg font-black text-slate-900">مشاريعي الهندسية المجدولة</h3>
-          <p class="text-xs text-slate-500">يمكنك إدارة مشاريعك، فتح الشيت الذكي لكل مشروع، أو رفع ملفات مشاريع جديدة</p>
+          <h3 class="text-lg font-black text-zinc-950">مشاريعي الهندسية المجدولة</h3>
+          <p class="text-xs text-zinc-500">إدارة مشاريعك وفتح الشيت الذكي لكل مشروع أو تصديره إلى Excel</p>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="handleLoadDemoProject()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+          <button onclick="handleLoadDemoProject()" class="px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition">
             📂 تجربة مشروع تجريبي
           </button>
-          <button onclick="switchTab('upload')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-sm shadow-blue-500/20">
+          <button onclick="switchTab('upload')" class="px-4 py-2 bg-zinc-950 hover:bg-black text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-sm">
             <span>➕</span> إضافة / رفع مشروع جديد
           </button>
         </div>
@@ -154,49 +154,49 @@
     <div id="tab-content-daily" class="hidden space-y-4">
       <!-- KPI Mini Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[11px] font-bold text-slate-500">إجمالي المهام</span>
-          <div class="text-xl font-black text-slate-800 mt-1" id="kpi-total">0</div>
+        <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm">
+          <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">إجمالي المهام</span>
+          <div class="text-2xl font-black text-zinc-950 mt-1" id="kpi-total">0</div>
         </div>
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[11px] font-bold text-emerald-600">المكتملة</span>
-          <div class="text-xl font-black text-emerald-600 mt-1" id="kpi-completed">0</div>
+        <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm">
+          <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">المكتملة</span>
+          <div class="text-2xl font-black text-emerald-600 mt-1" id="kpi-completed">0</div>
         </div>
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[11px] font-bold text-sky-600">جاري التنفيذ</span>
-          <div class="text-xl font-black text-sky-600 mt-1" id="kpi-inprogress">0</div>
+        <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm">
+          <span class="text-[11px] font-bold text-zinc-700 uppercase tracking-wider">جاري التنفيذ</span>
+          <div class="text-2xl font-black text-zinc-900 mt-1" id="kpi-inprogress">0</div>
         </div>
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[11px] font-bold text-amber-600">المخططة</span>
-          <div class="text-xl font-black text-amber-600 mt-1" id="kpi-pending">0</div>
+        <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm">
+          <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">المخططة</span>
+          <div class="text-2xl font-black text-amber-600 mt-1" id="kpi-pending">0</div>
         </div>
-        <div class="bg-red-50/50 p-3.5 rounded-xl border border-red-200 shadow-sm col-span-2 sm:col-span-1">
-          <span class="text-[11px] font-bold text-red-700 flex items-center gap-1">🚨 الحرجة</span>
-          <div class="text-xl font-black text-red-600 mt-1" id="kpi-critical">0</div>
+        <div class="bg-[#fff1f2] p-4 rounded-2xl border border-rose-200 shadow-sm col-span-2 sm:col-span-1">
+          <span class="text-[11px] font-bold text-rose-800 uppercase tracking-wider flex items-center gap-1">🚨 الحرجة</span>
+          <div class="text-2xl font-black text-rose-700 mt-1" id="kpi-critical">0</div>
         </div>
       </div>
 
       <!-- Date Selector Toolbar -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-xs font-bold text-slate-500">اختر التاريخ:</span>
-          <input type="date" id="daily-date-picker" class="border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <span class="text-xs font-bold text-zinc-500">اختر التاريخ:</span>
+          <input type="date" id="daily-date-picker" class="border border-zinc-300 rounded-xl px-3 py-1.5 text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-zinc-900 focus:outline-none bg-zinc-50">
           
-          <div class="flex items-center gap-1 border-r border-slate-200 pr-2 mr-2">
-            <button id="btn-prev-day" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">
+          <div class="flex items-center gap-1 border-r border-zinc-200 pr-2 mr-2">
+            <button id="btn-prev-day" class="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold">
               ◀ اليوم السابق
             </button>
-            <button id="btn-next-day" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">
+            <button id="btn-next-day" class="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold">
               اليوم التالي ▶
             </button>
           </div>
 
-          <button id="btn-today" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold">
+          <button id="btn-today" class="px-3 py-1.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition">
             📍 تاريخ اليوم
           </button>
         </div>
 
-        <h3 id="daily-selected-date-display" class="text-sm font-bold text-slate-700">
+        <h3 id="daily-selected-date-display" class="text-sm font-bold text-zinc-800">
           جدول مهام اليوم
         </h3>
       </div>
@@ -209,11 +209,11 @@
 
     <!-- TAB 2: INTERACTIVE SPREADSHEET GRID -->
     <div id="tab-content-grid" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
-          <input type="text" id="filter-search" placeholder="🔍 بحث في المهام، المسؤول، الرمز..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <input type="text" id="filter-search" placeholder="🔍 بحث في المهام، المسؤول، الرمز..." class="border border-zinc-300 bg-zinc-50 rounded-xl px-3 py-2 text-xs w-full sm:w-64 focus:ring-2 focus:ring-zinc-900 focus:outline-none">
           
-          <select id="filter-phase" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none">
+          <select id="filter-phase" class="border border-zinc-300 bg-zinc-50 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 focus:outline-none">
             <option value="all">كل المراحل (All Phases)</option>
             <option value="Mobilization">Mobilization & Kick-off</option>
             <option value="Engineering">Engineering & MTS</option>
@@ -223,7 +223,7 @@
             <option value="Handover">Closing Out & Handover</option>
           </select>
 
-          <select id="filter-priority" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none">
+          <select id="filter-priority" class="border border-zinc-300 bg-zinc-50 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 focus:outline-none">
             <option value="all">كل الأولويات</option>
             <option value="Critical">Critical (حرج)</option>
             <option value="High">High (عالي)</option>
@@ -231,13 +231,13 @@
           </select>
         </div>
 
-        <span id="grid-count" class="text-xs font-bold text-slate-500"></span>
+        <span id="grid-count" class="text-xs font-bold text-zinc-500"></span>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden">
         <div class="table-container max-h-[600px] overflow-y-auto">
           <table>
-            <thead class="sticky top-0 z-10 bg-slate-100 shadow-sm">
+            <thead class="sticky top-0 z-10 bg-zinc-50 shadow-sm">
               <tr>
                 <th>رمز</th>
                 <th>التاريخ</th>
@@ -261,9 +261,9 @@
 
     <!-- TAB 3: MTS & PROCUREMENT TRACKER -->
     <div id="tab-content-mts" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 class="text-sm font-bold text-slate-800">سجل اعتمادات المواد والمشتريات (Material Submittal & PO Tracker)</h3>
+      <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden">
+        <div class="p-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+          <h3 class="text-sm font-bold text-zinc-900">سجل اعتمادات المواد والمشتريات (Material Submittal & PO Tracker)</h3>
         </div>
         <div class="table-container">
           <table>
@@ -290,8 +290,8 @@
 
     <!-- TAB 4: MILESTONES & TIMELINE -->
     <div id="tab-content-milestones" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <div class="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
+        <h3 class="text-base font-black text-zinc-950 mb-4 flex items-center gap-2">
           <span>🚩</span> المعالم الرئيسية للمشروع (Key Milestones)
         </h3>
         <div id="milestones-timeline-container">
@@ -302,9 +302,9 @@
 
     <!-- TAB 5: ACTION ITEMS -->
     <div id="tab-content-actions" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 class="text-sm font-bold text-slate-800">سجل القرارات والبنود العالقة مع المالك والمقاول الرئيسي (Action Points Log)</h3>
+      <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden">
+        <div class="p-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+          <h3 class="text-sm font-bold text-zinc-900">سجل القرارات والبنود العالقة مع المالك والمقاول الرئيسي (Action Points Log)</h3>
         </div>
         <div class="table-container">
           <table>
@@ -329,26 +329,26 @@
 
     <!-- TAB 6: AI FILE UPLOADER & WELCOME SCREEN -->
     <div id="tab-content-upload" class="space-y-6">
-      <div class="bg-white p-8 sm:p-12 rounded-3xl border border-slate-200 shadow-sm text-center max-w-3xl mx-auto space-y-6">
+      <div class="bg-white p-8 sm:p-14 rounded-3xl border border-zinc-200/90 shadow-sm text-center max-w-3xl mx-auto space-y-6">
         
         <div class="space-y-2">
-          <div class="w-20 h-20 bg-gradient-to-tr from-blue-50 to-indigo-100 text-blue-600 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-inner border border-blue-100">
+          <div class="w-16 h-16 bg-zinc-950 text-amber-300 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-md shadow-zinc-900/10">
             📑
           </div>
-          <h3 class="text-2xl font-black text-slate-900">مرحباً بك! ارفع ملف مشروعك للبدء في الجدولة اليومية</h3>
-          <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-            قم بإسقاط كراسة الشروط، عرض الـ Kick-off، جدول Primavera أو ملف إكسل لمشروعك، وسيقوم الذكاء الاصطناعي بدراسة النطاق وتوليد خطة المهام اليومية وجداول المشتريات فوراً بدون أي بيانات مسبقة.
+          <h3 class="text-2xl font-black text-zinc-950">مرحباً بك! ارفع ملف مشروعك للبدء في الجدولة اليومية</h3>
+          <p class="text-xs sm:text-sm text-zinc-500 max-w-xl mx-auto leading-relaxed">
+            قم بإسقاط كراسة الشروط، عرض الـ Kick-off، جدول Primavera أو ملف إكسل لمشروعك، وسيقوم المحلل الذكي بدراسة النطاق وتوليد خطة المهام وجداول المشتريات فوراً.
           </p>
         </div>
 
         <!-- Drag and Drop Zone -->
-        <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 rounded-3xl p-10 cursor-pointer transition flex flex-col items-center justify-center gap-3 group">
+        <div id="drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-800 bg-zinc-50/70 hover:bg-zinc-100/70 rounded-3xl p-10 cursor-pointer transition flex flex-col items-center justify-center gap-3 group">
           <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.xlsx,.xls,.txt,.json">
-          <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-3xl group-hover:scale-110 transition">
+          <div class="w-12 h-12 rounded-xl bg-white shadow-sm border border-zinc-200 flex items-center justify-center text-2xl group-hover:scale-105 transition">
             📤
           </div>
-          <div class="text-sm font-bold text-slate-800">اضغط لاختيار ملف المشروع أو اسحبه وأفلته هنا</div>
-          <div class="text-xs text-slate-400">يدعم ملفات: PDF, DOCX, XLSX, TXT (حتى 50 ميجابايت)</div>
+          <div class="text-sm font-bold text-zinc-900">اضغط لاختيار ملف المشروع أو اسحبه وأفلته هنا</div>
+          <div class="text-xs text-zinc-400 font-mono">يدعم ملفات: PDF, DOCX, XLSX, TXT (حتى 50 ميجابايت)</div>
         </div>
 
         <div id="upload-status" class="hidden text-right">
@@ -356,10 +356,10 @@
         </div>
 
         <!-- Quick Demo Option -->
-        <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-3">
-          <span class="text-xs text-slate-400">أو إذا كنت تريد فقط استكشاف المنصة:</span>
-          <button onclick="handleLoadDemoProject()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-            <span>📂</span> تجربة مشروع تجريبي استعراضي
+        <div class="pt-4 border-t border-zinc-100 flex flex-wrap items-center justify-center gap-3">
+          <span class="text-xs text-zinc-400">أو إذا كنت تريد فقط استكشاف المنصة:</span>
+          <button onclick="handleLoadDemoProject()" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <span>📂</span> تجربة نموذج استعراضي جاهز
           </button>
         </div>
       </div>
@@ -368,35 +368,35 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-      AI PM Smart Sheet Platform © 2026 | نظام ذكي مصمم لمدراء المشاريع المحترفين (PMP Standard)
+  <footer class="bg-white border-t border-zinc-200/80 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-zinc-400">
+      AI PM Smart Sheet Platform © 2026 | المنصة التنفيذية لمدراء المشاريع المحترفين
     </div>
   </footer>
 
   <!-- AUTH MODAL -->
-  <div id="auth-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-right">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+  <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
         <div>
-          <h3 class="text-base font-black text-slate-900">👤 تسجيل الدخول / حساب جديد</h3>
-          <p class="text-xs text-slate-400">ادخل بياناتك لحفظ ومزامنة مشاريعك الهندسية</p>
+          <h3 class="text-base font-black text-zinc-950">👤 تسجيل الدخول / حساب جديد</h3>
+          <p class="text-xs text-zinc-400">ادخل بياناتك لحفظ ومزامنة مشاريعك الهندسية</p>
         </div>
-        <button id="btn-close-auth" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        <button id="btn-close-auth" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
       </div>
 
       <form id="auth-form" class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">الاسم الكامل:</label>
-          <input type="text" id="auth-name" required placeholder="مثال: م. فيصل الشمري" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block font-bold text-zinc-700 mb-1">الاسم الكامل:</label>
+          <input type="text" id="auth-name" required placeholder="مثال: م. فيصل الشمري" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-zinc-950 focus:outline-none">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">البريد الإلكتروني:</label>
-          <input type="email" id="auth-email" required placeholder="faisal@company.com" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block font-bold text-zinc-700 mb-1">البريد الإلكتروني:</label>
+          <input type="email" id="auth-email" required placeholder="faisal@company.com" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-zinc-950 focus:outline-none">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">المسمى الوظيفي (Role):</label>
-          <select id="auth-role" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-700">
+          <label class="block font-bold text-zinc-700 mb-1">المسمى الوظيفي (Role):</label>
+          <select id="auth-role" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold text-zinc-800">
             <option value="Project Manager (PMP)">Project Manager (مدير مشروع)</option>
             <option value="Planning Engineer">Planning Engineer (مهندس تخطيط)</option>
             <option value="Technical Lead">Technical Lead (مدير فني)</option>
@@ -405,11 +405,11 @@
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">الشركة أو الجهة (اختياري):</label>
-          <input type="text" id="auth-company" placeholder="شركة المقاولات / الاستشاري" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <label class="block font-bold text-zinc-700 mb-1">الشركة أو الجهة (اختياري):</label>
+          <input type="text" id="auth-company" placeholder="شركة المقاولات / الاستشاري" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-zinc-950 focus:outline-none">
         </div>
 
-        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20 mt-2">
+        <button type="submit" class="w-full py-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm mt-2">
           🚀 الدخول والبدء في استخدام النظام
         </button>
       </form>
@@ -417,20 +417,20 @@
   </div>
 
   <!-- SHARE MODAL -->
-  <div id="share-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-right">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="text-base font-bold text-slate-900">👥 مشاركة المشروع مع الفريق</h3>
-        <button id="btn-close-share" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+  <div id="share-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <h3 class="text-base font-black text-zinc-950">👥 مشاركة المشروع مع الفريق</h3>
+        <button id="btn-close-share" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
       </div>
 
       <div class="space-y-3 text-xs">
-        <p class="text-slate-600 leading-relaxed">
+        <p class="text-zinc-600 leading-relaxed">
           يمكنك مشاركة هذا الرابط مع مهندسي الموقع، المقاولين، أو المالك لمتابعة وتحديث مهام المشروع يومياً:
         </p>
         <div class="flex items-center gap-2">
-          <input type="text" readonly id="share-link-input" value="http://localhost:3001" class="w-full border border-slate-300 bg-slate-50 rounded-xl p-2.5 text-xs font-mono text-slate-600">
-          <button id="btn-copy-share-link" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition whitespace-nowrap">
+          <input type="text" readonly id="share-link-input" value="https://pmp-smart-sheet.vercel.app" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-mono text-zinc-700">
+          <button id="btn-copy-share-link" class="px-4 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition whitespace-nowrap">
             نسخ الرابط
           </button>
         </div>
@@ -439,31 +439,32 @@
   </div>
 
   <!-- Settings Modal -->
-  <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-right">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="text-base font-bold text-slate-800">⚙️ إعدادات الذكاء الاصطناعي (Gemini AI)</h3>
-        <button id="btn-close-settings" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+  <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <h3 class="text-base font-black text-zinc-950">⚙️ إعدادات الذكاء الاصطناعي (Gemini AI)</h3>
+        <button id="btn-close-settings" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
       </div>
 
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Gemini API Key:</label>
-          <input type="password" id="input-gemini-key" placeholder="AIzaSy..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
-          <p class="text-slate-400 mt-1">يتم حفظ المفتاح محلياً في متصفحك بشكل آمن.</p>
+          <label class="block font-bold text-zinc-700 mb-1">Gemini API Key:</label>
+          <input type="password" id="input-gemini-key" placeholder="AIzaSy..." class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-zinc-950 focus:outline-none">
+          <p class="text-zinc-400 mt-1">يتم حفظ المفتاح محلياً في متصفحك بشكل آمن ومشفّر.</p>
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 mb-1">نموذج الذكاء الاصطناعي:</label>
-          <select id="select-gemini-model" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-700">
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash (فائق السرعة والدقة)</option>
-            <option value="gemini-2.5-pro">Gemini 2.5 Pro (تحليل معمق للمستندات الضخمة)</option>
+          <label class="block font-bold text-zinc-700 mb-1">نموذج الذكاء الاصطناعي:</label>
+          <select id="select-gemini-model" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold text-zinc-800">
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash (النموذج الرسمي الأحدث والأسرع)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (عالي الدقة والموثوقية)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (تحليل معمق للمستندات الضخمة)</option>
           </select>
         </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <button id="btn-save-settings" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition">
+        <button id="btn-save-settings" class="px-5 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
           💾 حفظ الإعدادات
         </button>
       </div>
