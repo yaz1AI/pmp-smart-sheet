@@ -90,7 +90,10 @@
               <span id="client-contractor"></span>
               <span id="project-dates"></span>
             </div>
-            <div class="flex items-center gap-2 pt-1 sm:pt-0">
+            <div class="flex items-center gap-2 pt-1 sm:pt-0 flex-wrap sm:flex-nowrap">
+              <button onclick="openWorkPlanGeneratorModal()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold transition border border-amber-400/30 flex items-center justify-center gap-1.5" title="توليد أو إعادة جدولة خطة العمل بالذكاء الاصطناعي">
+                🪄 توليد خطة العمل (AI Plan)
+              </button>
               <button onclick="exportCurrentProject()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition border border-white/10 flex items-center justify-center gap-1.5" title="تصدير هذا المشروع إلى Excel">
                 📊 تصدير Excel
               </button>
@@ -367,10 +370,12 @@
           <!-- Live progress -->
         </div>
 
-        <!-- Quick Demo Option -->
-        <div class="pt-4 border-t border-zinc-100 flex flex-wrap items-center justify-center gap-3">
-          <span class="text-xs text-zinc-400">أو إذا كنت تريد فقط استكشاف المنصة:</span>
-          <button onclick="handleLoadDemoProject()" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <!-- Work Plan Generator & Demo Options -->
+        <div class="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onclick="openWorkPlanGeneratorModal()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-950 hover:bg-black text-amber-300 border border-amber-400/30 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+            <span>🪄</span> توليد خطة عمل وجدول زمني ذكي (بدون جدول مسبق)
+          </button>
+          <button onclick="handleLoadDemoProject()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
             <span>📂</span> تجربة نموذج استعراضي جاهز
           </button>
         </div>
@@ -480,6 +485,95 @@
           💾 حفظ الإعدادات
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- AI WORK PLAN GENERATOR MODAL -->
+  <div id="workplan-generator-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-3xl w-[94vw] sm:max-w-xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
+      
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px] mb-1">
+            ⚡ AI Schedule & Work Plan Synthesizer
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950">🪄 توليد خطة العمل والجدول الزمني بالذكاء الاصطناعي</h3>
+          <p class="text-xs text-zinc-500">يقوم النظام بابتكار وتوزيع مهام العمل، المعالم، والمشتريات وفق معايير PMP</p>
+        </div>
+        <button id="btn-close-workplan-modal" class="text-zinc-400 hover:text-zinc-950 font-bold p-1 text-sm">✕</button>
+      </div>
+
+      <form id="workplan-form" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-800 mb-1">اسم المشروع:</label>
+          <input type="text" id="wp-project-name" required placeholder="مثال: مشروع برج المكاتب الإدارية والخدمات" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-zinc-950 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">مجال وتخصص المشروع:</label>
+            <select id="wp-domain" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
+              <option value="construction">🏢 مقاولات عامة وإنشاءات وهيكل خرساني</option>
+              <option value="fitout">🎨 تشطيبات وديكور داخلي وتأثيث</option>
+              <option value="mep">⚡ كهروميكانيك وتكييف وسباكة (MEP)</option>
+              <option value="smart_systems">🔒 أنظمة ذكية وتيار خفيف وشبكات (ICT/ELV)</option>
+              <option value="it_software">💻 برمجيات وأنظمة سحابية وتحول رقمي</option>
+              <option value="general">📊 مشروع هندسي أو استشاري عام</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">مدة المشروع الإجمالية:</label>
+            <select id="wp-duration" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
+              <option value="30">30 يوماً (خطة شهرية سريعة)</option>
+              <option value="60">60 يوماً (شهرين)</option>
+              <option value="90">90 يوماً (ربع سنوي - 3 أشهر)</option>
+              <option value="180" selected>180 يوماً (نصف سنوي - 6 أشهر)</option>
+              <option value="365">365 يوماً (سنة كاملة)</option>
+              <option value="540">540 يوماً (سنة ونصف)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">تاريخ بداية المشروع:</label>
+            <input type="date" id="wp-start-date" required class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">أيام العمل الأسبوعية:</label>
+            <select id="wp-workdays" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
+              <option value="6">6 أيام بالأسبوع (الجمعة عطلة)</option>
+              <option value="5">5 أيام بالأسبوع (الجمعة والسبت عطلة)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">اسم المالك / العميل (اختياري):</label>
+            <input type="text" id="wp-client" placeholder="مثال: وزارة الإسكان / شركة التطوير" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-800 mb-1">المقاول أو المنفذ (اختياري):</label>
+            <input type="text" id="wp-contractor" placeholder="مثال: شركة المقاولات العامة" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-semibold focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-zinc-800 mb-1">بنود أو مواصفات نطاق العمل (اختياري - سطر لكل بند):</label>
+          <textarea id="wp-scope-text" rows="3" placeholder="الصق هنا أي بنود من كراسة الشروط أو جدول الكميات BOQ ليتم دمجها في خطة المهام اليومية..." class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-zinc-950 focus:outline-none"></textarea>
+          <p class="text-[11px] text-zinc-400">إذا تركت هذا الحقل فارغاً، سيقوم الذكاء الاصطناعي بابتكار خطة هندسية نموذجية كاملة متوافقة مع التخصص والمدة المحددة.</p>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-zinc-950 hover:bg-black text-amber-300 font-black rounded-xl text-xs sm:text-sm transition shadow-lg flex items-center justify-center gap-2">
+            <span>🚀</span> توليد خطة العمل والمهام اليومية والمشتريات فوراً
+          </button>
+        </div>
+      </form>
+
     </div>
   </div>
 

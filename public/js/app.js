@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthModals();
   initNewProjectModal();
   initShareModal();
+  initWorkPlanGeneratorModal();
 });
 
 function refreshAppState() {
@@ -931,4 +932,85 @@ function openAddTaskModal(date) {
   saveActiveProjectState();
   renderKPIs();
   renderDailyView();
+}
+
+// 15. AI Work Plan Generator Modal
+function initWorkPlanGeneratorModal() {
+  const modal = document.getElementById("workplan-generator-modal");
+  const closeBtn = document.getElementById("btn-close-workplan-modal");
+  const form = document.getElementById("workplan-form");
+  const startDateInput = document.getElementById("wp-start-date");
+
+  if (startDateInput && !startDateInput.value) {
+    startDateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  closeBtn?.addEventListener("click", () => modal?.classList.add("hidden"));
+
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.add("hidden");
+  });
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("wp-project-name")?.value || "مشروع هندسي جديد";
+    const domain = document.getElementById("wp-domain")?.value || "construction";
+    const duration = parseInt(document.getElementById("wp-duration")?.value, 10) || 180;
+    const startDate = document.getElementById("wp-start-date")?.value || new Date().toISOString().split('T')[0];
+    const workDays = parseInt(document.getElementById("wp-workdays")?.value, 10) || 6;
+    const client = document.getElementById("wp-client")?.value || "مالك المشروع / العميل";
+    const contractor = document.getElementById("wp-contractor")?.value || "المقاول المنفذ";
+    const scopeText = document.getElementById("wp-scope-text")?.value || "";
+
+    try {
+      const generatedProjectData = PMTaskScheduler.generateCompleteWorkPlan({
+        projectName: name,
+        projectNameEn: name,
+        domain: domain,
+        startDate: startDate,
+        durationDays: duration,
+        client: client,
+        contractor: contractor,
+        scopeText: scopeText,
+        workDaysPerWeek: workDays
+      });
+
+      const newProject = window.projectsStore?.createProject(generatedProjectData);
+      modal?.classList.add("hidden");
+      refreshAppState();
+      switchTab("daily");
+
+      alert(`🎉 تم توليد خطة العمل والجدول الزمني بنجاح!\n\nتم إنشاء ${generatedProjectData.dailyTasks.length} مهمة مجدولة على مدار ${duration} يوماً موزعة على 6 مراحل PMP، مع بناء جداول المشتريات والمعالم الرئيسية.`);
+    } catch (err) {
+      alert("⚠️ حدث خطأ أثناء توليد خطة العمل: " + err.message);
+    }
+  });
+}
+
+function openWorkPlanGeneratorModal(prefill = {}) {
+  const modal = document.getElementById("workplan-generator-modal");
+  if (!modal) return;
+
+  const nameInput = document.getElementById("wp-project-name");
+  const startDateInput = document.getElementById("wp-start-date");
+  const clientInput = document.getElementById("wp-client");
+  const contractorInput = document.getElementById("wp-contractor");
+  const scopeInput = document.getElementById("wp-scope-text");
+
+  if (currentProject && !prefill.name) {
+    const info = currentProject.projectInfo || {};
+    if (nameInput) nameInput.value = info.projectNameAr || info.projectName || "";
+    if (startDateInput) startDateInput.value = info.startDate || new Date().toISOString().split('T')[0];
+    if (clientInput) clientInput.value = info.client || "";
+    if (contractorInput) contractorInput.value = info.contractor || "";
+    if (scopeInput && currentProject.description) scopeInput.value = currentProject.description;
+  } else if (prefill.name) {
+    if (nameInput) nameInput.value = prefill.name;
+    if (startDateInput) startDateInput.value = prefill.startDate || new Date().toISOString().split('T')[0];
+    if (scopeInput) scopeInput.value = prefill.scope || "";
+  } else {
+    if (startDateInput && !startDateInput.value) startDateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  modal.classList.remove("hidden");
 }
