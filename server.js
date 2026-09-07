@@ -546,6 +546,151 @@ function parseProjectTextHeuristically(text, filename) {
   };
 }
 
+// Endpoint 3: YAZ AI Copilot Engineering Assistant
+app.post('/api/copilot', async (req, res) => {
+  try {
+    const { message, conversationHistory = [], projectContext = {} } = req.body;
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'الرسالة مطلوبة' });
+    }
+
+    const apiKey = req.headers['x-gemini-key'] || process.env.GEMINI_API_KEY || '';
+
+    const info = projectContext.projectInfo || {};
+    const kpis = projectContext.kpis || {};
+    const cf = projectContext.cashFlow || {};
+    const submittals = (projectContext.materialSubmittals || []).slice(0, 8);
+    const criticalTasks = (projectContext.criticalTasks || []).slice(0, 6);
+
+    const systemPrompt = `
+أنت YAZ AI Copilot - المستشار الهندسي والتنفيذي الأول لمدراء المشاريع والشركات، خبير أول معتمد في معايير PMP / PMI وإدارة العقود وفق FIDIC وهندسة التخطيط والتحكم (Planning & Controls).
+
+بيانات المشروع النشط الذي تعمل عليه حالياً:
+- اسم المشروع: ${info.projectNameAr || info.projectName || 'مشروع هندسي'} (${info.projectName || ''})
+- رقم العقد / المشروع: ${info.projectNumber || 'PRJ-2026'}
+- المالك / العميل: ${info.client || 'المالك'}
+- المقاول الرئيسي: ${info.contractor || 'المقاول'}
+- الجدول الزمني: من ${info.startDate || '-'} إلى ${info.finishDate || '-'} (${info.totalScheduleDays || 365} يوماً)
+- حالة المشروع: ${info.status || 'Active'}
+- مؤشرات الأداء: نسبة الإنجاز المخططة: ${kpis.completionRate || 0}% | إجمالي المهام: ${kpis.totalTasks || 0} | المكتملة: ${kpis.completedTasks || 0} | المسار الحرج: ${kpis.criticalTasks || 0} مهام حرجة.
+- الموقف المالي والتدفق النقدي: قيمة العقد: ${cf.contractValue || 'غير محددة'} ${cf.currency || 'ر.س'} | الدفعة المقدمة: ${cf.advancePaymentPct || 10}% | هامش الربح المستهدف: ${cf.marginPct || 20}%.
+- التوريدات الحرجة طويلة الأجل (Long-Lead Items): ${submittals.map(m => `[${m.item} - مدة التوريد: ${m.leadTime || '8-12 أسبوع'} - حالة الاعتماد: Code ${m.status || 'B'}]`).join(' | ') || 'لا توجد توريدات حرجة مسجلة'}.
+- عينة من المهام الحرجة: ${criticalTasks.map(t => `[${t.id}: ${t.titleAr || t.titleEn} (${t.date}) - المسؤول: ${t.owner}]`).join(' | ') || 'لا توجد مهام حرجة'}.
+
+تعليماتك وإرشادات الرد:
+1. تحدث كمهندس واستشاري PMP محترف باللغة العربية الفصحى الأنيقة والمباشرة.
+2. إذا طلب المستخدم صياغة خطاب رسمي (Official Letter / Claim / Delay Notice / EOT): اكتب خطاباً رسمياً متكاملاً بصيغة موجهة للاستشاري أو المالك، مع كتابة المرجع، الموضوع، السند التعاقدي وفق كراسة الشروط أو الفيديك، التفاصيل، والتوقيع باسم مدير المشروع (${info.contractor || 'المقاول المنفذ'}).
+3. إذا طلب خطة تعافي (Recovery Plan): قدم خطوات عملية مجدولة بأرقام وأيام وتوزيع الموارد والورديات.
+4. استخدم تنسيق Markdown واضح ومرتب، مع عناوين وجداول واقتباسات أنيقة تسهل القراءة والنسخ.
+`;
+
+    if (!apiKey) {
+      // Fallback offline expert logic when no API key is provided
+      let reply = "";
+      const lowerMsg = message.toLowerCase();
+
+      if (lowerMsg.includes("خطاب") || lowerMsg.includes("تمديد") || lowerMsg.includes("letter") || lowerMsg.includes("eot") || lowerMsg.includes("تأخير")) {
+        reply = `
+### 📄 مسوّدة خطاب رسمي للاستشاري: إشعار بتأخر التوريدات وطلب تمديد زمني (EOT Notice)
+
+**التاريخ:** ${new Date().toISOString().split('T')[0]}  
+**المرجع:** YAZ/${info.projectNumber || 'PRJ'}/LET-${Math.floor(100 + Math.random() * 900)}  
+**إلى:** السادة استشاري الإشراف على ${info.projectNameAr || info.projectName || 'المشروع'}  
+**المشروع:** ${info.projectNameAr || info.projectName || 'مشروع هندسي'} | عقد رقم: ${info.projectNumber || 'PRJ-2026'}  
+**المالك الموقر:** ${info.client || 'العميل'}  
+
+---
+
+**الموضوع: إشعار بتأخر اعتماد وتوريد المواد الحرجة وطلب تمديد زمني استناداً للمادة التعاقدية**
+
+السلام عليكم ورحمة الله وبركاته،، وبعد:
+
+بالإشارة إلى العقد المبرم بخصوص المشروع المذكور أعلاه، وإلى الجدول الزمني المعتمد، نود إحاطة عنايتكم بأنه وفقاً لسجل التوريدات والمشتريات (MTS)، فإن بعض المواد ذات فترات التوريد الطويلة (Long-Lead Items: 8-12 أسبوع) قد استغرقت فترة مراجعة إضافية تتجاوز المدة التعاقدية للاعتمادات، مما أثر بشكل مباشر على المسار الحرج (Critical Path) للأعمال الكهروميكانيكية والتشطيبات.
+
+**الأثر الزمني والتعاقدي:**
+- تاريخ البدء المتأثر: ${info.startDate || '-'}
+- الأيام التقديرية المطلوبة للتعويض: 14 إلى 21 يوماً تقويمياً.
+- السند التعاقدي: شروط العقد العامة والخاصة (أحكام القوة القاهرة والتأخير غير المنسوب للمقاول).
+
+وعليه، نأمل التكرم باعتماد التمديد الزمني المقترح لضمان تنفيذ الأعمال وفق أعلى معايير الجودة المعتمدة ودون الإخلال بالمخرجات الهندسية.
+
+وتفضلوا بقبول فائق الاحترام والتقدير،،
+
+**مدير المشروع:** م. مدير المشروع  
+**المقاول الرئيسي:** ${info.contractor || 'شركة المقاولات المنفذة'}  
+        `.trim();
+      } else if (lowerMsg.includes("تعافي") || lowerMsg.includes("recovery") || lowerMsg.includes("تسريع")) {
+        reply = `
+### ⚡ خطة التعافي الزمني الميدانية (Fast-Track Recovery Plan)
+**المشروع:** ${info.projectNameAr || info.projectName} | **نسبة الإنجاز الحالية:** ${kpis.completionRate || 0}%
+
+لتعويض التأخير الحاصل في المسار الحرج وإعادة المشروع إلى مساره المخطط للتسليم بتاريخ **${info.finishDate || '-'}**، نوصي بالإجراءات التالية:
+
+1. **تطبيق نظام الورديات المزدوجة (Double Shifts):**
+   - تشغيل وردية مسائية مخصصة لأعمال التمديدات الكهروميكانيكية (MEP 1st & 2nd Fix).
+2. **التنفيذ المتوازي (Fast-Tracking):**
+   - بدء أعمال اللياسة والدهانات التأسيسية في الطوابق المنتهية بالتوازي دون انتظار اكتمال المبنى كاملاً.
+3. **التوريد المباشر والشحن السريع:**
+   - تحويل شحن المواد الحرجة (Long Lead Items) من الشحن البحري إلى الشحن الجوي الجزئي للدفعة الأولى.
+4. **زيادة العمالة الفنية المتخصصة بنسبة 25%** في الواجهات وأعمال التشطيبات.
+        `.trim();
+      } else {
+        reply = `
+أهلاً بك يا باشمهندس! أنا **YAZ AI Copilot** مستشارك الهندسي للمشروع **(${info.projectNameAr || info.projectName || 'المشروع الحالي'})**.
+
+📊 **ملخص موقف المشروع الآن:**
+- نسبة الإنجاز العامة: **${kpis.completionRate || 0}%**
+- إجمالي المهام المتبقية: **${kpis.pendingTasks || 0} مهمة**
+- المهام ذات الأولوية الحرجة: **${kpis.criticalTasks || 0} مهام**
+
+💡 **كيف يمكنني مساعدتك الآن؟**
+- صياغة خطابات رسمية أو مطالبات للاستشاري (Claims & EOT Letters).
+- توليد خطط تعافي زمني أو تسريع الأعمال الميدانية (Crash Schedule).
+- كتابة ملخص أسبوعي وإيميلات رسمية للعميل.
+- دراسة مخاطر التوريدات وأوامر الشراء المتأخرة.
+        `.trim();
+      }
+
+      return res.json({ reply });
+    }
+
+    // Call Gemini API with contextual messages
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const formattedContents = [
+      {
+        role: "user",
+        parts: [{ text: `${systemPrompt}\n\nسؤال مدير المشروع: ${message}` }]
+      }
+    ];
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: formattedContents,
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(`خطأ في استجابة الذكاء الاصطناعي (${response.status}): ${errData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "عذراً، لم أتمكن من توليد إجابة في الوقت الحالي.";
+
+    res.json({ reply: replyText });
+  } catch (err) {
+    console.error("Copilot error:", err);
+    res.status(500).json({ error: err.message || "حدث خطأ أثناء معالجة طلب المساعد الذكي" });
+  }
+});
+
 // Start Server with automatic port fallback
 let currentPort = parseInt(process.env.PORT || 3000, 10);
 

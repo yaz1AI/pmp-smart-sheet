@@ -950,6 +950,88 @@
     </div>
   </div>
 
+  <!-- YAZ AI COPILOT FLOATING BUTTON -->
+  <div class="fixed bottom-5 left-5 z-50">
+    <button type="button" id="copilot-floating-btn" onclick="window.yazCopilot?.toggleDrawer()" class="group flex items-center gap-2.5 bg-gradient-to-r from-zinc-950 via-zinc-900 to-[#0e111a] hover:to-cyan-950 text-white border border-cyan-500/40 hover:border-cyan-400 px-4 py-3 rounded-full shadow-2xl shadow-cyan-500/20 transition-all duration-300 transform hover:scale-105 active:scale-95">
+      <div class="relative">
+        <img src="assets/logo.jpg" alt="YAZ AI" class="w-6 h-6 rounded-full object-cover border border-cyan-400 shadow-sm">
+        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-zinc-950 animate-pulse"></span>
+      </div>
+      <div class="text-right">
+        <span class="text-xs font-black tracking-tight text-white flex items-center gap-1">
+          <span>YAZ AI Copilot</span>
+          <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30">PMP</span>
+        </span>
+      </div>
+      <span class="text-xs text-cyan-300 group-hover:rotate-12 transition">✨</span>
+    </button>
+  </div>
+
+  <!-- YAZ AI COPILOT CHAT DRAWER / WINDOW -->
+  <div id="copilot-chat-drawer" class="fixed bottom-20 left-4 sm:left-6 z-50 w-[94vw] sm:w-[460px] h-[580px] max-h-[85vh] bg-[#0c0d14] border border-[#242736] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-right hidden">
+    
+    <!-- Drawer Top Header -->
+    <div class="p-3.5 sm:p-4 bg-[#12141c] border-b border-[#242736] flex justify-between items-center flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <img src="assets/logo.jpg" alt="YAZ AI" class="w-7 h-7 rounded-xl object-cover border border-cyan-500/40">
+        <div>
+          <h3 class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+            <span>YAZ AI Copilot</span>
+            <span class="text-[9px] px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-300 border border-cyan-400/30 font-bold">المستشار الهندسي</span>
+          </h3>
+          <p id="copilot-project-status" class="text-[10px] text-zinc-400 font-medium truncate max-w-[200px]">🟢 متصل بالمشروع</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button type="button" onclick="window.yazCopilot?.clearHistory()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-[#181a24] text-xs font-bold transition" title="مسح سجل المحادثة">
+          🧹
+        </button>
+        <button type="button" onclick="window.yazCopilot?.toggleDrawer()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-[#181a24] text-sm font-bold transition" title="إغلاق">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Engineering Prompt Chips -->
+    <div class="px-3 py-2 bg-[#090a0f] border-b border-[#1e2029] overflow-x-auto flex items-center gap-1.5 no-scrollbar flex-shrink-0 text-[10px]">
+      <button type="button" onclick="window.yazCopilot?.sendQuickPrompt('اكتب لي خطاب رسمي للاستشاري أطلب فيه تمديد زمني 14 يوم بسبب تأخر توريد المواد الحرجة')" class="px-2.5 py-1 rounded-full bg-[#181a24] hover:bg-[#232736] text-amber-300 border border-amber-500/30 whitespace-nowrap transition flex items-center gap-1">
+        <span>📝</span> <span>خطاب تمديد زمني</span>
+      </button>
+      <button type="button" onclick="window.yazCopilot?.sendQuickPrompt('اقترح لي خطة تعافي زمني Fast-Track لتعويض التأخير في المسار الحرج')" class="px-2.5 py-1 rounded-full bg-[#181a24] hover:bg-[#232736] text-cyan-300 border border-cyan-500/30 whitespace-nowrap transition flex items-center gap-1">
+        <span>⚡</span> <span>خطة تعافي زمني</span>
+      </button>
+      <button type="button" onclick="window.yazCopilot?.sendQuickPrompt('حلل لي أكبر 3 مخاطر قد تؤخر تسليم المشروع وكيف نتفاداها')" class="px-2.5 py-1 rounded-full bg-[#181a24] hover:bg-[#232736] text-rose-300 border border-rose-500/30 whitespace-nowrap transition flex items-center gap-1">
+        <span>🚨</span> <span>تحليل المخاطر</span>
+      </button>
+      <button type="button" onclick="window.yazCopilot?.sendQuickPrompt('اكتب لي إيميل ملخص تنفيذي أسبوعي موجه للعميل يوضح نسبة الإنجاز والتوريدات')" class="px-2.5 py-1 rounded-full bg-[#181a24] hover:bg-[#232736] text-emerald-300 border border-emerald-500/30 whitespace-nowrap transition flex items-center gap-1">
+        <span>📧</span> <span>إيميل ملخص أسبوعي</span>
+      </button>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="copilot-messages-container" class="flex-1 p-3.5 space-y-3 overflow-y-auto bg-[#0c0d14]">
+      <!-- Messages rendered dynamically -->
+    </div>
+
+    <!-- Typing Indicator -->
+    <div id="copilot-typing-indicator" class="px-4 py-2 bg-[#0c0d14] flex items-center gap-2 text-[11px] text-cyan-300 font-bold hidden border-t border-[#1a1c26]">
+      <div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400"></div>
+      <span>YAZ AI يفكر ويدرس بيانات المشروع...</span>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="p-3 bg-[#12141c] border-t border-[#242736] flex-shrink-0">
+      <div class="flex items-center gap-2 bg-[#181a24] border border-[#2d303e] rounded-2xl p-1.5 focus-within:border-amber-400/70 transition">
+        <textarea id="copilot-input" rows="1" placeholder="اسأل المستشار الذكي عن أي بند، خطاب، أو تحليل بالمشروع..." class="flex-1 bg-transparent text-white placeholder-zinc-500 text-xs px-2.5 py-1.5 focus:outline-none resize-none max-h-24"></textarea>
+        <button type="button" id="copilot-send-btn" onclick="window.yazCopilot?.handleSendMessage()" class="p-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center flex-shrink-0">
+          <span>🚀</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
   <!-- Scripts -->
   <script src="js/sample-project-data.js"></script>
   <script src="js/auth-service.js"></script>
@@ -958,6 +1040,7 @@
   <script src="js/gemini-service.js"></script>
   <script src="js/excel-export.js"></script>
   <script src="js/pdf-export.js"></script>
+  <script src="js/copilot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

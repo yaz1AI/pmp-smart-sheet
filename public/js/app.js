@@ -69,6 +69,11 @@ function refreshAppState() {
     renderKPIs();
     renderCurrentTab();
   }
+
+  // Update YAZ AI Copilot Context
+  if (window.yazCopilot) {
+    window.yazCopilot.setProjectContext(currentProject, scheduler);
+  }
 }
 
 // 1. User Badge & Profile
