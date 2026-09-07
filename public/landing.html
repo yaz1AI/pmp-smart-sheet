@@ -286,7 +286,7 @@
 
             <div class="pt-2">
               <div class="flex items-baseline gap-1">
-                <span id="price-pro-display" class="text-3xl sm:text-4xl font-black text-amber-300">199</span>
+                <span id="price-pro-display" class="text-3xl sm:text-4xl font-black text-amber-300">99</span>
                 <span class="text-xs text-zinc-300 font-bold">ر.س / <span id="period-pro-display">شهرياً</span></span>
               </div>
               <p id="subtext-pro-display" class="text-[11px] text-zinc-400 mt-1">تجدد شهرياً، ويمكنك الإلغاء بأي وقت</p>
@@ -337,7 +337,7 @@
 
             <div class="pt-2">
               <div class="flex items-baseline gap-1">
-                <span id="price-ent-display" class="text-3xl sm:text-4xl font-black text-cyan-300">499</span>
+                <span id="price-ent-display" class="text-3xl sm:text-4xl font-black text-cyan-300">249</span>
                 <span class="text-xs text-zinc-400 font-bold">ر.س / <span id="period-ent-display">شهرياً</span></span>
               </div>
               <p id="subtext-ent-display" class="text-[11px] text-zinc-500 mt-1">حل متكامل لفرق إدارة المشاريع والمقاولات</p>
@@ -500,23 +500,23 @@
         labelMonthly.className = "text-xs font-bold text-zinc-400 transition";
         labelYearly.className = "text-xs font-bold text-amber-300 transition flex items-center gap-1.5";
         
-        if (proPrice) proPrice.innerText = "1,899";
+        if (proPrice) proPrice.innerText = "890";
         if (proPeriod) proPeriod.innerText = "سنوياً";
-        if (proSubtext) proSubtext.innerText = "خصم 20%، وفرت 489 ر.س سنوياً";
+        if (proSubtext) proSubtext.innerText = "خصم سنوي خاص، وفرت 298 ر.س سنوياً";
         
-        if (entPrice) entPrice.innerText = "4,790";
+        if (entPrice) entPrice.innerText = "2,390";
         if (entPeriod) entPeriod.innerText = "سنوياً";
-        if (entSubtext) entSubtext.innerText = "خصم 20%، وفرت 1,198 ر.س سنوياً";
+        if (entSubtext) entSubtext.innerText = "خصم سنوي خاص، وفرت 598 ر.س سنوياً";
       } else {
         indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0";
         labelMonthly.className = "text-xs font-bold text-white transition";
         labelYearly.className = "text-xs font-bold text-zinc-400 transition flex items-center gap-1.5";
 
-        if (proPrice) proPrice.innerText = "199";
+        if (proPrice) proPrice.innerText = "99";
         if (proPeriod) proPeriod.innerText = "شهرياً";
         if (proSubtext) proSubtext.innerText = "تجدد شهرياً، ويمكنك الإلغاء بأي وقت";
 
-        if (entPrice) entPrice.innerText = "499";
+        if (entPrice) entPrice.innerText = "249";
         if (entPeriod) entPeriod.innerText = "شهرياً";
         if (entSubtext) entSubtext.innerText = "حل متكامل لفرق إدارة المشاريع والمقاولات";
       }

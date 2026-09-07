@@ -182,17 +182,17 @@ function toggleSubModalBilling() {
     if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-7";
     if (labelMonthly) labelMonthly.className = "text-xs font-bold text-zinc-400 transition";
     if (labelYearly) labelYearly.className = "text-xs font-bold text-amber-300 transition flex items-center gap-1.5";
-    if (pricePro) pricePro.innerText = "1,899";
-    if (periodPro) periodPro.innerText = "سنوياً (وفر 20%)";
-    if (priceEnt) priceEnt.innerText = "4,790";
+    if (pricePro) pricePro.innerText = "890";
+    if (periodPro) periodPro.innerText = "سنوياً (وفر 25%)";
+    if (priceEnt) priceEnt.innerText = "2,390";
     if (periodEnt) periodEnt.innerText = "سنوياً (وفر 20%)";
   } else {
     if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0";
     if (labelMonthly) labelMonthly.className = "text-xs font-bold text-white transition";
     if (labelYearly) labelYearly.className = "text-xs font-bold text-zinc-400 transition flex items-center gap-1.5";
-    if (pricePro) pricePro.innerText = "199";
+    if (pricePro) pricePro.innerText = "99";
     if (periodPro) periodPro.innerText = "شهرياً";
-    if (priceEnt) priceEnt.innerText = "499";
+    if (priceEnt) priceEnt.innerText = "249";
     if (periodEnt) periodEnt.innerText = "شهرياً";
   }
 }
