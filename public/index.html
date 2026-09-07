@@ -678,32 +678,14 @@
         </div>
       </div>
 
-      <!-- Payment Method Selection -->
-      <div class="p-4 bg-[#090a0f] rounded-2xl border border-[#1e2029] space-y-3">
-        <span class="block font-bold text-xs text-zinc-300">طريقة الدفع المعتمدة:</span>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
-          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#14161f] border border-[#242736] cursor-pointer hover:border-amber-400/50 transition">
-            <input type="radio" name="sub-payment-method" value="Mada" checked class="text-amber-500 focus:ring-0">
-            <span>💳 بطاقات مدى (Mada)</span>
-          </label>
-          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#14161f] border border-[#242736] cursor-pointer hover:border-amber-400/50 transition">
-            <input type="radio" name="sub-payment-method" value="Visa" class="text-amber-500 focus:ring-0">
-            <span>💳 فيزا / ماستركارد</span>
-          </label>
-          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#14161f] border border-[#242736] cursor-pointer hover:border-amber-400/50 transition">
-            <input type="radio" name="sub-payment-method" value="ApplePay" class="text-amber-500 focus:ring-0">
-            <span>🍎 Apple Pay</span>
-          </label>
-          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#14161f] border border-[#242736] cursor-pointer hover:border-amber-400/50 transition">
-            <input type="radio" name="sub-payment-method" value="BankTransfer" class="text-amber-500 focus:ring-0">
-            <span>🏛️ تحويل بنكي</span>
-          </label>
-        </div>
+      <!-- Payment Method Selection & Checkout Container -->
+      <div id="payment-checkout-container" class="p-4 bg-[#090a0f] rounded-2xl border border-[#1e2029]">
+        <!-- Dynamic Payment UI rendered by PaymentService -->
       </div>
 
       <!-- Checkout Action Buttons -->
       <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3">
-        <button type="button" onclick="handleConfirmSubscription()" class="w-full sm:flex-1 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition shadow-xl flex items-center justify-center gap-2">
+        <button type="button" onclick="window.paymentService ? window.paymentService.processDirectCardPayment() : handleConfirmSubscription()" class="w-full sm:flex-1 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition shadow-xl flex items-center justify-center gap-2">
           <span>🚀</span> <span id="sub-modal-btn-label">تأكيد ودفع 174 ر.س / تفعيل الاشتراك الشامل فوراً</span>
         </button>
         <button type="button" onclick="closeSubscriptionModal()" class="w-full sm:w-auto px-5 py-3.5 bg-[#181a24] hover:bg-[#202330] text-zinc-300 rounded-xl text-xs font-bold transition">
@@ -736,6 +718,21 @@
             <option value="gemini-1.5-flash">Gemini 1.5 Flash (عالي الدقة والموثوقية)</option>
             <option value="gemini-1.5-pro">Gemini 1.5 Pro (تحليل معمق للمستندات الضخمة)</option>
           </select>
+        </div>
+
+        <!-- Payment Gateway Settings Section -->
+        <div class="pt-3 border-t border-zinc-200 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold text-zinc-950">💳 بوابة الدفع الإلكتروني (Moyasar):</label>
+            <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">معتمدة في السعودية</span>
+          </div>
+          <div>
+            <label class="block text-zinc-600 text-[11px] mb-1">Moyasar Publishable Key:</label>
+            <input type="text" id="input-moyasar-key" placeholder="pk_live_... أو pk_test_..." class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-zinc-950 focus:outline-none">
+            <p class="text-[10px] text-zinc-500 mt-1">
+              احصل على مفاتيحك من لوحة تحكم <a href="https://moyasar.com" target="_blank" class="text-amber-600 underline font-bold">moyasar.com</a> بعد تفعيل حسابك التجاري أو وثيقة العمل الحر.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1141,6 +1138,7 @@
   <script src="js/gemini-service.js"></script>
   <script src="js/excel-export.js"></script>
   <script src="js/pdf-export.js"></script>
+  <script src="js/payment-service.js"></script>
   <script src="js/copilot.js"></script>
   <script src="js/app.js"></script>
 </body>

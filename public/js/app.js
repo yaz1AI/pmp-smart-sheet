@@ -158,6 +158,7 @@ function openSubscriptionModal() {
     currentBadgeEl.className = `text-[10px] px-2.5 py-0.5 rounded-full ${isPro ? 'bg-amber-400/10 text-amber-300 border-amber-400/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'} font-black border`;
   }
 
+  window.paymentService?.renderPaymentUI("payment-checkout-container");
   modal.classList.remove("hidden");
 }
 
@@ -1302,9 +1303,11 @@ function initSettingsModal() {
   const closeBtn = document.getElementById("btn-close-settings");
   const saveBtn = document.getElementById("btn-save-settings");
   const apiKeyInput = document.getElementById("input-gemini-key");
+  const moyasarKeyInput = document.getElementById("input-moyasar-key");
 
   openBtn?.addEventListener("click", () => {
     if (apiKeyInput) apiKeyInput.value = geminiService.getApiKey();
+    if (moyasarKeyInput && window.paymentService) moyasarKeyInput.value = window.paymentService.config.publishableKey || "";
     modal.classList.remove("hidden");
   });
 
@@ -1313,9 +1316,13 @@ function initSettingsModal() {
   saveBtn?.addEventListener("click", () => {
     if (apiKeyInput) {
       geminiService.setApiKey(apiKeyInput.value);
-      alert("✅ تم حفظ إعدادات مفتاح Gemini API بنجاح!");
-      modal.classList.add("hidden");
     }
+    if (moyasarKeyInput && window.paymentService) {
+      const key = moyasarKeyInput.value.trim();
+      window.paymentService.saveConfig({ publishableKey: key, isLive: key.startsWith("pk_live_") });
+    }
+    alert("✅ تم حفظ إعدادات الذكاء الاصطناعي وبوابة الدفع بنجاح!");
+    modal.classList.add("hidden");
   });
 }
 

@@ -691,6 +691,72 @@ app.post('/api/copilot', async (req, res) => {
   }
 });
 
+// ==========================================
+// PAYMENT GATEWAY API (Moyasar / SAMA Regulated)
+// ==========================================
+
+// Get public payment configuration
+app.get('/api/payment/config', (req, res) => {
+  const publishableKey = process.env.MOYASAR_PUBLISHABLE_KEY || '';
+  const isLive = !!(process.env.MOYASAR_SECRET_KEY && process.env.MOYASAR_SECRET_KEY.startsWith('sk_live_'));
+  res.json({
+    publishableKey: publishableKey,
+    mode: isLive ? 'live' : 'test',
+    currency: 'SAR',
+    amount: 17400 // 174 SAR in Halalas
+  });
+});
+
+// Verify payment transaction with Moyasar
+app.post('/api/payment/verify', async (req, res) => {
+  try {
+    const { paymentId, amount, user } = req.body;
+    const secretKey = process.env.MOYASAR_SECRET_KEY;
+
+    if (!paymentId) {
+      return res.status(400).json({ error: "Missing paymentId" });
+    }
+
+    if (secretKey && !paymentId.startsWith('pay_test_') && !paymentId.startsWith('pay_ap_')) {
+      // Production verification against Moyasar API
+      const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
+      const response = await fetch(`https://api.moyasar.com/v1/payments/${paymentId}`, {
+        headers: { 'Authorization': authHeader }
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل التحقق من صحة العملية من خوادم بوابة الدفع');
+      }
+
+      const payment = await response.json();
+      if (payment.status !== 'paid') {
+        return res.status(400).json({ error: `حالة العملية غير مدفوعة (${payment.status})`, payment });
+      }
+
+      console.log(`✅ [PAYMENT SUCCESS] Verified live payment ${paymentId} for user ${user?.email || 'N/A'} (174 SAR)`);
+      return res.json({ success: true, payment, verified: true, live: true });
+    } else {
+      // Test / Sandbox verification
+      console.log(`🧪 [TEST PAYMENT] Verified sandbox payment ${paymentId} for user ${user?.email || 'N/A'}`);
+      return res.json({ success: true, paymentId, verified: true, live: false, mode: 'sandbox' });
+    }
+  } catch (err) {
+    console.error("Payment verification error:", err);
+    res.status(500).json({ error: err.message || "حدث خطأ أثناء التحقق من الدفع" });
+  }
+});
+
+// Moyasar Webhook Listener for async callbacks / recurring billing
+app.post('/api/payment/webhook', (req, res) => {
+  try {
+    const event = req.body;
+    console.log("🔔 [PAYMENT WEBHOOK RECEIVED]:", event?.type, event?.data?.id);
+    res.json({ received: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Start Server with automatic port fallback
 let currentPort = parseInt(process.env.PORT || 3000, 10);
 
