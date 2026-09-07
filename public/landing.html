@@ -43,6 +43,9 @@
 
       <!-- Quick Nav Buttons -->
       <div class="flex items-center gap-2 sm:gap-3">
+        <a href="#pricing-section" class="text-xs font-bold text-amber-300 hover:text-amber-200 transition px-2.5 sm:px-3 py-2 flex items-center gap-1">
+          <span>💎</span> <span>الأسعار والباقات</span>
+        </a>
         <a href="index.html" class="text-xs font-bold text-zinc-400 hover:text-white transition px-2.5 sm:px-3 py-2">
           لوحة التحكم
         </a>
@@ -193,6 +196,187 @@
     </div>
   </section>
 
+  <!-- PRICING & SUBSCRIPTIONS SECTION -->
+  <section id="pricing-section" class="py-16 sm:py-24 bg-[#090a0f] border-t border-[#1e2029] relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10">
+      
+      <!-- Section Header -->
+      <div class="text-center space-y-3 max-w-2xl mx-auto">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-[11px] font-bold">
+          💎 خطط وباقات الاشتراك لمدراء المشاريع والشركات
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-black text-white">اختر الباقة المناسبة لحجم مشاريعك</h2>
+        <p class="text-xs sm:text-sm text-zinc-400">انضم لأكثر من 500+ مدير مشروع ومهندس تخطيط يعتمدون على YAZ AI لجدولة أعمالهم يومياً</p>
+        
+        <!-- Billing Toggle -->
+        <div class="pt-4 flex items-center justify-center gap-3">
+          <span id="label-billing-monthly" class="text-xs font-bold text-white transition">اشتراك شهري</span>
+          <button type="button" id="btn-toggle-billing" onclick="toggleBillingCycle()" class="w-14 h-7 bg-[#1e2230] rounded-full p-1 transition relative border border-[#2d3246] flex items-center">
+            <div id="toggle-indicator" class="w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0"></div>
+          </button>
+          <span id="label-billing-yearly" class="text-xs font-bold text-zinc-400 transition flex items-center gap-1.5">
+            <span>اشتراك سنوي</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">وفر 20% 🔥</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Pricing Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch text-right">
+        
+        <!-- 1. Free Starter Card -->
+        <div class="bg-[#12141c] border border-[#242736] rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-zinc-700 transition">
+          <div class="space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-black text-white">الباقة التجريبية</h3>
+                <p class="text-xs text-zinc-400">Free Starter</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">للتجربة</span>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-baseline gap-1">
+                <span class="text-3xl sm:text-4xl font-black text-white">0</span>
+                <span class="text-xs text-zinc-400 font-bold">ر.س / مجاناً</span>
+              </div>
+              <p class="text-[11px] text-zinc-500 mt-1">ابدأ فوراً بدون بطاقة ائتمانية</p>
+            </div>
+
+            <div class="pt-4 border-t border-[#1e2029] space-y-2.5 text-xs text-zinc-300">
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">✓</span> <span>1 مشروع نشط</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">✓</span> <span>جدولة المهام اليومية PMP</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">✓</span> <span>مصفوفة التوريدات والمشتريات</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">✓</span> <span>تصدير ملفات Excel</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">✓</span> <span>5 استشارات يومية مع YAZ AI Copilot</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6">
+            <button onclick="openRegisterModal('register', 'free')" class="w-full py-3 bg-[#181a24] hover:bg-[#202330] text-white border border-[#2d303e] rounded-xl text-xs font-bold transition">
+              ابدأ مجاناً الآن
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Pro PMP Card (Featured) -->
+        <div class="bg-gradient-to-b from-[#161a26] to-[#0f1118] border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl shadow-amber-500/10 relative transform md:-translate-y-2">
+          <div class="absolute -top-3.5 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 text-[11px] font-black px-4 py-1 rounded-full uppercase tracking-wider shadow">
+            ⭐ الأكثر طلباً للمهندسين
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex justify-between items-start pt-2">
+              <div>
+                <h3 class="text-xl font-black text-white">باقة المحترفين</h3>
+                <p class="text-xs text-amber-300 font-bold">Pro PMP Plan</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 text-[10px] font-black">احترافي</span>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-baseline gap-1">
+                <span id="price-pro-display" class="text-3xl sm:text-4xl font-black text-amber-300">199</span>
+                <span class="text-xs text-zinc-300 font-bold">ر.س / <span id="period-pro-display">شهرياً</span></span>
+              </div>
+              <p id="subtext-pro-display" class="text-[11px] text-zinc-400 mt-1">تجدد شهرياً، ويمكنك الإلغاء بأي وقت</p>
+            </div>
+
+            <div class="pt-4 border-t border-amber-400/20 space-y-2.5 text-xs text-zinc-200">
+              <div class="flex items-center gap-2 font-bold text-white">
+                <span class="text-amber-400">✓</span> <span>مشاريع هندسية غير محدودة</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">✓</span> <span>تحليل ودمج عدة ملفات متزامنة</span>
+              </div>
+              <div class="flex items-center gap-2 font-bold text-amber-300">
+                <span class="text-amber-400">✓</span> <span>إدارة التدفقات النقدية ومنحنى S-Curve</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">✓</span> <span>تصدير تقارير PDF تنفيذية رسمية A4</span>
+              </div>
+              <div class="flex items-center gap-2 font-bold text-white">
+                <span class="text-amber-400">✓</span> <span>استشارات غير محدودة مع YAZ AI Copilot</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">✓</span> <span>صياغة خطابات التمديد الزمني والمطالبات</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">✓</span> <span>دعم فني هندسي مخصص 24/7</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6">
+            <button onclick="openRegisterModal('register', 'pro')" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2">
+              <span>🚀</span> <span>اشترك الآن في باقة المحترفين</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Enterprise PMO Card -->
+        <div class="bg-[#12141c] border border-[#242736] rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-cyan-500/50 transition">
+          <div class="space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-black text-white">باقة الشركات</h3>
+                <p class="text-xs text-cyan-300 font-bold">Enterprise PMO</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">مكاتب وشركات</span>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-baseline gap-1">
+                <span id="price-ent-display" class="text-3xl sm:text-4xl font-black text-cyan-300">499</span>
+                <span class="text-xs text-zinc-400 font-bold">ر.س / <span id="period-ent-display">شهرياً</span></span>
+              </div>
+              <p id="subtext-ent-display" class="text-[11px] text-zinc-500 mt-1">حل متكامل لفرق إدارة المشاريع والمقاولات</p>
+            </div>
+
+            <div class="pt-4 border-t border-[#1e2029] space-y-2.5 text-xs text-zinc-300">
+              <div class="flex items-center gap-2 font-bold text-white">
+                <span class="text-cyan-400">✓</span> <span>كافة مميزات باقة المحترفين</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400">✓</span> <span>فريق عمل حتى 10 مهندسين</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400">✓</span> <span>تخصيص الشعار وهوية الشركة بالكامل</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400">✓</span> <span>دعم عقود الفيديك FIDIC والمواصفات الخاصة</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400">✓</span> <span>أولوية قصوى في معالجة الذكاء الاصطناعي</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400">✓</span> <span>مدير حساب وخدمة عملاء VIP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6">
+            <button onclick="openRegisterModal('register', 'enterprise')" class="w-full py-3 bg-[#181a24] hover:bg-[#202330] text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <span>👑</span> <span>اشتراك باقة الشركات</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer class="py-8 bg-[#090a0f] border-t border-[#1e2029] mt-auto text-center text-xs text-zinc-500">
     <div class="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2">
@@ -296,7 +480,50 @@
       }
     }
 
-    function openRegisterModal(mode = 'register') {
+    let selectedRegisterPlan = "pro";
+    let isYearlyBilling = false;
+
+    function toggleBillingCycle() {
+      isYearlyBilling = !isYearlyBilling;
+      const indicator = document.getElementById("toggle-indicator");
+      const labelMonthly = document.getElementById("label-billing-monthly");
+      const labelYearly = document.getElementById("label-billing-yearly");
+      const proPrice = document.getElementById("price-pro-display");
+      const proPeriod = document.getElementById("period-pro-display");
+      const proSubtext = document.getElementById("subtext-pro-display");
+      const entPrice = document.getElementById("price-ent-display");
+      const entPeriod = document.getElementById("period-ent-display");
+      const entSubtext = document.getElementById("subtext-ent-display");
+
+      if (isYearlyBilling) {
+        indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-7";
+        labelMonthly.className = "text-xs font-bold text-zinc-400 transition";
+        labelYearly.className = "text-xs font-bold text-amber-300 transition flex items-center gap-1.5";
+        
+        if (proPrice) proPrice.innerText = "1,899";
+        if (proPeriod) proPeriod.innerText = "سنوياً";
+        if (proSubtext) proSubtext.innerText = "خصم 20%، وفرت 489 ر.س سنوياً";
+        
+        if (entPrice) entPrice.innerText = "4,790";
+        if (entPeriod) entPeriod.innerText = "سنوياً";
+        if (entSubtext) entSubtext.innerText = "خصم 20%، وفرت 1,198 ر.س سنوياً";
+      } else {
+        indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0";
+        labelMonthly.className = "text-xs font-bold text-white transition";
+        labelYearly.className = "text-xs font-bold text-zinc-400 transition flex items-center gap-1.5";
+
+        if (proPrice) proPrice.innerText = "199";
+        if (proPeriod) proPeriod.innerText = "شهرياً";
+        if (proSubtext) proSubtext.innerText = "تجدد شهرياً، ويمكنك الإلغاء بأي وقت";
+
+        if (entPrice) entPrice.innerText = "499";
+        if (entPeriod) entPeriod.innerText = "شهرياً";
+        if (entSubtext) entSubtext.innerText = "حل متكامل لفرق إدارة المشاريع والمقاولات";
+      }
+    }
+
+    function openRegisterModal(mode = 'register', planId = 'pro') {
+      selectedRegisterPlan = planId;
       switchAuthMode(mode);
       document.getElementById('register-modal').classList.remove('hidden');
     }
@@ -343,7 +570,7 @@
           const name = document.getElementById('reg-name').value || email.split('@')[0];
           const role = document.getElementById('reg-role').value;
           const company = document.getElementById('reg-company').value;
-          window.authService?.register(name, email, role, company);
+          window.authService?.register(name, email, role, company, selectedRegisterPlan);
         }
         window.location.href = "index.html";
       } catch (err) {

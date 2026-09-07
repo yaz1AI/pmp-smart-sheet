@@ -76,42 +76,51 @@ function refreshAppState() {
   }
 }
 
-// 1. User Badge & Profile
+// 1. User Badge & Profile & Subscription
 function renderUserBadge() {
   const user = window.authService?.getCurrentUser();
   const container = document.getElementById("user-profile-badge");
   if (!container) return;
 
   if (user) {
+    const planBadge = user.planBadge || (user.planId === "enterprise" ? "ENTERPRISE 👑" : user.planId === "free" ? "Free 🌱" : "PRO ⭐");
+    
     container.innerHTML = `
-      <div class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 py-1 px-3 rounded-xl cursor-pointer transition" id="btn-user-menu">
-        <img src="${user.avatar}" class="w-7 h-7 rounded-full bg-blue-500 border border-white shadow-sm" alt="${user.name}">
+      <div class="flex items-center gap-2 bg-[#14161f] hover:bg-[#1f2230] border border-[#242736] py-1 px-2.5 rounded-xl cursor-pointer transition" id="btn-user-menu">
+        <img src="${user.avatar}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-500 border border-amber-400 shadow-sm" alt="${user.name}">
         <div class="text-right hidden sm:block">
-          <div class="text-xs font-bold text-slate-800 leading-tight">${user.name}</div>
-          <div class="text-[10px] text-blue-600 font-semibold leading-tight">${user.role}</div>
+          <div class="text-xs font-bold text-white leading-tight">${user.name}</div>
+          <div class="text-[9px] text-amber-300 font-black leading-tight">${planBadge}</div>
         </div>
-        <span class="text-xs text-slate-400">▾</span>
+        <span class="text-xs text-zinc-400">▾</span>
       </div>
       <!-- User Dropdown Menu -->
-      <div id="user-dropdown" class="hidden absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 text-right text-xs">
-        <div class="p-2 border-b border-slate-100">
-          <div class="font-bold text-slate-800">${user.name}</div>
-          <div class="text-slate-400 text-[11px]">${user.email}</div>
-          <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">${user.plan}</span>
+      <div id="user-dropdown" class="hidden absolute left-0 mt-2 w-60 bg-[#12141c] rounded-2xl shadow-2xl border border-[#242736] p-2 z-50 text-right text-xs text-zinc-200">
+        <div class="p-2.5 border-b border-[#1e2029]">
+          <div class="font-black text-white">${user.name}</div>
+          <div class="text-zinc-400 text-[11px]">${user.email}</div>
+          <div class="mt-1.5 flex items-center justify-between">
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 font-bold border border-amber-400/30">${user.plan || 'باقة المحترفين'}</span>
+            <button onclick="openSubscriptionModal()" class="text-[10px] text-amber-400 hover:underline font-bold">ترقية 💎</button>
+          </div>
         </div>
-        <button onclick="switchTab('projects')" class="w-full text-right p-2 hover:bg-slate-50 rounded-lg font-bold text-slate-700 flex items-center justify-between">
+        <button onclick="openSubscriptionModal()" class="w-full text-right p-2 hover:bg-[#181a24] rounded-xl font-bold text-amber-300 flex items-center justify-between">
+          <span>💎 باقات الاشتراك والترقية</span>
+          <span class="text-xs">⭐</span>
+        </button>
+        <button onclick="switchTab('projects')" class="w-full text-right p-2 hover:bg-[#181a24] rounded-xl font-bold text-zinc-300 flex items-center justify-between">
           <span>📁 لوحة مشاريعي</span>
           <span class="text-xs">📂</span>
         </button>
-        <button onclick="switchTab('upload')" class="w-full text-right p-2 hover:bg-slate-50 rounded-lg font-bold text-slate-700 flex items-center justify-between">
+        <button onclick="switchTab('upload')" class="w-full text-right p-2 hover:bg-[#181a24] rounded-xl font-bold text-zinc-300 flex items-center justify-between">
           <span>➕ رفع مشروع جديد</span>
           <span class="text-xs">📤</span>
         </button>
-        <button onclick="handleClearAllUserProjects()" class="w-full text-right p-2 hover:bg-amber-50 text-amber-700 rounded-lg font-bold flex items-center justify-between">
+        <button onclick="handleClearAllUserProjects()" class="w-full text-right p-2 hover:bg-amber-950/30 text-amber-400 rounded-xl font-bold flex items-center justify-between">
           <span>🗑️ مسح مشاريعي (البدء من الصفر)</span>
           <span class="text-xs">🧹</span>
         </button>
-        <button onclick="handleLogout()" class="w-full text-right p-2 hover:bg-red-50 text-red-600 rounded-lg font-bold flex items-center justify-between mt-1 border-t border-slate-100">
+        <button onclick="handleLogout()" class="w-full text-right p-2 hover:bg-rose-950/30 text-rose-400 rounded-xl font-bold flex items-center justify-between mt-1 border-t border-[#1e2029]">
           <span>🚪 تسجيل الخروج</span>
           <span class="text-xs">✕</span>
         </button>
@@ -128,10 +137,102 @@ function renderUserBadge() {
     });
   } else {
     container.innerHTML = `
-      <button onclick="openAuthModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
+      <button onclick="openAuthModal()" class="px-3 py-1.5 bg-white hover:bg-zinc-100 text-zinc-950 rounded-xl text-xs font-black transition flex items-center gap-1 shadow-sm">
         👤 تسجيل الدخول
       </button>
     `;
+  }
+}
+
+// Subscription Modal Controller
+let selectedModalPlan = "pro";
+let isModalYearlyBilling = false;
+
+function openSubscriptionModal(preselectPlan = "pro") {
+  selectedModalPlan = preselectPlan;
+  const modal = document.getElementById("subscription-modal");
+  if (!modal) return;
+
+  const user = window.authService?.getCurrentUser();
+  const currentBadgeEl = document.getElementById("sub-modal-current-badge");
+  if (currentBadgeEl && user) {
+    currentBadgeEl.innerText = `حسابك الحالي: ${user.planBadge || user.plan || 'PRO ⭐'}`;
+  }
+
+  selectSubPlan(selectedModalPlan);
+  modal.classList.remove("hidden");
+}
+
+function closeSubscriptionModal() {
+  const modal = document.getElementById("subscription-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function toggleSubModalBilling() {
+  isModalYearlyBilling = !isModalYearlyBilling;
+  const indicator = document.getElementById("sub-modal-toggle-indicator");
+  const labelMonthly = document.getElementById("sub-modal-label-monthly");
+  const labelYearly = document.getElementById("sub-modal-label-yearly");
+  const pricePro = document.getElementById("sub-modal-price-pro");
+  const periodPro = document.getElementById("sub-modal-period-pro");
+  const priceEnt = document.getElementById("sub-modal-price-ent");
+  const periodEnt = document.getElementById("sub-modal-period-ent");
+
+  if (isModalYearlyBilling) {
+    if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-7";
+    if (labelMonthly) labelMonthly.className = "text-xs font-bold text-zinc-400 transition";
+    if (labelYearly) labelYearly.className = "text-xs font-bold text-amber-300 transition flex items-center gap-1.5";
+    if (pricePro) pricePro.innerText = "1,899";
+    if (periodPro) periodPro.innerText = "سنوياً (وفر 20%)";
+    if (priceEnt) priceEnt.innerText = "4,790";
+    if (periodEnt) periodEnt.innerText = "سنوياً (وفر 20%)";
+  } else {
+    if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0";
+    if (labelMonthly) labelMonthly.className = "text-xs font-bold text-white transition";
+    if (labelYearly) labelYearly.className = "text-xs font-bold text-zinc-400 transition flex items-center gap-1.5";
+    if (pricePro) pricePro.innerText = "199";
+    if (periodPro) periodPro.innerText = "شهرياً";
+    if (priceEnt) priceEnt.innerText = "499";
+    if (periodEnt) periodEnt.innerText = "شهرياً";
+  }
+}
+
+function selectSubPlan(planId) {
+  selectedModalPlan = planId;
+  const plans = ["free", "pro", "enterprise"];
+  plans.forEach(p => {
+    const card = document.getElementById(`sub-card-${p}`);
+    if (card) {
+      if (p === planId) {
+        card.classList.add("border-amber-400", "bg-[#1f2233]", "ring-2", "ring-amber-400/30");
+        card.classList.remove("border-[#2d303e]", "bg-[#181a24]");
+      } else {
+        card.classList.remove("border-amber-400", "bg-[#1f2233]", "ring-2", "ring-amber-400/30");
+        card.classList.add("border-[#2d303e]", "bg-[#181a24]");
+      }
+    }
+  });
+
+  const btnLabel = document.getElementById("sub-modal-btn-label");
+  if (btnLabel) {
+    const planName = planId === "enterprise" ? "باقة الشركات" : planId === "free" ? "الباقة التجريبية" : "باقة المحترفين";
+    btnLabel.innerText = `تأكيد وتفعيل ${planName} فوراً 🚀`;
+  }
+}
+
+function handleConfirmSubscription() {
+  const selectedPayment = document.querySelector('input[name="sub-payment-method"]:checked')?.value || "Mada";
+  const cycle = isModalYearlyBilling ? "yearly" : "monthly";
+
+  try {
+    window.authService?.upgradePlan(selectedModalPlan, cycle, selectedPayment);
+    renderUserBadge();
+    closeSubscriptionModal();
+
+    const planName = selectedModalPlan === "enterprise" ? "باقة الشركات والاستشاريين 👑" : selectedModalPlan === "free" ? "الباقة المجانية 🌱" : "باقة المحترفين PRO ⭐";
+    alert(`🎉 تهانينا! تم تفعيل وتأكيد اشتراكك بنجاح في (${planName}).\n\nتم فتح كافة ميزات المنظومة والمشاريع والتقارير التنفيذية لحسابك.`);
+  } catch (err) {
+    alert("⚠️ " + err.message);
   }
 }
 
