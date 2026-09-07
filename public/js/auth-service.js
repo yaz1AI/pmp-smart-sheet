@@ -6,59 +6,45 @@
 const SUBSCRIPTION_PLANS = {
   free: {
     id: "free",
-    name: "الباقة المجانية",
-    nameEn: "Free Starter",
-    badge: "Free 🌱",
+    name: "التجربة المجانية",
+    nameEn: "Free Trial",
+    badge: "FREE TRIAL 🌱",
     priceMonthly: 0,
     priceYearly: 0,
     maxProjects: 1,
-    pdfExport: false,
+    pdfExport: true,
     unlimitedCopilot: false,
     features: [
-      "مشروع واحد نشط",
+      "مشروع تجريبي كامل (1 Project)",
       "جدولة المهام اليومية PMP",
       "مصفوفة المشتريات والتوريدات",
+      "إدارة التدفقات النقدية ومنحنى S-Curve",
       "تصدير ملفات Excel",
-      "5 استشارات يومية مع YAZ AI Copilot"
+      "استشارات ذكية مع YAZ AI Copilot"
     ]
   },
   pro: {
     id: "pro",
-    name: "باقة المحترفين",
-    nameEn: "Pro PMP Plan",
-    badge: "PRO ⭐",
-    priceMonthly: 99,
-    priceYearly: 890,
-    maxProjects: 999,
-    pdfExport: true,
-    unlimitedCopilot: true,
-    features: [
-      "مشاريع غير محدودة",
-      "دمج وتحليل عدة ملفات متزامنة",
-      "إدارة التدفقات النقدية ومنحنى S-Curve",
-      "تصدير تقارير PDF تنفيذية عالية الدقة",
-      "استشارات غير محدودة مع YAZ AI Copilot",
-      "صياغة خطابات التمديد الزمني والمطالبات التعاقدية",
-      "دعم فني هندسي مخصص"
-    ]
-  },
-  enterprise: {
-    id: "enterprise",
-    name: "باقة الشركات والاستشاريين",
-    nameEn: "Enterprise PMO",
-    badge: "ENTERPRISE 👑",
-    priceMonthly: 249,
-    priceYearly: 2390,
+    name: "الاشتراك الشامل",
+    nameEn: "All-Access Pro Plan",
+    badge: "PRO UNLIMITED ⭐",
+    priceMonthly: 174,
+    priceYearly: 174,
     maxProjects: 9999,
     pdfExport: true,
     unlimitedCopilot: true,
+    fidicSupport: true,
+    sCurve: true,
+    customBranding: true,
     features: [
-      "كافة مميزات باقة المحترفين",
-      "فريق عمل حتى 10 مهندسين",
+      "مشاريع هندسية غير محدودة",
+      "دمج وتحليل عدة ملفات إكسل متزامنة",
+      "إدارة التدفقات النقدية ومنحنى S-Curve",
+      "تصدير تقارير PDF تنفيذية رسمية A4",
+      "استشارات وتحليلات غير محدودة مع YAZ AI Copilot",
+      "صياغة خطابات التمديد والمطالبات التعاقدية (FIDIC)",
       "تخصيص الشعار وهوية الشركة بالكامل",
-      "دعم عقود الفيديك FIDIC والمواصفات الخاصة",
-      "أولوية قصوى في معالجة الذكاء الاصطناعي",
-      "مدير حساب وخدمة عملاء VIP 24/7"
+      "دعم فني هندسي مستمر 24/7"
     ]
   }
 };
@@ -82,9 +68,9 @@ class AuthService {
     try {
       const user = JSON.parse(localStorage.getItem(this.STORAGE_KEY_USER));
       if (user && !user.planId) {
-        user.planId = "pro"; // Default active plan
-        user.plan = SUBSCRIPTION_PLANS.pro.name;
-        user.planBadge = SUBSCRIPTION_PLANS.pro.badge;
+        user.planId = "free";
+        user.plan = SUBSCRIPTION_PLANS.free.name;
+        user.planBadge = SUBSCRIPTION_PLANS.free.badge;
       }
       return user || null;
     } catch {
@@ -105,10 +91,10 @@ class AuthService {
     return !!this.currentUser;
   }
 
-  register(name, email, role = "Project Manager", company = "", planId = "pro") {
+  register(name, email, role = "Project Manager", company = "", planId = "free") {
     const users = this.getUsersDB();
     const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    const plan = SUBSCRIPTION_PLANS[planId] || SUBSCRIPTION_PLANS.pro;
+    const plan = SUBSCRIPTION_PLANS[planId] || SUBSCRIPTION_PLANS.free;
 
     const userObj = {
       id: existing ? existing.id : `usr-${Date.now()}`,
@@ -142,26 +128,25 @@ class AuthService {
     const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
     if (!user) {
       const name = email.split('@')[0] || "مدير المشروع";
-      return this.register(name, email);
+      return this.register(name, email, "Project Manager", "", "free");
     }
     this.currentUser = user;
     localStorage.setItem(this.STORAGE_KEY_USER, JSON.stringify(user));
     return user;
   }
 
-  upgradePlan(planId, billingCycle = "monthly", paymentMethod = "Mada") {
+  upgradePlan(planId = "pro", billingCycle = "monthly", paymentMethod = "Mada") {
     if (!this.currentUser) {
       throw new Error("يرجى تسجيل الدخول أولاً للترقية");
     }
 
-    const plan = SUBSCRIPTION_PLANS[planId];
-    if (!plan) throw new Error("الباقة المحددة غير صالحة");
+    const plan = SUBSCRIPTION_PLANS[planId] || SUBSCRIPTION_PLANS.pro;
 
-    const days = billingCycle === "yearly" ? 365 : 30;
+    const days = 30; // Monthly billing
     this.currentUser.planId = plan.id;
     this.currentUser.plan = plan.name;
     this.currentUser.planBadge = plan.badge;
-    this.currentUser.billingCycle = billingCycle;
+    this.currentUser.billingCycle = "monthly";
     this.currentUser.paymentMethod = paymentMethod;
     this.currentUser.subscriptionStatus = "active";
     this.currentUser.subscribedAt = new Date().toISOString();

@@ -57,6 +57,20 @@ class ProjectsStore {
     return userProjects[0] || null;
   }
 
+  canCreateProject() {
+    const user = window.authService?.getCurrentUser();
+    const plan = window.authService?.getCurrentPlan();
+    if (!user) return true;
+    // Free trial user is allowed 1 project only
+    if (plan && plan.id === "free") {
+      const userProjects = this.getAllProjects();
+      if (userProjects.length >= 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   createProject(projectData) {
     const all = this._getRawProjects();
     const user = window.authService?.getCurrentUser();

@@ -83,29 +83,30 @@ function renderUserBadge() {
   if (!container) return;
 
   if (user) {
-    const planBadge = user.planBadge || (user.planId === "enterprise" ? "ENTERPRISE 👑" : user.planId === "free" ? "Free 🌱" : "PRO ⭐");
+    const isPro = user.planId === "pro";
+    const planBadge = user.planBadge || (isPro ? "PRO UNLIMITED ⭐" : "FREE TRIAL 🌱");
     
     container.innerHTML = `
       <div class="flex items-center gap-2 bg-[#14161f] hover:bg-[#1f2230] border border-[#242736] py-1 px-2.5 rounded-xl cursor-pointer transition" id="btn-user-menu">
         <img src="${user.avatar}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-500 border border-amber-400 shadow-sm" alt="${user.name}">
         <div class="text-right hidden sm:block">
           <div class="text-xs font-bold text-white leading-tight">${user.name}</div>
-          <div class="text-[9px] text-amber-300 font-black leading-tight">${planBadge}</div>
+          <div class="text-[9px] ${isPro ? 'text-amber-300' : 'text-emerald-400'} font-black leading-tight">${planBadge}</div>
         </div>
         <span class="text-xs text-zinc-400">▾</span>
       </div>
       <!-- User Dropdown Menu -->
-      <div id="user-dropdown" class="hidden absolute left-0 mt-2 w-60 bg-[#12141c] rounded-2xl shadow-2xl border border-[#242736] p-2 z-50 text-right text-xs text-zinc-200">
+      <div id="user-dropdown" class="hidden absolute left-0 mt-2 w-64 bg-[#12141c] rounded-2xl shadow-2xl border border-[#242736] p-2 z-50 text-right text-xs text-zinc-200">
         <div class="p-2.5 border-b border-[#1e2029]">
           <div class="font-black text-white">${user.name}</div>
           <div class="text-zinc-400 text-[11px]">${user.email}</div>
-          <div class="mt-1.5 flex items-center justify-between">
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 font-bold border border-amber-400/30">${user.plan || 'باقة المحترفين'}</span>
-            <button onclick="openSubscriptionModal()" class="text-[10px] text-amber-400 hover:underline font-bold">ترقية 💎</button>
+          <div class="mt-2 flex items-center justify-between">
+            <span class="text-[10px] px-2 py-0.5 rounded-full ${isPro ? 'bg-amber-400/10 text-amber-300 border-amber-400/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'} font-bold border">${user.plan || (isPro ? 'الاشتراك الشامل' : 'التجربة المجانية')}</span>
+            ${!isPro ? `<button onclick="openSubscriptionModal()" class="text-[10px] px-2 py-0.5 bg-amber-400 text-zinc-950 rounded-lg font-black hover:bg-amber-300 transition">ترقية 💎</button>` : ''}
           </div>
         </div>
         <button onclick="openSubscriptionModal()" class="w-full text-right p-2 hover:bg-[#181a24] rounded-xl font-bold text-amber-300 flex items-center justify-between">
-          <span>💎 باقات الاشتراك والترقية</span>
+          <span>💎 تفاصيل الاشتراك والترقية</span>
           <span class="text-xs">⭐</span>
         </button>
         <button onclick="switchTab('projects')" class="w-full text-right p-2 hover:bg-[#181a24] rounded-xl font-bold text-zinc-300 flex items-center justify-between">
@@ -144,22 +145,19 @@ function renderUserBadge() {
   }
 }
 
-// Subscription Modal Controller
-let selectedModalPlan = "pro";
-let isModalYearlyBilling = false;
-
-function openSubscriptionModal(preselectPlan = "pro") {
-  selectedModalPlan = preselectPlan;
+// Subscription Modal Controller (Unified 174 SAR All-Access Plan)
+function openSubscriptionModal() {
   const modal = document.getElementById("subscription-modal");
   if (!modal) return;
 
   const user = window.authService?.getCurrentUser();
   const currentBadgeEl = document.getElementById("sub-modal-current-badge");
   if (currentBadgeEl && user) {
-    currentBadgeEl.innerText = `حسابك الحالي: ${user.planBadge || user.plan || 'PRO ⭐'}`;
+    const isPro = user.planId === "pro";
+    currentBadgeEl.innerText = `حسابك الحالي: ${user.planBadge || (isPro ? 'PRO UNLIMITED ⭐' : 'FREE TRIAL 🌱')}`;
+    currentBadgeEl.className = `text-[10px] px-2.5 py-0.5 rounded-full ${isPro ? 'bg-amber-400/10 text-amber-300 border-amber-400/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'} font-black border`;
   }
 
-  selectSubPlan(selectedModalPlan);
   modal.classList.remove("hidden");
 }
 
@@ -168,69 +166,15 @@ function closeSubscriptionModal() {
   if (modal) modal.classList.add("hidden");
 }
 
-function toggleSubModalBilling() {
-  isModalYearlyBilling = !isModalYearlyBilling;
-  const indicator = document.getElementById("sub-modal-toggle-indicator");
-  const labelMonthly = document.getElementById("sub-modal-label-monthly");
-  const labelYearly = document.getElementById("sub-modal-label-yearly");
-  const pricePro = document.getElementById("sub-modal-price-pro");
-  const periodPro = document.getElementById("sub-modal-period-pro");
-  const priceEnt = document.getElementById("sub-modal-price-ent");
-  const periodEnt = document.getElementById("sub-modal-period-ent");
-
-  if (isModalYearlyBilling) {
-    if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-7";
-    if (labelMonthly) labelMonthly.className = "text-xs font-bold text-zinc-400 transition";
-    if (labelYearly) labelYearly.className = "text-xs font-bold text-amber-300 transition flex items-center gap-1.5";
-    if (pricePro) pricePro.innerText = "890";
-    if (periodPro) periodPro.innerText = "سنوياً (وفر 25%)";
-    if (priceEnt) priceEnt.innerText = "2,390";
-    if (periodEnt) periodEnt.innerText = "سنوياً (وفر 20%)";
-  } else {
-    if (indicator) indicator.className = "w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0";
-    if (labelMonthly) labelMonthly.className = "text-xs font-bold text-white transition";
-    if (labelYearly) labelYearly.className = "text-xs font-bold text-zinc-400 transition flex items-center gap-1.5";
-    if (pricePro) pricePro.innerText = "99";
-    if (periodPro) periodPro.innerText = "شهرياً";
-    if (priceEnt) priceEnt.innerText = "249";
-    if (periodEnt) periodEnt.innerText = "شهرياً";
-  }
-}
-
-function selectSubPlan(planId) {
-  selectedModalPlan = planId;
-  const plans = ["free", "pro", "enterprise"];
-  plans.forEach(p => {
-    const card = document.getElementById(`sub-card-${p}`);
-    if (card) {
-      if (p === planId) {
-        card.classList.add("border-amber-400", "bg-[#1f2233]", "ring-2", "ring-amber-400/30");
-        card.classList.remove("border-[#2d303e]", "bg-[#181a24]");
-      } else {
-        card.classList.remove("border-amber-400", "bg-[#1f2233]", "ring-2", "ring-amber-400/30");
-        card.classList.add("border-[#2d303e]", "bg-[#181a24]");
-      }
-    }
-  });
-
-  const btnLabel = document.getElementById("sub-modal-btn-label");
-  if (btnLabel) {
-    const planName = planId === "enterprise" ? "باقة الشركات" : planId === "free" ? "الباقة التجريبية" : "باقة المحترفين";
-    btnLabel.innerText = `تأكيد وتفعيل ${planName} فوراً 🚀`;
-  }
-}
-
 function handleConfirmSubscription() {
   const selectedPayment = document.querySelector('input[name="sub-payment-method"]:checked')?.value || "Mada";
-  const cycle = isModalYearlyBilling ? "yearly" : "monthly";
 
   try {
-    window.authService?.upgradePlan(selectedModalPlan, cycle, selectedPayment);
+    window.authService?.upgradePlan("pro", "monthly", selectedPayment);
     renderUserBadge();
     closeSubscriptionModal();
 
-    const planName = selectedModalPlan === "enterprise" ? "باقة الشركات والاستشاريين 👑" : selectedModalPlan === "free" ? "الباقة المجانية 🌱" : "باقة المحترفين PRO ⭐";
-    alert(`🎉 تهانينا! تم تفعيل وتأكيد اشتراكك بنجاح في (${planName}).\n\nتم فتح كافة ميزات المنظومة والمشاريع والتقارير التنفيذية لحسابك.`);
+    alert("🎉 تهانينا! تم تفعيل الاشتراك الشامل بنجاح (174 ر.س / شهرياً).\n\nأصبح بإمكانك الآن إضافة مشاريع هندسية غير محدودة واستخدام كافة ميزات المنظومة والذكاء الاصطناعي بلا قيود!");
   } catch (err) {
     alert("⚠️ " + err.message);
   }
@@ -345,8 +289,25 @@ function renderProjectsDashboard() {
   const projects = window.projectsStore?.getAllProjects() || [];
   const activeId = window.projectsStore?.getActiveProjectId();
 
+  const user = window.authService?.getCurrentUser();
+  const isFree = !user || user.planId === 'free';
+  const planBanner = isFree ? `
+    <div class="col-span-full p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-400/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-right">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌱</span>
+        <div>
+          <div class="text-xs font-black text-zinc-900">أنت حالياً في التجربة المجانية (${projects.length} من 1 مشروع مسموح)</div>
+          <div class="text-[11px] text-zinc-600">لإضافة مشاريع غير محدودة وتفعيل كافة مزايا التحليل والتصدير، اشترك في الباقة الشاملة.</div>
+        </div>
+      </div>
+      <button onclick="openSubscriptionModal()" class="px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 rounded-xl text-xs font-black transition shadow whitespace-nowrap">
+        💎 الترقية للاشتراك الشامل (174 ر.س/شهرياً)
+      </button>
+    </div>
+  ` : '';
+
   if (projects.length === 0) {
-    container.innerHTML = `
+    container.innerHTML = planBanner + `
       <div class="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-zinc-300 space-y-4 shadow-sm">
         <div class="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-2xl flex items-center justify-center text-3xl mx-auto border border-zinc-200">📁</div>
         <h3 class="text-lg font-black text-zinc-950">ليس لديك أي مشروع محفوظ حالياً</h3>
@@ -366,7 +327,7 @@ function renderProjectsDashboard() {
     return;
   }
 
-  container.innerHTML = projects.map(p => {
+  container.innerHTML = planBanner + projects.map(p => {
     const info = p.data.projectInfo;
     const tempScheduler = new PMTaskScheduler(p.data);
     const kpis = tempScheduler.getProjectKPIs();
@@ -456,6 +417,11 @@ function renderProjectsDashboard() {
 }
 
 function handleLoadDemoProject() {
+  if (!window.projectsStore?.canCreateProject()) {
+    openSubscriptionModal();
+    alert("⚠️ لقد استنفدت التجربة المجانية لمشروع واحد.\n\nلإضافة مشاريع جديدة غير محدودة، يرجى تفعيل الاشتراك الشامل بـ 174 ر.س / شهرياً.");
+    return;
+  }
   window.projectsStore?.loadDemoProject();
   refreshAppState();
   switchTab("daily");
@@ -1189,6 +1155,12 @@ async function startMultiFileAnalysis() {
     return;
   }
 
+  if (!window.projectsStore?.canCreateProject()) {
+    openSubscriptionModal();
+    alert("⚠️ لقد استنفدت التجربة المجانية لمشروع واحد.\n\nلإضافة ودمج مشاريع جديدة غير محدودة، يرجى تفعيل باقة الاشتراك الشامل بـ 174 ر.س / شهرياً.");
+    return;
+  }
+
   const uploadStatus = document.getElementById("upload-status");
   uploadStatus.classList.remove("hidden");
 
@@ -1427,6 +1399,12 @@ function initWorkPlanGeneratorModal() {
 }
 
 function openWorkPlanGeneratorModal(prefill = {}) {
+  if (!window.projectsStore?.canCreateProject()) {
+    openSubscriptionModal();
+    alert("⚠️ لقد استنفدت التجربة المجانية لمشروع واحد.\n\nلتوليد وإنشاء مشاريع جديدة غير محدودة بالذكاء الاصطناعي، يرجى تفعيل باقة الاشتراك الشامل بـ 174 ر.س / شهرياً.");
+    return;
+  }
+
   const modal = document.getElementById("workplan-generator-modal");
   if (!modal) return;
 

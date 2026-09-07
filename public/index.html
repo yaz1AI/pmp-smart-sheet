@@ -616,118 +616,66 @@
   <div id="subscription-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-[#12141c] border border-[#242736] rounded-3xl w-[96vw] max-w-4xl max-h-[92vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-6 text-right text-zinc-100">
       
-      <!-- Top Bar -->
+      <!-- Modal Header -->
       <div class="flex justify-between items-center border-b border-[#242736] pb-4">
         <div class="flex items-center gap-3">
-          <img src="assets/logo.jpg" alt="YAZ AI" class="w-8 h-8 rounded-xl object-cover border border-cyan-500/40">
+          <img src="assets/logo.jpg" alt="YAZ AI" class="w-9 h-9 rounded-xl object-cover border border-amber-400/40 shadow-md">
           <div>
             <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
-              <span>💎 باقات الاشتراك والترقية</span>
-              <span id="sub-modal-current-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-black">حسابك الحالي: PRO ⭐</span>
+              <span>💎 الاشتراك الشامل لمدراء المشاريع</span>
+              <span id="sub-modal-current-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-black">حسابك الحالي: FREE TRIAL 🌱</span>
             </h3>
-            <p class="text-xs text-zinc-400">اختر الباقة المناسبة لمشاريعك لفتح ميزات الـ AI المتقدمة والتقارير التنفيذية</p>
+            <p class="text-xs text-zinc-400">افتح كامل إمكانيات الشيت الذكي ومشاريع غير محدودة مع كافة أدوات الذكاء الاصطناعي</p>
           </div>
         </div>
         <button type="button" onclick="closeSubscriptionModal()" class="text-zinc-400 hover:text-white font-bold p-1 text-sm">✕</button>
       </div>
 
-      <!-- Billing Cycle Toggle -->
-      <div class="flex items-center justify-center gap-3 py-2 bg-[#090a0f] rounded-2xl border border-[#1e2029]">
-        <span id="sub-modal-label-monthly" class="text-xs font-bold text-white transition">اشتراك شهري</span>
-        <button type="button" onclick="toggleSubModalBilling()" class="w-14 h-7 bg-[#1e2230] rounded-full p-1 transition relative border border-[#2d3246] flex items-center">
-          <div id="sub-modal-toggle-indicator" class="w-5 h-5 bg-amber-400 rounded-full shadow-md transform transition translate-x-0"></div>
-        </button>
-        <span id="sub-modal-label-yearly" class="text-xs font-bold text-zinc-400 transition flex items-center gap-1.5">
-          <span>اشتراك سنوي</span>
-          <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">وفر 20% 🔥</span>
-        </span>
-      </div>
-
-      <!-- Plan Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        
-        <!-- Free Starter -->
-        <div id="sub-card-free" onclick="selectSubPlan('free')" class="sub-plan-card bg-[#181a24] border-2 border-[#2d303e] hover:border-zinc-500 rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition">
-          <div class="space-y-3">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-black text-white text-sm">الباقة التجريبية</h4>
-                <p class="text-[10px] text-zinc-400">Free Starter</p>
-              </div>
-              <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[9px] font-bold">مجاني</span>
+      <!-- Single Plan Showcase Card -->
+      <div class="bg-gradient-to-b from-[#181c28] to-[#10121a] border-2 border-amber-400 rounded-3xl p-5 sm:p-6 shadow-xl relative text-right">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#242736] pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="text-lg font-black text-white">باقة الاشتراك الشامل وغير المحدود</h4>
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-black">PRO UNLIMITED ⭐</span>
             </div>
-            <div class="text-2xl font-black text-white">0 <span class="text-xs font-bold text-zinc-400">ر.س</span></div>
-            <div class="space-y-1.5 text-[11px] text-zinc-300 pt-2 border-t border-[#242736]">
-              <div>✓ 1 مشروع نشط</div>
-              <div>✓ الجدولة اليومية PMP</div>
-              <div>✓ تصدير Excel</div>
-              <div>✓ 5 استشارات يومية Copilot</div>
-            </div>
+            <p class="text-xs text-zinc-400 mt-0.5">حل متكامل لكافة مدراء المشاريع ومهندسي التخطيط والمقاولات</p>
           </div>
-          <div class="pt-4">
-            <span class="sub-btn-label block w-full py-2 bg-[#232736] text-zinc-300 rounded-xl text-xs font-bold text-center">اختيار الباقة</span>
+          <div class="text-right sm:text-left">
+            <div class="flex items-baseline gap-1">
+              <span class="text-3xl sm:text-4xl font-black text-amber-300">174</span>
+              <span class="text-xs font-bold text-zinc-300">ر.س / شهرياً</span>
+            </div>
+            <span class="text-[10px] text-zinc-400">تجدد شهرياً — يمكنك الإلغاء بأي وقت</span>
           </div>
         </div>
 
-        <!-- Pro PMP (Active by Default) -->
-        <div id="sub-card-pro" onclick="selectSubPlan('pro')" class="sub-plan-card bg-[#1a1c28] border-2 border-amber-400 rounded-2xl p-4 flex flex-col justify-between cursor-pointer shadow-lg shadow-amber-500/10 transition relative">
-          <div class="absolute -top-2.5 right-4 bg-amber-400 text-zinc-950 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase">
-            ⭐ الأكثر طلباً
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-zinc-200 pt-4">
+          <div class="flex items-center gap-2 font-bold text-white">
+            <span class="text-amber-400 font-black">✓</span> <span>مشاريع هندسية غير محدودة (Unlimited)</span>
           </div>
-          <div class="space-y-3 pt-1">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-black text-white text-sm">باقة المحترفين</h4>
-                <p class="text-[10px] text-amber-300 font-bold">Pro PMP Plan</p>
-              </div>
-              <span class="px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 text-[9px] font-bold">احترافي</span>
-            </div>
-            <div>
-              <span id="sub-modal-price-pro" class="text-2xl font-black text-amber-300">99</span>
-              <span class="text-xs font-bold text-zinc-300">ر.س / <span id="sub-modal-period-pro">شهرياً</span></span>
-            </div>
-            <div class="space-y-1.5 text-[11px] text-zinc-200 pt-2 border-t border-[#242736]">
-              <div class="font-bold text-white">✓ مشاريع غير محدودة</div>
-              <div>✓ دمج وتحليل عدة ملفات</div>
-              <div class="text-amber-300">✓ التدفقات النقدية S-Curve</div>
-              <div>✓ تقارير PDF تنفيذية رسمية</div>
-              <div class="font-bold text-white">✓ YAZ AI Copilot غير محدود</div>
-              <div>✓ صياغة خطابات التمديد والمطالبات</div>
-            </div>
+          <div class="flex items-center gap-2 font-bold text-white">
+            <span class="text-amber-400 font-black">✓</span> <span>دمج وتحليل عدة ملفات إكسل متزامنة</span>
           </div>
-          <div class="pt-4">
-            <span class="sub-btn-label block w-full py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 rounded-xl text-xs font-black text-center shadow">الباقة الحالية / ترقية</span>
+          <div class="flex items-center gap-2 font-bold text-amber-300">
+            <span class="text-amber-400 font-black">✓</span> <span>إدارة التدفقات النقدية ومنحنى S-Curve</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 font-black">✓</span> <span>تصدير تقارير PDF تنفيذية رسمية A4</span>
+          </div>
+          <div class="flex items-center gap-2 font-bold text-white">
+            <span class="text-amber-400 font-black">✓</span> <span>استشارات غير محدودة مع YAZ AI Copilot</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 font-black">✓</span> <span>صياغة خطابات التمديد والمطالبات التعاقدية</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 font-black">✓</span> <span>تخصيص الشعار وهوية الشركة بالكامل</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 font-black">✓</span> <span>دعم فني هندسي مستمر 24/7</span>
           </div>
         </div>
-
-        <!-- Enterprise PMO -->
-        <div id="sub-card-enterprise" onclick="selectSubPlan('enterprise')" class="sub-plan-card bg-[#181a24] border-2 border-[#2d303e] hover:border-cyan-400 rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition">
-          <div class="space-y-3">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-black text-white text-sm">باقة الشركات</h4>
-                <p class="text-[10px] text-cyan-300 font-bold">Enterprise PMO</p>
-              </div>
-              <span class="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[9px] font-bold">شركات</span>
-            </div>
-            <div>
-              <span id="sub-modal-price-ent" class="text-2xl font-black text-cyan-300">249</span>
-              <span class="text-xs font-bold text-zinc-300">ر.س / <span id="sub-modal-period-ent">شهرياً</span></span>
-            </div>
-            <div class="space-y-1.5 text-[11px] text-zinc-300 pt-2 border-t border-[#242736]">
-              <div class="font-bold text-white">✓ كافة مميزات المحترفين</div>
-              <div>✓ فريق عمل حتى 10 مهندسين</div>
-              <div>✓ تخصيص الشعار وهوية الشركة</div>
-              <div>✓ دعم عقود الفيديك FIDIC</div>
-              <div>✓ أولوية قصوى بمعالجة الـ AI</div>
-              <div>✓ مدير حساب VIP 24/7</div>
-            </div>
-          </div>
-          <div class="pt-4">
-            <span class="sub-btn-label block w-full py-2 bg-[#232736] text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-bold text-center">اختيار الباقة</span>
-          </div>
-        </div>
-
       </div>
 
       <!-- Payment Method Selection -->
@@ -748,7 +696,7 @@
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#14161f] border border-[#242736] cursor-pointer hover:border-amber-400/50 transition">
             <input type="radio" name="sub-payment-method" value="BankTransfer" class="text-amber-500 focus:ring-0">
-            <span>🏛️ تحويل بنكي مؤسسي</span>
+            <span>🏛️ تحويل بنكي</span>
           </label>
         </div>
       </div>
@@ -756,7 +704,7 @@
       <!-- Checkout Action Buttons -->
       <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3">
         <button type="button" onclick="handleConfirmSubscription()" class="w-full sm:flex-1 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition shadow-xl flex items-center justify-center gap-2">
-          <span>🚀</span> <span id="sub-modal-btn-label">تأكيد وتفعيل الاشتراك فوراً</span>
+          <span>🚀</span> <span id="sub-modal-btn-label">تأكيد ودفع 174 ر.س / تفعيل الاشتراك الشامل فوراً</span>
         </button>
         <button type="button" onclick="closeSubscriptionModal()" class="w-full sm:w-auto px-5 py-3.5 bg-[#181a24] hover:bg-[#202330] text-zinc-300 rounded-xl text-xs font-bold transition">
           إلغاء
