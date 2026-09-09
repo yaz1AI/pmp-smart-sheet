@@ -6,10 +6,75 @@
 class PaymentService {
   constructor() {
     this.STORAGE_KEY_CONFIG = "AI_PM_PAYMENT_CONFIG";
-    this.planPriceSAR = 174;
-    this.planPriceHalalas = 17400; // 174 SAR * 100
+    this.monthlyPriceSAR = 149;
+    this.yearlyPriceSAR = 1190;
+    this.billingCycle = "monthly"; // "monthly" | "yearly"
+    this.appliedCoupon = null;
     this.config = this.loadConfig();
     this.isLoaded = false;
+  }
+
+  getOriginalAmount() {
+    return this.billingCycle === "yearly" ? this.yearlyPriceSAR : this.monthlyPriceSAR;
+  }
+
+  getFinalAmount() {
+    if (this.appliedCoupon && typeof this.appliedCoupon.finalAmount === "number") {
+      return this.appliedCoupon.finalAmount;
+    }
+    return this.getOriginalAmount();
+  }
+
+  getFinalHalalas() {
+    return Math.round(this.getFinalAmount() * 100);
+  }
+
+  setBillingCycle(cycle) {
+    this.billingCycle = cycle === "yearly" ? "yearly" : "monthly";
+    if (this.appliedCoupon) {
+      // Recalculate discount based on new base amount
+      const code = this.appliedCoupon.code;
+      const res = window.authService?.validateCoupon(code, this.getOriginalAmount());
+      if (res && res.valid) {
+        this.appliedCoupon = res;
+      }
+    }
+    this.updateModalUI();
+  }
+
+  applyCoupon(code) {
+    if (!window.authService) return { valid: false, message: "خدمة الحسابات غير متاحة" };
+    const res = window.authService.validateCoupon(code, this.getOriginalAmount());
+    if (res.valid) {
+      this.appliedCoupon = res;
+      this.updateModalUI();
+    }
+    return res;
+  }
+
+  removeCoupon() {
+    this.appliedCoupon = null;
+    this.updateModalUI();
+  }
+
+  updateModalUI() {
+    // Update labels and amounts across modal
+    const finalAmt = this.getFinalAmount();
+    const origAmt = this.getOriginalAmount();
+    const isFree = finalAmt === 0;
+
+    const btnLabel = document.getElementById("sub-modal-btn-label");
+    if (btnLabel) {
+      if (isFree) {
+        btnLabel.innerText = "تفعيل الاشتراك المجاني فوراً 🎉 (0 ر.س)";
+      } else {
+        const cycleText = this.billingCycle === "yearly" ? "سنوياً" : "شهرياً";
+        btnLabel.innerText = `تأكيد ودفع ${finalAmt} ر.س (${cycleText}) / تفعيل الاشتراك الشامل فوراً`;
+      }
+    }
+
+    // Re-render payment inputs
+    this.renderPaymentUI();
   }
 
   loadConfig() {
@@ -77,6 +142,9 @@ class PaymentService {
    * Process payment verification with backend
    */
   async handlePaymentSuccess(paymentId, paymentMethod = "Mada") {
+    const finalAmount = this.getFinalAmount();
+    const cycleName = this.billingCycle === "yearly" ? "سنوي" : "شهري";
+
     try {
       // Call backend verification
       const res = await fetch("/api/payment/verify", {
@@ -84,7 +152,9 @@ class PaymentService {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           paymentId: paymentId,
-          amount: this.planPriceHalalas,
+          amount: this.getFinalHalalas(),
+          billingCycle: this.billingCycle,
+          coupon: this.appliedCoupon?.code || null,
           user: window.authService?.getCurrentUser()
         })
       });
@@ -92,21 +162,21 @@ class PaymentService {
       const data = await res.json().catch(() => ({ success: true }));
 
       if (data.success || res.ok) {
-        window.authService?.upgradePlan("pro", "monthly", paymentMethod);
+        window.authService?.upgradePlan("pro", this.billingCycle, paymentMethod, this.appliedCoupon);
         if (typeof renderUserBadge === "function") renderUserBadge();
         if (typeof closeSubscriptionModal === "function") closeSubscriptionModal();
 
-        alert(`🎉 تهانينا! تم استلام وتأكيد دفع (${this.planPriceSAR} ر.س) بنجاح!\n\nرقم العملية: ${paymentId || 'TXN-' + Date.now()}\nتم ترقية حسابك إلى الاشتراك الشامل (PRO UNLIMITED ⭐) وفتح جميع المشاريع غير المحدودة.`);
+        alert(`🎉 تهانينا! تم تفعيل الاشتراك بنجاح (${finalAmount} ر.س - باقة ${cycleName})!\n\nرقم العملية: ${paymentId || 'TXN-' + Date.now()}\nتم ترقية حسابك إلى الاشتراك الشامل (PRO UNLIMITED ⭐) وفتح جميع المشاريع غير المحدودة.`);
       } else {
         throw new Error(data.error || "فشل التحقق من العملية البنكية");
       }
     } catch (err) {
       console.error("Payment verification error:", err);
       // Fallback upgrade for client continuity
-      window.authService?.upgradePlan("pro", "monthly", paymentMethod);
+      window.authService?.upgradePlan("pro", this.billingCycle, paymentMethod, this.appliedCoupon);
       if (typeof renderUserBadge === "function") renderUserBadge();
       if (typeof closeSubscriptionModal === "function") closeSubscriptionModal();
-      alert(`🎉 تم تفعيل اشتراكك بنجاح في الباقة الشاملة (174 ر.س / شهرياً)!`);
+      alert(`🎉 تم تفعيل اشتراكك بنجاح في الباقة الشاملة (${finalAmount} ر.س / ${cycleName})!`);
     }
   }
 
@@ -118,7 +188,26 @@ class PaymentService {
     if (!container) return;
 
     const isLive = this.isLiveMode();
-    const pubKey = this.getPublishableKey();
+    const finalAmount = this.getFinalAmount();
+    const isFree = finalAmount === 0;
+
+    if (isFree) {
+      container.innerHTML = `
+        <div class="p-5 bg-gradient-to-r from-emerald-950/60 to-emerald-900/40 border-2 border-emerald-500/50 rounded-2xl text-center space-y-3 shadow-xl">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 text-2xl">
+            🎁
+          </div>
+          <div>
+            <h4 class="text-sm sm:text-base font-black text-emerald-300">تم تطبيق كود الخصم الكامل 100% بنجاح!</h4>
+            <p class="text-xs text-zinc-300 mt-1">المبلغ المطلوب للدفع: <span class="font-black text-emerald-400 font-mono text-sm">0.00 ر.س</span> — لا حاجة لإدخال بطاقة بنكية.</p>
+          </div>
+          <div class="text-[11px] text-zinc-400">
+            اضغط على الزر الأخضر بالأسفل لتفعيل باقة <span class="text-amber-300 font-bold">PRO UNLIMITED ⭐</span> فوراً على حسابك.
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     container.innerHTML = `
       <div class="space-y-4">
@@ -130,7 +219,10 @@ class PaymentService {
               ${isLive ? 'بوابة الدفع الحية المعتمدة (Moyasar Live)' : 'وضع الدفع التجريبي المعتمد (Sandbox Test Mode)'}
             </span>
           </div>
-          <span class="text-[10px] font-mono text-zinc-400">SAR 174.00</span>
+          <div class="text-right">
+            <span class="text-xs font-mono font-black ${this.appliedCoupon ? 'text-emerald-400' : 'text-zinc-200'}">SAR ${finalAmount.toFixed(2)}</span>
+            ${this.appliedCoupon ? `<span class="text-[10px] block text-zinc-500 line-through">SAR ${this.getOriginalAmount().toFixed(2)}</span>` : ''}
+          </div>
         </div>
 
         <!-- Quick Apple Pay Option -->
@@ -198,15 +290,23 @@ class PaymentService {
   }
 
   async processDirectCardPayment() {
-    const cardNum = document.getElementById("pay-card-number")?.value.replace(/\s+/g, '') || "";
-    const cardExp = document.getElementById("pay-card-exp")?.value || "";
-    const cardCvc = document.getElementById("pay-card-cvc")?.value || "";
-    const cardName = document.getElementById("pay-card-name")?.value || "";
-
     if (!window.authService?.isLoggedIn()) {
       alert("⚠️ يرجى تسجيل الدخول أو إدخال بريدك أولاً لتفعيل الاشتراك.");
       return;
     }
+
+    // Zero-amount bypass (e.g. 100% Free Coupon like FREE100 / VIP100)
+    if (this.getFinalAmount() === 0) {
+      const freeCouponCode = this.appliedCoupon?.code || "FREE100";
+      const txnId = `free_promo_${Date.now()}`;
+      await this.handlePaymentSuccess(txnId, `كود خصم مجاني 100% (${freeCouponCode})`);
+      return;
+    }
+
+    const cardNum = document.getElementById("pay-card-number")?.value.replace(/\s+/g, '') || "";
+    const cardExp = document.getElementById("pay-card-exp")?.value || "";
+    const cardCvc = document.getElementById("pay-card-cvc")?.value || "";
+    const cardName = document.getElementById("pay-card-name")?.value || "";
 
     if (this.isLiveMode()) {
       // In production with Moyasar Live Key:
@@ -224,9 +324,9 @@ class PaymentService {
             "Authorization": "Basic " + btoa(this.getPublishableKey() + ":")
           },
           body: JSON.stringify({
-            amount: this.planPriceHalalas,
+            amount: this.getFinalHalalas(),
             currency: "SAR",
-            description: "اشتراك باقة المحترفين الشاملة - YAZ AI Smart PM",
+            description: `اشتراك باقة المحترفين الشاملة (${this.billingCycle === 'yearly' ? 'سنوي' : 'شهري'}) - YAZ AI Smart PM`,
             callback_url: window.location.origin + "/index.html",
             source: {
               type: "creditcard",

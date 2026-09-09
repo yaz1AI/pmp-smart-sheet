@@ -28,8 +28,8 @@ const SUBSCRIPTION_PLANS = {
     name: "الاشتراك الشامل",
     nameEn: "All-Access Pro Plan",
     badge: "PRO UNLIMITED ⭐",
-    priceMonthly: 174,
-    priceYearly: 174,
+    priceMonthly: 149,
+    priceYearly: 1190,
     maxProjects: 9999,
     pdfExport: true,
     unlimitedCopilot: true,
@@ -47,6 +47,13 @@ const SUBSCRIPTION_PLANS = {
       "دعم فني هندسي مستمر 24/7"
     ]
   }
+};
+
+const COUPON_CODES = {
+  "PMP30": { code: "PMP30", type: "percentage", discount: 30, description: "خصم 30% لمدراء المشاريع" },
+  "YAZ30": { code: "YAZ30", type: "percentage", discount: 30, description: "خصم 30% لمدراء المشاريع" },
+  "FREE100": { code: "FREE100", type: "percentage", discount: 100, description: "اشتراك مجاني بالكامل 100% (VIP)" },
+  "VIP100": { code: "VIP100", type: "percentage", discount: 100, description: "اشتراك مجاني بالكامل 100% (VIP)" }
 };
 
 class AuthService {
@@ -135,19 +142,45 @@ class AuthService {
     return user;
   }
 
-  upgradePlan(planId = "pro", billingCycle = "monthly", paymentMethod = "Mada") {
+  validateCoupon(code, amount) {
+    if (!code) return { valid: false, message: "يرجى إدخال كود الخصم" };
+    const cleanCode = String(code).trim().toUpperCase();
+    const coupon = COUPON_CODES[cleanCode];
+    if (!coupon) {
+      return { valid: false, message: "❌ كود الخصم غير صالح أو منتهي الصلاحية" };
+    }
+    const currentAmt = parseFloat(amount) || 0;
+    const discountAmount = Math.round(((currentAmt * coupon.discount) / 100) * 100) / 100;
+    const finalAmount = Math.max(0, Math.round((currentAmt - discountAmount) * 100) / 100);
+    return {
+      valid: true,
+      coupon,
+      code: cleanCode,
+      discountPercent: coupon.discount,
+      discountAmount,
+      finalAmount,
+      isFree: finalAmount === 0,
+      message: `🎉 تم تطبيق كود (${cleanCode}): ${coupon.description} (${coupon.discount}%)`
+    };
+  }
+
+  upgradePlan(planId = "pro", billingCycle = "monthly", paymentMethod = "Mada", couponInfo = null) {
     if (!this.currentUser) {
-      throw new Error("يرجى تسجيل الدخول أولاً للترقية");
+      // Auto register temporary or guest user session if needed
+      const guestEmail = "engineer_" + Math.floor(1000 + Math.random() * 9000) + "@pmp-user.com";
+      this.login(guestEmail);
     }
 
     const plan = SUBSCRIPTION_PLANS[planId] || SUBSCRIPTION_PLANS.pro;
+    const isYearly = billingCycle === "yearly";
+    const days = isYearly ? 365 : 30;
 
-    const days = 30; // Monthly billing
     this.currentUser.planId = plan.id;
     this.currentUser.plan = plan.name;
     this.currentUser.planBadge = plan.badge;
-    this.currentUser.billingCycle = "monthly";
+    this.currentUser.billingCycle = isYearly ? "yearly" : "monthly";
     this.currentUser.paymentMethod = paymentMethod;
+    this.currentUser.appliedCoupon = couponInfo ? couponInfo.code : null;
     this.currentUser.subscriptionStatus = "active";
     this.currentUser.subscribedAt = new Date().toISOString();
     this.currentUser.expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();

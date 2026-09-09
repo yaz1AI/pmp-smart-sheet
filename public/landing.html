@@ -209,6 +209,17 @@
         <p class="text-xs sm:text-sm text-zinc-400">جرب مشروعك الأول مجاناً بالكامل، وعندما ترغب في إضافة مشاريع غير محدودة، اشترك في باقة المحترفين الشاملة.</p>
       </div>
 
+      <!-- Billing Cycle Switch (Monthly vs Yearly) -->
+      <div class="flex items-center justify-center p-1.5 bg-[#12141c] border border-[#242736] rounded-2xl max-w-sm mx-auto">
+        <button type="button" id="landing-toggle-monthly" onclick="toggleLandingBilling('monthly')" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md">
+          شهرياً (149 ر.س)
+        </button>
+        <button type="button" id="landing-toggle-yearly" onclick="toggleLandingBilling('yearly')" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition text-zinc-400 hover:text-white flex items-center justify-center gap-1.5">
+          <span>سنوياً (1,190 ر.س)</span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/30">وفر 35%</span>
+        </button>
+      </div>
+
       <!-- Pricing Cards Grid (2 Columns: Free Trial & All-Access Plan) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch text-right max-w-4xl mx-auto">
         
@@ -277,10 +288,10 @@
 
             <div class="pt-2">
               <div class="flex items-baseline gap-1">
-                <span class="text-3xl sm:text-4xl font-black text-amber-300">174</span>
-                <span class="text-xs text-zinc-300 font-bold">ر.س / شهرياً</span>
+                <span id="landing-pro-price" class="text-3xl sm:text-4xl font-black text-amber-300">149</span>
+                <span id="landing-pro-period" class="text-xs text-zinc-300 font-bold">ر.س / شهرياً</span>
               </div>
-              <p class="text-[11px] text-zinc-400 mt-1">اشتراك شهري مرن — بدون التزامات، يمكنك الإلغاء بأي وقت</p>
+              <p id="landing-pro-note" class="text-[11px] text-zinc-400 mt-1">اشتراك شهري مرن — بدون التزامات، يمكنك الإلغاء بأي وقت</p>
             </div>
 
             <div class="pt-4 border-t border-amber-400/20 space-y-3 text-xs text-zinc-200">
@@ -313,7 +324,7 @@
 
           <div class="pt-6">
             <button onclick="openRegisterModal('register', 'pro')" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2">
-              <span>🚀</span> <span>اشترك الآن في الباقة الشاملة (174 ر.س/شهرياً)</span>
+              <span>🚀</span> <span id="landing-pro-btn-text">اشترك الآن في الباقة الشاملة (149 ر.س/شهرياً)</span>
             </button>
           </div>
         </div>
@@ -428,6 +439,42 @@
     }
 
     let selectedRegisterPlan = "free";
+    let landingBillingCycle = "monthly";
+
+    function toggleLandingBilling(cycle) {
+      landingBillingCycle = cycle;
+      const isYearly = cycle === 'yearly';
+      const priceEl = document.getElementById('landing-pro-price');
+      const periodEl = document.getElementById('landing-pro-period');
+      const noteEl = document.getElementById('landing-pro-note');
+      const btnEl = document.getElementById('landing-pro-btn-text');
+      const mBtn = document.getElementById('landing-toggle-monthly');
+      const yBtn = document.getElementById('landing-toggle-yearly');
+
+      if (isYearly) {
+        if (priceEl) priceEl.innerText = '1,190';
+        if (periodEl) periodEl.innerText = 'ر.س / سنوياً';
+        if (noteEl) noteEl.innerText = 'يعادل 99 ر.س فقط شهرياً — توفير شهرين ونصف مجاناً!';
+        if (btnEl) btnEl.innerText = 'اشترك الآن في الباقة الشاملة (1,190 ر.س/سنوياً)';
+        if (yBtn) {
+          yBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md flex items-center justify-center gap-1.5';
+        }
+        if (mBtn) {
+          mBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition text-zinc-400 hover:text-white';
+        }
+      } else {
+        if (priceEl) priceEl.innerText = '149';
+        if (periodEl) periodEl.innerText = 'ر.س / شهرياً';
+        if (noteEl) noteEl.innerText = 'اشتراك شهري مرن — بدون التزامات، يمكنك الإلغاء بأي وقت';
+        if (btnEl) btnEl.innerText = 'اشترك الآن في الباقة الشاملة (149 ر.س/شهرياً)';
+        if (mBtn) {
+          mBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md';
+        }
+        if (yBtn) {
+          yBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition text-zinc-400 hover:text-white flex items-center justify-center gap-1.5';
+        }
+      }
+    }
 
     function openRegisterModal(mode = 'register', planId = 'free') {
       selectedRegisterPlan = planId;

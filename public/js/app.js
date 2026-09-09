@@ -145,7 +145,7 @@ function renderUserBadge() {
   }
 }
 
-// Subscription Modal Controller (Unified 174 SAR All-Access Plan)
+// Subscription Modal Controller (Unified All-Access Plan with Monthly/Yearly & Promo Codes)
 function openSubscriptionModal() {
   const modal = document.getElementById("subscription-modal");
   if (!modal) return;
@@ -158,7 +158,7 @@ function openSubscriptionModal() {
     currentBadgeEl.className = `text-[10px] px-2.5 py-0.5 rounded-full ${isPro ? 'bg-amber-400/10 text-amber-300 border-amber-400/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'} font-black border`;
   }
 
-  window.paymentService?.renderPaymentUI("payment-checkout-container");
+  setSubscriptionCycle(window.paymentService?.billingCycle || 'monthly');
   modal.classList.remove("hidden");
 }
 
@@ -167,15 +167,118 @@ function closeSubscriptionModal() {
   if (modal) modal.classList.add("hidden");
 }
 
+function setSubscriptionCycle(cycle) {
+  const isYearly = cycle === "yearly";
+  const monthlyBtn = document.getElementById("sub-cycle-monthly-btn");
+  const yearlyBtn = document.getElementById("sub-cycle-yearly-btn");
+  const priceDisplay = document.getElementById("sub-modal-price-display");
+  const periodDisplay = document.getElementById("sub-modal-period-display");
+  const periodNote = document.getElementById("sub-modal-period-note");
+
+  if (monthlyBtn && yearlyBtn) {
+    if (isYearly) {
+      yearlyBtn.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md flex items-center justify-center gap-1.5";
+      monthlyBtn.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition text-zinc-400 hover:text-white";
+      if (priceDisplay) priceDisplay.innerText = "1,190";
+      if (periodDisplay) periodDisplay.innerText = "ر.س / سنوياً";
+      if (periodNote) periodNote.innerText = "يعادل 99 ر.س فقط شهرياً — توفير شهرين ونصف مجاناً!";
+    } else {
+      monthlyBtn.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md";
+      yearlyBtn.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition text-zinc-400 hover:text-white flex items-center justify-center gap-1.5";
+      if (priceDisplay) priceDisplay.innerText = "149";
+      if (periodDisplay) periodDisplay.innerText = "ر.س / شهرياً";
+      if (periodNote) periodNote.innerText = "تجدد شهرياً — يمكنك الإلغاء بأي وقت";
+    }
+  }
+
+  window.paymentService?.setBillingCycle(cycle);
+  updateSubscriptionBreakdownUI();
+}
+
+function applySubscriptionCoupon() {
+  const input = document.getElementById("coupon-code-input");
+  const code = input ? input.value.trim() : "";
+  const statusContainer = document.getElementById("coupon-status-container");
+
+  if (!code) {
+    if (statusContainer) {
+      statusContainer.innerHTML = `<div class="p-2.5 bg-amber-950/40 border border-amber-500/40 rounded-xl text-xs text-amber-300 font-bold">⚠️ يرجى كتابة رمز الكود أولاً (مثال: PMP30 أو FREE100).</div>`;
+      statusContainer.classList.remove("hidden");
+    }
+    return;
+  }
+
+  const res = window.paymentService?.applyCoupon(code);
+  if (!res || !res.valid) {
+    if (statusContainer) {
+      statusContainer.innerHTML = `<div class="p-2.5 bg-red-950/40 border border-red-500/40 rounded-xl text-xs text-red-300 font-bold">${res?.message || "❌ كود الخصم غير صالح أو منتهي الصلاحية."}</div>`;
+      statusContainer.classList.remove("hidden");
+    }
+    return;
+  }
+
+  updateSubscriptionBreakdownUI();
+}
+
+function removeSubscriptionCoupon() {
+  window.paymentService?.removeCoupon();
+  const input = document.getElementById("coupon-code-input");
+  if (input) input.value = "";
+  const statusContainer = document.getElementById("coupon-status-container");
+  if (statusContainer) {
+    statusContainer.innerHTML = "";
+    statusContainer.classList.add("hidden");
+  }
+  updateSubscriptionBreakdownUI();
+}
+
+function updateSubscriptionBreakdownUI() {
+  const statusContainer = document.getElementById("coupon-status-container");
+  const ps = window.paymentService;
+  if (!ps || !statusContainer) return;
+
+  const coupon = ps.appliedCoupon;
+  if (!coupon) {
+    statusContainer.innerHTML = "";
+    statusContainer.classList.add("hidden");
+    return;
+  }
+
+  const orig = ps.getOriginalAmount();
+  const disc = coupon.discountAmount;
+  const finalAmt = ps.getFinalAmount();
+  const isFree = finalAmt === 0;
+
+  statusContainer.classList.remove("hidden");
+  statusContainer.innerHTML = `
+    <div class="p-3 bg-gradient-to-r from-emerald-950/50 to-emerald-900/30 border border-emerald-500/40 rounded-xl space-y-2 text-xs">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5 font-black text-emerald-300">
+          <span>✅</span> <span>${coupon.message}</span>
+        </div>
+        <button type="button" onclick="removeSubscriptionCoupon()" class="text-[10px] text-zinc-400 hover:text-red-300 underline font-bold">إلغاء الكود</button>
+      </div>
+      <div class="flex items-center justify-between pt-1 border-t border-emerald-500/20 text-[11px] text-zinc-300">
+        <span>السعر الأساسي: <span class="line-through font-mono text-zinc-400">${orig} ر.س</span></span>
+        <span class="text-emerald-400 font-bold">وفرت: -${disc} ر.س (${coupon.discountPercent}%)</span>
+        <span class="font-black text-white text-xs">المطلوب: <span class="text-amber-300 font-mono font-black">${isFree ? '0.00 ر.س (مجاني 🎉)' : finalAmt + ' ر.س'}</span></span>
+      </div>
+    </div>
+  `;
+}
+
 function handleConfirmSubscription() {
-  const selectedPayment = document.querySelector('input[name="sub-payment-method"]:checked')?.value || "Mada";
+  const ps = window.paymentService;
+  const cycle = ps?.billingCycle || "monthly";
+  const finalAmt = ps?.getFinalAmount() ?? 149;
+  const coupon = ps?.appliedCoupon;
 
   try {
-    window.authService?.upgradePlan("pro", "monthly", selectedPayment);
+    window.authService?.upgradePlan("pro", cycle, "Mada", coupon);
     renderUserBadge();
     closeSubscriptionModal();
 
-    alert("🎉 تهانينا! تم تفعيل الاشتراك الشامل بنجاح (174 ر.س / شهرياً).\n\nأصبح بإمكانك الآن إضافة مشاريع هندسية غير محدودة واستخدام كافة ميزات المنظومة والذكاء الاصطناعي بلا قيود!");
+    alert(`🎉 تهانينا! تم تفعيل الاشتراك الشامل بنجاح (${finalAmt} ر.س / ${cycle === 'yearly' ? 'سنوياً' : 'شهرياً'}).\n\nأصبح بإمكانك الآن إضافة مشاريع هندسية غير محدودة واستخدام كافة ميزات المنظومة والذكاء الاصطناعي بلا قيود!`);
   } catch (err) {
     alert("⚠️ " + err.message);
   }
