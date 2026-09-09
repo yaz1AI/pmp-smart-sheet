@@ -1,4 +1,4 @@
-﻿/**
+/**
  * YAZ AI - Executive PDF Report Exporter (Arabic Native High-Fidelity Engine)
  * يقوم بتوليد تقرير تنفيذي هندسي رسمي متناسق تماماً مع الخطوط العربية ومعايير الطباعة A4
  */
@@ -221,15 +221,17 @@ class PMPdfExporter {
             🚢 التوريدات الحرجة طويلة الأجل (Critical Procurement Items)
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #cbd5e1;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #cbd5e1;">
             <thead style="background: #1e293b; color: #ffffff;">
               <tr>
                 <th style="padding: 4px; text-align: right;">البند والمادة المطلوبة</th>
-                <th style="padding: 4px; text-align: center;">تاريخ التقديم</th>
-                <th style="padding: 4px; text-align: center;">حالة الاعتماد</th>
-                <th style="padding: 4px; text-align: center;">مدة التوريد</th>
+                <th style="padding: 4px; text-align: center;">تقديم الاعتماد</th>
+                <th style="padding: 4px; text-align: center;">كود الاعتماد</th>
                 <th style="padding: 4px; text-align: center;">المطلوب بالموقع</th>
-                <th style="padding: 4px; text-align: center;">أمر الشراء (PO)</th>
+                <th style="padding: 4px; text-align: center;">طلب PO</th>
+                <th style="padding: 4px; text-align: center;">اعتماد PO</th>
+                <th style="padding: 4px; text-align: center;">إصدار PO</th>
+                <th style="padding: 4px; text-align: center;">حالة أمر الشراء (PO)</th>
               </tr>
             </thead>
             <tbody>
@@ -238,9 +240,11 @@ class PMPdfExporter {
                   <td style="padding: 4px 6px; font-weight: 700; color: #0f172a;">${m.item}</td>
                   <td style="padding: 4px; text-align: center; color: #64748b;">${m.submissionDate || '-'}</td>
                   <td style="padding: 4px; text-align: center;"><strong style="color: ${m.status === 'A' ? '#059669' : m.status === 'B' ? '#d97706' : '#dc2626'};">Code ${m.status || 'B'}</strong></td>
-                  <td style="padding: 4px; text-align: center; font-weight: 700; color: #b45309;">${m.leadTime || '8-12 أسبوع'} ⚠️</td>
                   <td style="padding: 4px; text-align: center; font-weight: 800; color: #0f172a;">${m.requiredSite || '-'}</td>
-                  <td style="padding: 4px; text-align: center; color: #475569;">${m.poStatus || 'Planned'}</td>
+                  <td style="padding: 4px; text-align: center; color: #1e40af; font-family: monospace;">${m.poRequestDate || '-'}</td>
+                  <td style="padding: 4px; text-align: center; color: #b45309; font-family: monospace;">${m.poApprovalDate || '-'}</td>
+                  <td style="padding: 4px; text-align: center; color: #047857; font-family: monospace; font-weight: 700;">${m.poIssuanceDate || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: 700; color: ${m.poStatus === 'Issued' || m.poStatus === 'Delivered to Site' ? '#059669' : m.poStatus === 'Pending Approval' ? '#d97706' : '#dc2626'};">${m.poStatus || 'Planned'}</td>
                 </tr>
               `).join('')}
             </tbody>

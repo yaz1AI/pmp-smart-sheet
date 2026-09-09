@@ -702,14 +702,64 @@ function renderGridView() {
   }).join('');
 }
 
-// 10. MTS View
+// 10. MTS View (Approvals & Procurement Register with Full PO Tracking)
 function renderMTSView() {
   const tbody = document.getElementById("mts-table-body");
+  const kpiContainer = document.getElementById("mts-kpi-summary");
   if (!tbody || !currentProject) return;
 
   const items = currentProject.materialSubmittals || [];
+
+  // Render KPI summary bar
+  if (kpiContainer) {
+    const totalItems = items.length;
+    const issuedCount = items.filter(m => m.poStatus === 'Issued' || m.poStatus === 'Delivered to Site').length;
+    const pendingApprovalCount = items.filter(m => m.poStatus === 'Pending Approval' || m.poStatus === 'Pending PO').length;
+    const revisionCount = items.filter(m => m.poStatus === 'Pending Revision' || m.poStatus === 'Under Resubmission').length;
+    const criticalCount = items.filter(m => m.critical || (m.leadTime || '').includes('8-12')).length;
+    const cycleCompletionRate = totalItems > 0 ? Math.round((issuedCount / totalItems) * 100) : 0;
+
+    kpiContainer.innerHTML = `
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-zinc-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-bold text-zinc-500">إجمالي المواد والاعتمادات</div>
+          <div class="text-xl sm:text-2xl font-black text-zinc-900 mt-1">${totalItems} <span class="text-xs font-normal text-zinc-400">بند</span></div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg">📦</div>
+      </div>
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-emerald-200/80 shadow-sm flex items-center justify-between bg-emerald-50/20">
+        <div>
+          <div class="text-[11px] font-bold text-emerald-800">أوامر شراء صادرة (Issued)</div>
+          <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1">${issuedCount} <span class="text-xs font-normal text-emerald-700">أمر</span></div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center text-lg">✅</div>
+      </div>
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-amber-200/80 shadow-sm flex items-center justify-between bg-amber-50/20">
+        <div>
+          <div class="text-[11px] font-bold text-amber-800">قيد الاعتماد الداخلي</div>
+          <div class="text-xl sm:text-2xl font-black text-amber-600 mt-1">${pendingApprovalCount} <span class="text-xs font-normal text-amber-700">بند</span></div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-amber-100/70 text-amber-700 flex items-center justify-center text-lg">⏳</div>
+      </div>
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-rose-200/80 shadow-sm flex items-center justify-between bg-rose-50/20">
+        <div>
+          <div class="text-[11px] font-bold text-rose-800">بانتظار المراجعة والتعديل</div>
+          <div class="text-xl sm:text-2xl font-black text-rose-600 mt-1">${revisionCount} <span class="text-xs font-normal text-rose-700">بند</span></div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-rose-100/70 text-rose-700 flex items-center justify-center text-lg">⚠️</div>
+      </div>
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-cyan-200/80 shadow-sm flex items-center justify-between bg-cyan-50/20 col-span-2 sm:col-span-4 lg:col-span-1">
+        <div>
+          <div class="text-[11px] font-bold text-cyan-800">اكتمال دورة التوريد</div>
+          <div class="text-xl sm:text-2xl font-black text-cyan-600 mt-1">${cycleCompletionRate}% <span class="text-xs font-normal text-cyan-700">منجز</span></div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-cyan-100/70 text-cyan-700 flex items-center justify-center text-lg">🎯</div>
+      </div>
+    `;
+  }
+
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-xs text-zinc-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="text-center py-8 text-xs text-zinc-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
     return;
   }
 
@@ -717,21 +767,76 @@ function renderMTSView() {
     const codeClass = m.status === 'A' ? 'code-a' : m.status === 'B' ? 'code-b' : 'code-c';
     const isLongLead = (m.leadTime || '').includes('8-12');
 
+    // PO Status styling badge
+    let poBadgeClass = 'bg-zinc-100 text-zinc-700 border-zinc-200';
+    let poIcon = '📄';
+    if (m.poStatus === 'Issued') {
+      poBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold';
+      poIcon = '✅';
+    } else if (m.poStatus === 'Delivered to Site') {
+      poBadgeClass = 'bg-teal-50 text-teal-800 border-teal-300 font-bold';
+      poIcon = '🚚';
+    } else if (m.poStatus === 'Pending Approval' || m.poStatus === 'Pending PO') {
+      poBadgeClass = 'bg-amber-50 text-amber-700 border-amber-300 font-semibold';
+      poIcon = '⏳';
+    } else if (m.poStatus === 'Pending Revision') {
+      poBadgeClass = 'bg-rose-50 text-rose-700 border-rose-300 font-semibold';
+      poIcon = '❌';
+    } else if (m.poStatus === 'Under Resubmission') {
+      poBadgeClass = 'bg-orange-50 text-orange-700 border-orange-300 font-semibold';
+      poIcon = '🔄';
+    }
+
+    // Mini Cycle status visual
+    const hasRequest = m.poRequestDate && m.poRequestDate !== '-';
+    const hasApproval = m.poApprovalDate && m.poApprovalDate !== '-';
+    const hasIssuance = m.poIssuanceDate && m.poIssuanceDate !== '-';
+
     return `
-      <tr>
-        <td class="text-center font-bold text-xs text-zinc-400">${m.sn || 1}</td>
-        <td class="font-bold text-xs text-zinc-950">${m.item}</td>
-        <td class="font-mono text-xs whitespace-nowrap">${m.submissionDate || '-'}</td>
-        <td class="text-center"><span class="px-2 py-0.5 rounded text-xs font-bold ${codeClass}">Code ${m.status || 'B'}</span></td>
-        <td class="text-xs font-medium text-zinc-700">${m.codeName || 'Under Review'}</td>
-        <td>
+      <tr class="hover:bg-zinc-50/80 transition-colors border-b border-zinc-100">
+        <td class="text-center font-bold text-xs text-zinc-400 py-2.5 px-2">${m.sn || 1}</td>
+        <td class="py-2.5 px-3 min-w-[220px]">
+          <div class="font-bold text-xs text-zinc-950">${m.item}</div>
+          <div class="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-1 font-mono">
+            <span class="${hasRequest ? 'text-blue-600 font-semibold' : 'text-zinc-300'}">طلب</span>
+            <span class="text-zinc-300">➔</span>
+            <span class="${hasApproval ? 'text-amber-600 font-semibold' : 'text-zinc-300'}">اعتماد</span>
+            <span class="text-zinc-300">➔</span>
+            <span class="${hasIssuance ? 'text-emerald-600 font-bold' : 'text-zinc-300'}">إصدار</span>
+          </div>
+        </td>
+        <td class="font-mono text-xs whitespace-nowrap text-center py-2.5 px-2.5 text-zinc-600">${m.submissionDate || '-'}</td>
+        <td class="text-center py-2.5 px-2"><span class="px-2 py-0.5 rounded text-xs font-bold ${codeClass}">Code ${m.status || 'B'}</span></td>
+        <td class="text-xs font-medium text-zinc-700 py-2.5 px-2.5 whitespace-nowrap">${m.codeName || 'Under Review'}</td>
+        <td class="py-2.5 px-2.5 whitespace-nowrap">
           <span class="text-xs px-2 py-0.5 rounded font-bold ${isLongLead ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-zinc-100 text-zinc-700'}">
             ${m.leadTime || 'Standard'} ${isLongLead ? '⚠️' : ''}
           </span>
         </td>
-        <td class="font-mono text-xs font-bold text-zinc-950 whitespace-nowrap">${m.requiredSite || '-'}</td>
-        <td><span class="text-xs px-2 py-0.5 rounded font-semibold bg-zinc-100 text-zinc-800">${m.poStatus || 'Planned'}</span></td>
-        <td class="text-center font-bold text-xs">${m.critical ? '🚨 حرج' : 'عادي'}</td>
+        <td class="font-mono text-xs font-bold text-zinc-950 whitespace-nowrap text-center py-2.5 px-2.5">${m.requiredSite || '-'}</td>
+        
+        <!-- PO Lifecycle Columns -->
+        <td class="font-mono text-xs text-center py-2.5 px-2.5 bg-blue-50/30 border-x border-blue-50 whitespace-nowrap text-zinc-700">
+          ${m.poRequestDate && m.poRequestDate !== '-' ? `<span class="text-blue-700 font-semibold">${m.poRequestDate}</span>` : '<span class="text-zinc-300">-</span>'}
+        </td>
+        <td class="font-mono text-xs text-center py-2.5 px-2.5 bg-blue-50/30 border-x border-blue-50 whitespace-nowrap text-zinc-700">
+          ${m.poApprovalDate && m.poApprovalDate !== '-' ? `<span class="text-amber-700 font-semibold">${m.poApprovalDate}</span>` : '<span class="text-zinc-300">-</span>'}
+        </td>
+        <td class="font-mono text-xs text-center py-2.5 px-2.5 bg-blue-50/30 border-x border-blue-50 whitespace-nowrap text-zinc-700">
+          ${m.poIssuanceDate && m.poIssuanceDate !== '-' ? `<span class="text-emerald-700 font-bold">${m.poIssuanceDate}</span>` : '<span class="text-zinc-300">-</span>'}
+        </td>
+        <td class="font-mono text-xs text-center py-2.5 px-2.5 bg-zinc-50/50 whitespace-nowrap text-zinc-600">
+          ${m.poStatusDate && m.poStatusDate !== '-' ? m.poStatusDate : '-'}
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full border ${poBadgeClass}">
+            <span>${poIcon}</span>
+            <span>${m.poStatus || 'Planned'}</span>
+          </span>
+        </td>
+        <td class="text-center font-bold text-xs py-2.5 px-2">
+          ${m.critical ? '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🚨 حرج</span>' : '<span class="text-zinc-400 font-normal">عادي</span>'}
+        </td>
       </tr>
     `;
   }).join('');

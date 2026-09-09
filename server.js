@@ -286,7 +286,7 @@ async function callGeminiAI(documentText, apiKey) {
     { "id": "M-01", "name": "اسم المعلم الرئيسي", "startDate": "YYYY-MM-DD", "finishDate": "YYYY-MM-DD", "weight": "15%", "status": "In Progress", "owner": "الدور المسؤول" }
   ],
   "materialSubmittals": [
-    { "sn": 1, "item": "اسم المادة أو الاعتماد من جدول الكميات BOQ", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poStatus": "Pending PO", "critical": true }
+    { "sn": 1, "item": "اسم المادة أو الاعتماد من جدول الكميات BOQ", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "critical": true }
   ],
   "actionItems": [
     { "id": "ACT-01", "task": "Task in English", "taskAr": "المهمة بالعربية", "owner": "المسؤول", "targetDate": "YYYY-MM-DD", "status": "Open", "priority": "High" }
@@ -435,7 +435,11 @@ function parseProjectTextHeuristically(text, filename) {
         codeName: "Approved as Noted",
         leadTime: "8-12 weeks",
         requiredSite: midStr,
-        poStatus: "Pending PO",
+        poRequestDate: todayStr,
+        poApprovalDate: midStr,
+        poIssuanceDate: midStr,
+        poStatusDate: midStr,
+        poStatus: "Issued",
         critical: true
       });
     }
@@ -444,8 +448,8 @@ function parseProjectTextHeuristically(text, filename) {
   // If no materials detected, add standard project submittals
   if (materialSubmittals.length === 0) {
     materialSubmittals.push(
-      { sn: 1, item: `اعتماد المخططات والمواصفات لـ (${cleanName})`, submissionDate: todayStr, status: "A", codeName: "Approved", leadTime: "2-4 weeks", requiredSite: midStr, poStatus: "Issued", critical: false },
-      { sn: 2, item: `توريدات المواد الرئيسية ذات الفترات الحرجة (Long Lead Items)`, submissionDate: todayStr, status: "B", codeName: "Approved as Noted", leadTime: "8-12 weeks", requiredSite: midStr, poStatus: "Pending PO", critical: true }
+      { sn: 1, item: `اعتماد المخططات والمواصفات لـ (${cleanName})`, submissionDate: todayStr, status: "A", codeName: "Approved", leadTime: "2-4 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: midStr, poIssuanceDate: midStr, poStatusDate: midStr, poStatus: "Issued", critical: false },
+      { sn: 2, item: `توريدات المواد الرئيسية ذات الفترات الحرجة (Long Lead Items)`, submissionDate: todayStr, status: "B", codeName: "Approved as Noted", leadTime: "8-12 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: "-", poIssuanceDate: "-", poStatusDate: todayStr, poStatus: "Pending Approval", critical: true }
     );
   }
 

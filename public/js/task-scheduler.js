@@ -114,6 +114,22 @@ class PMTaskScheduler {
           });
         }
 
+        if (mts.poIssuanceDate && mts.poIssuanceDate !== '-') {
+          dailyTasks.push({
+            date: mts.poIssuanceDate,
+            phase: "Engineering & Procurement",
+            category: "Purchase Order (PO)",
+            titleAr: `إصدار وتعميد أمر الشراء الرسمي (PO) لمادة/نظام: ${mts.item}`,
+            titleEn: `Issue Official PO & Sign Supplier Contract for: ${mts.item}`,
+            owner: "Procurement Manager",
+            facility: "Head Office / Procurement",
+            priority: mts.critical ? "Critical" : "High",
+            status: mts.poStatus === 'Issued' || mts.poStatus === 'Delivered to Site' ? 'Completed' : 'In Progress',
+            deliverable: `Issued PO Copy & Confirmed Delivery Schedule`,
+            progress: mts.poStatus === 'Issued' || mts.poStatus === 'Delivered to Site' ? 100 : 50
+          });
+        }
+
         if (mts.requiredSite) {
           dailyTasks.push({
             date: mts.requiredSite,
@@ -423,18 +439,49 @@ class PMTaskScheduler {
       owner: m.owner
     }));
 
-    // Generate Material Submittals
-    const materialSubmittals = selectedPreset.submittals.map((s, idx) => ({
-      sn: idx + 1,
-      item: s.item,
-      submissionDate: calcDate(s.subRatio),
-      status: s.code,
-      codeName: s.statusName,
-      leadTime: s.lead,
-      requiredSite: calcDate(s.siteRatio),
-      poStatus: idx === 0 ? "Issued" : "Pending PO",
-      critical: s.critical
-    }));
+    // Generate Material Submittals with Full PO Lifecycle Timeline
+    const materialSubmittals = selectedPreset.submittals.map((s, idx) => {
+      const isApproved = s.code === 'A' || s.code === 'B';
+      const isIssued = isApproved && (idx < 2);
+      const isPendingApproval = isApproved && !isIssued;
+
+      // Realistic PO dates
+      const poRequestDate = calcDate(Math.min(s.siteRatio - 0.12, s.subRatio + 0.04));
+      let poApprovalDate = "-";
+      let poIssuanceDate = "-";
+      let poStatusDate = poRequestDate;
+      let poStatus = "Pending Approval";
+
+      if (isIssued) {
+        poApprovalDate = calcDate(Math.min(s.siteRatio - 0.08, s.subRatio + 0.08));
+        poIssuanceDate = calcDate(Math.min(s.siteRatio - 0.05, s.subRatio + 0.11));
+        poStatusDate = poIssuanceDate;
+        poStatus = "Issued";
+      } else if (isPendingApproval) {
+        poApprovalDate = calcDate(Math.min(s.siteRatio - 0.05, s.subRatio + 0.08));
+        poStatusDate = poApprovalDate;
+        poStatus = "Pending Approval";
+      } else if (s.code === 'C') {
+        poStatusDate = calcDate(s.subRatio + 0.05);
+        poStatus = "Pending Revision";
+      }
+
+      return {
+        sn: idx + 1,
+        item: s.item,
+        submissionDate: calcDate(s.subRatio),
+        status: s.code,
+        codeName: s.statusName,
+        leadTime: s.lead,
+        requiredSite: calcDate(s.siteRatio),
+        poRequestDate,
+        poApprovalDate,
+        poIssuanceDate,
+        poStatusDate,
+        poStatus,
+        critical: s.critical
+      };
+    });
 
     // Generate Daily Tasks
     const dailyTasks = [];

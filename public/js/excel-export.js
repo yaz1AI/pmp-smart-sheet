@@ -107,8 +107,22 @@ class PMExcelExporter {
     wsMilestones['!cols'] = [{ wch: 12 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsMilestones, "Milestones_المعالم");
 
-    // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات)
-    const mtsHeaders = ["م", "اسم المادة / النظام (Material Submittal)", "تاريخ التقديم", "كود الاعتماد", "وصف الحالة", "فترة التوريد (Lead Time)", "مطلوب بالموقع (Required Site)", "حالة أمر الشراء (PO)", "حرج (Critical)"];
+    // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات وتتبع دورة أوامر الشراء)
+    const mtsHeaders = [
+      "م", 
+      "اسم المادة / النظام (Material Submittal)", 
+      "تاريخ تقديم الاعتماد", 
+      "كود الاعتماد", 
+      "وصف الاعتماد", 
+      "فترة التوريد (Lead Time)", 
+      "مطلوب بالموقع (Required Site)", 
+      "تاريخ طلب PO (PO Request Date)",
+      "تاريخ اعتماد PO (PO Approval Date)",
+      "تاريخ إصدار PO (PO Issuance Date)",
+      "تاريخ الحالة (Status Date)",
+      "حالة أمر الشراء (PO Status)", 
+      "حرج (Critical)"
+    ];
     const mtsRows = (projectData.materialSubmittals || []).map(m => [
       m.sn,
       m.item,
@@ -117,11 +131,29 @@ class PMExcelExporter {
       m.codeName,
       m.leadTime,
       m.requiredSite,
-      m.poStatus,
+      m.poRequestDate || "-",
+      m.poApprovalDate || "-",
+      m.poIssuanceDate || "-",
+      m.poStatusDate || "-",
+      m.poStatus || "Planned",
       m.critical ? "نعم (حرج)" : "عادي"
     ]);
     const wsMTS = XLSX.utils.aoa_to_sheet([mtsHeaders, ...mtsRows]);
-    wsMTS['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 15 }, { wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 12 }];
+    wsMTS['!cols'] = [
+      { wch: 5 },  // م
+      { wch: 45 }, // اسم المادة
+      { wch: 18 }, // تاريخ التقديم
+      { wch: 12 }, // كود الاعتماد
+      { wch: 22 }, // وصف الاعتماد
+      { wch: 22 }, // فترة التوريد
+      { wch: 20 }, // مطلوب بالموقع
+      { wch: 22 }, // طلب PO
+      { wch: 22 }, // اعتماد PO
+      { wch: 22 }, // إصدار PO
+      { wch: 18 }, // تاريخ الحالة
+      { wch: 22 }, // حالة أمر الشراء
+      { wch: 14 }  // حرج
+    ];
     XLSX.utils.book_append_sheet(wb, wsMTS, "MTS_Procurement_المشتريات");
 
     // 5. Action Items Tab (بنود الإجراءات المعلقة)

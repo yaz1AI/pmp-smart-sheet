@@ -89,7 +89,7 @@ function callGeminiForProject(docText, apiKey) {
     { "id": "M-01", "name": "اسم المعلم", "startDate": "YYYY-MM-DD", "finishDate": "YYYY-MM-DD", "weight": "10%", "status": "In Progress", "owner": "Project Manager" }
   ],
   "materialSubmittals": [
-    { "sn": 1, "item": "اسم المادة", "submissionDate": "YYYY-MM-DD", "status": "B", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poStatus": "Pending PO" }
+    { "sn": 1, "item": "اسم المادة", "submissionDate": "YYYY-MM-DD", "status": "B", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued" }
   ],
   "actionItems": [
     { "id": "ACT-01", "task": "المهمة", "owner": "المسؤول", "targetDate": "YYYY-MM-DD", "status": "Open", "priority": "High" }
@@ -176,12 +176,13 @@ function buildCompleteProjectSheet(data) {
     mtsSheet.clear();
     mtsSheet.setRightToLeft(true);
     
-    const mtsHeaders = ['م', 'اسم المادة / النظام', 'تاريخ التقديم', 'كود الاعتماد', 'فترة التوريد (Lead Time)', 'مطلوب بالموقع', 'حالة أمر الشراء (PO)'];
+    const mtsHeaders = ['م', 'اسم المادة / النظام', 'تاريخ التقديم', 'كود الاعتماد', 'فترة التوريد (Lead Time)', 'مطلوب بالموقع', 'طلب PO', 'اعتماد PO', 'إصدار PO', 'تاريخ الحالة', 'حالة أمر الشراء (PO)'];
     mtsSheet.getRange(1, 1, 1, mtsHeaders.length).setValues([mtsHeaders])
       .setFontWeight('bold').setBackground('#0284c7').setFontColor('#ffffff');
 
     const mtsRows = data.materialSubmittals.map(m => [
-      m.sn, m.item, m.submissionDate, m.status, m.leadTime, m.requiredSite, m.poStatus
+      m.sn, m.item, m.submissionDate, m.status, m.leadTime, m.requiredSite,
+      m.poRequestDate || '-', m.poApprovalDate || '-', m.poIssuanceDate || '-', m.poStatusDate || '-', m.poStatus || 'Planned'
     ]);
     mtsSheet.getRange(2, 1, mtsRows.length, mtsHeaders.length).setValues(mtsRows);
     mtsSheet.autoResizeColumns(1, mtsHeaders.length);

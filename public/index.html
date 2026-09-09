@@ -301,23 +301,44 @@
 
     <!-- TAB 3: MTS & PROCUREMENT TRACKER -->
     <div id="tab-content-mts" class="hidden space-y-4">
+      <!-- MTS & PO KPI Summary Bar -->
+      <div id="mts-kpi-summary" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+        <!-- Rendered via JS -->
+      </div>
+
       <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden">
-        <div class="p-3.5 sm:p-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-          <h3 class="text-xs sm:text-sm font-bold text-zinc-900">سجل اعتمادات المواد والمشتريات (Material Submittal & PO Tracker)</h3>
+        <div class="p-3.5 sm:p-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-2 bg-zinc-50/50">
+          <div>
+            <h3 class="text-xs sm:text-sm font-bold text-zinc-900 flex items-center gap-2">
+              <span>📦</span>
+              سجل اعتمادات المواد وتتبع أوامر الشراء (Approvals & Procurement Register – MTS & PO Lifecycle)
+            </h3>
+            <p class="text-[11px] text-zinc-500 mt-0.5">تتبع شامل لدورة المشتريات: تقديم المادة ➔ اعتماد MTS ➔ طلب PO ➔ اعتماد PO ➔ إصدار PO ➔ التوريد للموقع</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">
+              <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+              PO Timeline Active
+            </span>
+          </div>
         </div>
-        <div class="table-container">
-          <table>
+        <div class="table-container overflow-x-auto">
+          <table class="min-w-full text-xs">
             <thead>
-              <tr>
-                <th class="text-center">#</th>
-                <th>المادة / النظام (Material Submittal)</th>
-                <th>تاريخ التقديم</th>
-                <th class="text-center">كود الاعتماد</th>
-                <th>حالة الاعتماد</th>
-                <th>فترة التوريد (Lead Time)</th>
-                <th>مطلوب بالموقع</th>
-                <th>أمر الشراء (PO)</th>
-                <th class="text-center">الأهمية</th>
+              <tr class="bg-zinc-100/80 text-zinc-700 border-b border-zinc-200">
+                <th class="text-center py-2.5 px-2">#</th>
+                <th class="py-2.5 px-3 min-w-[220px]">المادة / النظام (Material Submittal)</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center">تقديم الاعتماد</th>
+                <th class="text-center py-2.5 px-2">كود الاعتماد</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap">حالة الاعتماد</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap">فترة التوريد</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center">مطلوب بالموقع</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center bg-blue-50/60 text-blue-900 border-x border-blue-100">طلب PO</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center bg-blue-50/60 text-blue-900 border-x border-blue-100">اعتماد PO</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center bg-blue-50/60 text-blue-900 border-x border-blue-100">إصدار PO</th>
+                <th class="py-2.5 px-2.5 whitespace-nowrap text-center bg-zinc-50">تاريخ الحالة</th>
+                <th class="py-2.5 px-3 whitespace-nowrap text-center">حالة أمر الشراء (PO Status)</th>
+                <th class="text-center py-2.5 px-2">الأهمية</th>
               </tr>
             </thead>
             <tbody id="mts-table-body">

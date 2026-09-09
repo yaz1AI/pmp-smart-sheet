@@ -69,7 +69,7 @@ class GeminiPMService {
     { "id": "M-01", "name": "اسم المعلم الرئيسي", "startDate": "YYYY-MM-DD", "finishDate": "YYYY-MM-DD", "weight": "10%", "status": "In Progress", "owner": "اسم الدور المسؤول" }
   ],
   "materialSubmittals": [
-    { "sn": 1, "item": "اسم المادة أو النظام", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poStatus": "Pending PO", "critical": true }
+    { "sn": 1, "item": "اسم المادة أو النظام", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "critical": true }
   ],
   "actionItems": [
     { "id": "ACT-01", "task": "Task in English", "taskAr": "المهمة بالعربية", "owner": "المسؤول (المالك/المقاول)", "targetDate": "YYYY-MM-DD", "status": "Open", "priority": "High" }
@@ -81,9 +81,10 @@ class GeminiPMService {
 
 ملاحظات مهمة:
 1. استخرج التواريخ بدقة بصيغة YYYY-MM-DD.
-2. إذا كانت الوثيقة تحتوي على نطاق العمل أو المواصفات فقط دون وجود خطة عمل أو جدول زمني مفصل، قم بتوليد خطة عمل هندسية وجدول مهام يومي PMP متكامل يغطي كافة مراحل المشروع (Mobilization, Engineering, Procurement, Site Execution, Testing & Handover).
-3. احرص على استخراج كافة المواد ذات فترات التوريد الطويلة (Long Lead Items: 8-12 weeks) لتضمينها في جدول المشتريات.
-4. قم بتعريب المسميات بطريقة هندسية احترافية ملائمة لمدراء المشاريع في الشرق الأوسط والسعودية.
+2. تتبع دورة المشتريات وأوامر الشراء (PO Tracking) بالكامل لكل مادة: تاريخ طلب الـ PO (poRequestDate)، تاريخ اعتماد الـ PO (poApprovalDate)، تاريخ إصدار الـ PO (poIssuanceDate)، تاريخ الحالة الحالية (poStatusDate)، وحالة أمر الشراء (poStatus: Issued, Delivered to Site, Pending Approval, Pending Revision, Planned).
+3. إذا كانت الوثيقة تحتوي على نطاق العمل أو المواصفات فقط دون وجود خطة عمل أو جدول زمني مفصل، قم بتوليد خطة عمل هندسية وجدول مهام يومي PMP متكامل يغطي كافة مراحل المشروع (Mobilization, Engineering, Procurement, Site Execution, Testing & Handover).
+4. احرص على استخراج كافة المواد ذات فترات التوريد الطويلة (Long Lead Items: 8-12 weeks) لتضمينها في جدول المشتريات.
+5. قم بتعريب المسميات بطريقة هندسية احترافية ملائمة لمدراء المشاريع في الشرق الأوسط والسعودية.
 `;
 
     const userPrompt = `
