@@ -106,7 +106,7 @@ function generateExcel() {
   wsMilestones['!cols'] = [{ wch: 12 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
   XLSX.utils.book_append_sheet(wb, wsMilestones, "Milestones_المعالم");
 
-  // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات وتتبع دورة أوامر الشراء)
+  // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات وتتبع دورة أوامر الشراء والميزانية MTS & PO & BO)
   const mtsHeaders = [
     "م", 
     "اسم المادة / النظام (Material Submittal)", 
@@ -118,8 +118,10 @@ function generateExcel() {
     "تاريخ طلب PO (PO Request Date)",
     "تاريخ اعتماد PO (PO Approval Date)",
     "تاريخ إصدار PO (PO Issuance Date)",
-    "تاريخ الحالة (Status Date)",
+    "تاريخ حالة PO (PO Status Date)",
     "حالة أمر الشراء (PO Status)", 
+    "تاريخ حالة BO (BO Status Date)",
+    "حالة أمر الميزانية (BO Status)",
     "حرج (Critical)"
   ];
   const mtsRows = (projectData.materialSubmittals || []).map(m => [
@@ -135,12 +137,14 @@ function generateExcel() {
     m.poIssuanceDate || "-",
     m.poStatusDate || "-",
     m.poStatus || "Planned",
+    m.boStatusDate || "-",
+    m.boStatus || "Pending BO",
     m.critical ? "نعم (حرج)" : "عادي"
   ]);
   const wsMTS = XLSX.utils.aoa_to_sheet([mtsHeaders, ...mtsRows]);
   wsMTS['!cols'] = [
     { wch: 5 }, { wch: 45 }, { wch: 18 }, { wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 20 },
-    { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 18 }, { wch: 22 }, { wch: 14 }
+    { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 18 }, { wch: 22 }, { wch: 20 }, { wch: 22 }, { wch: 14 }
   ];
   XLSX.utils.book_append_sheet(wb, wsMTS, "MTS_Procurement_المشتريات");
 
@@ -158,6 +162,94 @@ function generateExcel() {
   const wsAction = XLSX.utils.aoa_to_sheet([actHeaders, ...actRows]);
   wsAction['!cols'] = [{ wch: 10 }, { wch: 45 }, { wch: 45 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(wb, wsAction, "Action_Items_القرارات_المعلقة");
+
+  // 6. Cash Flow & Financial S-Curve Tab (التدفقات النقدية المربوطة بالشروط التعاقدية ومعالم الخطة)
+  const cf = scheduler.getCashFlowForecast();
+  const sym = cf.currency || "SAR";
+
+  const cfData = [
+    ["تقرير وجدول التدفقات النقدية ومنحنى S-Curve المالي المربوط بالعقد والجدول الزمني", ""],
+    ["", ""],
+    ["قيمة العقد / الميزانية الإجمالية:", `${cf.contractValue.toLocaleString()} ${sym}`],
+    ["إجمالي التدفقات الداخلة المخططة (Total Inflows):", `${cf.totalInflow.toLocaleString()} ${sym}`],
+    ["إجمالي المصروفات والتوريد (Total Outflows):", `${cf.totalOutflow.toLocaleString()} ${sym}`],
+    ["صافي السيولة النقدية (Net Cash Flow):", `${cf.netCashFlow.toLocaleString()} ${sym}`],
+    ["صافي الربح المتوقع:", `${cf.totalProfit.toLocaleString()} ${sym}`],
+    ["هامش الربح المستهدف:", `${cf.profitMarginPct}%`],
+    ["", ""],
+    ["جدول الشروط التعاقدية للدفعات ومحفزات الاستحقاق (Contract Payment Terms):", ""],
+    [
+      "رمز الدفعة",
+      "اسم الدفعة التعاقدية",
+      "شرط الاستحقاق التعاقدي (Trigger)",
+      "المعلم المرتبط في الخطة (Linked Milestone)",
+      "النسبة %",
+      "القيمة المطبقة",
+      `المستخلص المستحق (${sym})`,
+      "التاريخ المخطط",
+      "الشهر المستهدف",
+      "الحالة"
+    ],
+    ...(cf.contractPaymentTerms || []).map(t => [
+      t.id,
+      t.termNameAr || t.termNameEn,
+      t.triggerNameAr || t.triggerType,
+      t.linkedMilestoneName || t.linkedMilestoneId,
+      `${t.percentage}%`,
+      `${(t.applicableValue || cf.contractValue).toLocaleString()} ${sym}`,
+      t.paymentValue,
+      t.plannedDate,
+      t.cashFlowMonth,
+      t.status
+    ]),
+    ["", ""],
+    ["جدول توقعات التدفقات النقدية الشهرية المربوط بالمعالم (Monthly Milestone-Linked Cash Flow):", ""],
+    [
+      "الشهر (Month)",
+      "الفترة الزمنية (Period)",
+      "الدفعات والمعالم المستحقة (Milestones Trigger)",
+      "العقد / الحزمة / BO المرتبط",
+      "النسبة المستحقة %",
+      `المستخلص الداخل Inflow (${sym})`,
+      `المصروفات والتكاليف Outflow (${sym})`,
+      `صافي التدفق الشهري Net (${sym})`,
+      `التدفق التراكمي الداخل (${sym})`,
+      `التكاليف التراكمية (${sym})`,
+      `السيولة التراكمية Cumulative Net (${sym})`,
+      "الحالة (Status)"
+    ],
+    ...cf.monthlyBreakdown.map(m => [
+      `M${String(m.monthIndex).padStart(2, '0')}`,
+      m.monthLabel,
+      m.milestonesSummaryAr || "-",
+      m.relatedItemsSummary || "العقد العام",
+      `${m.progressPct}%`,
+      m.inflow,
+      m.outflow,
+      m.netFlow,
+      m.cumulativeInflow,
+      m.cumulativeOutflow,
+      m.cumulativeNet,
+      m.statusAr || m.status
+    ])
+  ];
+
+  const wsCF = XLSX.utils.aoa_to_sheet(cfData);
+  wsCF['!cols'] = [
+    { wch: 14 },
+    { wch: 25 },
+    { wch: 35 },
+    { wch: 30 },
+    { wch: 16 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 25 },
+    { wch: 18 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsCF, "CashFlow_التدفقات_النقدية");
 
   const outDir = path.join(__dirname, '..', 'sample_output');
   if (!fs.existsSync(outDir)) {

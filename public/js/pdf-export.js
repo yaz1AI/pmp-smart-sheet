@@ -156,7 +156,7 @@ class PMPdfExporter {
         <div style="margin-bottom: 14px;">
           
           <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
-            💵 الموقف المالي والتدفقات النقدية (Financial Summary)
+            💵 الموقف المالي والتدفقات النقدية المربوطة بالعقد (Contract-Linked Financial Forecast)
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px;">
@@ -165,45 +165,78 @@ class PMPdfExporter {
               <div style="font-size: 11.5px; font-weight: 900; color: #0f172a; margin-top: 1px;">${formattedContractVal} ${sym}</div>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
-              <div style="font-size: 9px; color: #64748b; font-weight: 700;">الدفعة المقدمة</div>
-              <div style="font-size: 11.5px; font-weight: 900; color: #0284c7; margin-top: 1px;">${cf.advancePaymentPct || 10}% (${cf.advancePayment ? new Intl.NumberFormat('en-US').format(cf.advancePayment) : '-'} ${sym})</div>
+              <div style="font-size: 9px; color: #64748b; font-weight: 700;">إجمالي التدفقات المخططة</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #0284c7; margin-top: 1px;">${cf.totalInflow ? new Intl.NumberFormat('en-US').format(cf.totalInflow) : formattedContractVal} ${sym}</div>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
-              <div style="font-size: 9px; color: #64748b; font-weight: 700;">نسبة الاستقطاع والضمان</div>
-              <div style="font-size: 11.5px; font-weight: 900; color: #d97706; margin-top: 1px;">${cf.retentionPct || 10}% (تُصرف عند التسليم)</div>
+              <div style="font-size: 9px; color: #64748b; font-weight: 700;">صافي السيولة النقدية</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #059669; margin-top: 1px;">${cf.netCashFlow ? new Intl.NumberFormat('en-US').format(cf.netCashFlow) : '-'} ${sym}</div>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px;">
               <div style="font-size: 9px; color: #64748b; font-weight: 700;">هامش الربح المستهدف</div>
-              <div style="font-size: 11.5px; font-weight: 900; color: #059669; margin-top: 1px;">${cf.marginPct || 20}%</div>
+              <div style="font-size: 11.5px; font-weight: 900; color: #b45309; margin-top: 1px;">${cf.profitMarginPct || 20}%</div>
             </div>
           </div>
 
+          <!-- Contract Payment Terms Table Preview -->
+          ${(cf.contractPaymentTerms && cf.contractPaymentTerms.length > 0) ? `
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 10px; font-weight: 800; color: #334155; margin-bottom: 4px;">📑 الشروط التعاقدية للدفعات ومحفزات الاستحقاق (Contract Payment Terms):</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
+              <thead style="background: #0f172a; color: #ffffff;">
+                <tr>
+                  <th style="padding: 3.5px;">الرمز</th>
+                  <th style="padding: 3.5px; text-align: right;">الدفعة التعاقدية</th>
+                  <th style="padding: 3.5px; text-align: right;">المعلم المرتبط</th>
+                  <th style="padding: 3.5px;">النسبة</th>
+                  <th style="padding: 3.5px;">المستخلص (${sym})</th>
+                  <th style="padding: 3.5px;">التاريخ المتوقع</th>
+                  <th style="padding: 3.5px;">الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cf.contractPaymentTerms.map((t, idx) => `
+                  <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 3px; font-weight: 700; font-family: monospace;">${t.id}</td>
+                    <td style="padding: 3px 5px; text-align: right; font-weight: 700; color: #0f172a;">${t.termNameAr || t.termNameEn}</td>
+                    <td style="padding: 3px 5px; text-align: right; color: #475569;">${t.linkedMilestoneName || t.linkedMilestoneId}</td>
+                    <td style="padding: 3px; font-weight: 800; color: #0284c7;">${t.percentage}%</td>
+                    <td style="padding: 3px; font-weight: 800; color: #059669;">${new Intl.NumberFormat('en-US').format(t.paymentValue)}</td>
+                    <td style="padding: 3px; font-family: monospace;">${t.plannedDate}</td>
+                    <td style="padding: 3px; font-size: 8.5px; font-weight: 700; color: ${t.status === 'Paid' ? '#059669' : '#d97706'};">${t.status}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : ''}
+
           <!-- Mini Monthly Breakdown Preview -->
           ${(cf.monthlyBreakdown && cf.monthlyBreakdown.length > 0) ? `
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
-            <thead style="background: #090a0f; color: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <thead style="background: #1e293b; color: #ffffff;">
               <tr>
-                <th style="padding: 4px;">الشهر</th>
-                <th style="padding: 4px;">الفترة</th>
-                <th style="padding: 4px;">الإنجاز</th>
-                <th style="padding: 4px;">التراكمي %</th>
-                <th style="padding: 4px;">المستخلص المتوقع</th>
-                <th style="padding: 4px;">التكاليف التشغيلية</th>
-                <th style="padding: 4px;">صافي التدفق (${sym})</th>
-                <th style="padding: 4px;">الحالة</th>
+                <th style="padding: 3.5px;">الشهر</th>
+                <th style="padding: 3.5px;">الفترة</th>
+                <th style="padding: 3.5px; text-align: right;">المعالم والدفعات المستحقة</th>
+                <th style="padding: 3.5px;">المستخلص (${sym})</th>
+                <th style="padding: 3.5px;">المصروفات (${sym})</th>
+                <th style="padding: 3.5px;">الصافي (${sym})</th>
+                <th style="padding: 3.5px;">السيولة التراكمية</th>
+                <th style="padding: 3.5px;">الحالة</th>
               </tr>
             </thead>
             <tbody>
-              ${cf.monthlyBreakdown.slice(0, 5).map((m, idx) => `
+              ${cf.monthlyBreakdown.slice(0, 6).map((m, idx) => `
                 <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 3.5px; font-weight: 700;">M${String(m.monthIndex).padStart(2, '0')}</td>
-                  <td style="padding: 3.5px; color: #475569;">${m.monthLabel}</td>
-                  <td style="padding: 3.5px; font-weight: 700;">${m.progressPct}%</td>
-                  <td style="padding: 3.5px; font-weight: 800; color: #d97706;">${m.cumulativeProgressPct}%</td>
-                  <td style="padding: 3.5px; font-weight: 700; color: #059669;">${new Intl.NumberFormat('en-US').format(m.inflow)}</td>
-                  <td style="padding: 3.5px; font-weight: 700; color: #dc2626;">${new Intl.NumberFormat('en-US').format(m.outflow)}</td>
-                  <td style="padding: 3.5px; font-weight: 800; color: ${m.netFlow >= 0 ? '#059669' : '#dc2626'};">${m.netFlow >= 0 ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)}</td>
-                  <td style="padding: 3.5px; font-size: 8.5px;">${m.statusAr || m.status}</td>
+                  <td style="padding: 3px; font-weight: 700;">M${String(m.monthIndex).padStart(2, '0')}</td>
+                  <td style="padding: 3px; color: #475569;">${m.monthLabel}</td>
+                  <td style="padding: 3px 5px; text-align: right; font-weight: 700; color: #1e40af; font-size: 8.5px;">${m.milestonesSummaryAr || '-'}</td>
+                  <td style="padding: 3px; font-weight: 700; color: #059669;">${new Intl.NumberFormat('en-US').format(m.inflow)}</td>
+                  <td style="padding: 3px; font-weight: 700; color: #dc2626;">${new Intl.NumberFormat('en-US').format(m.outflow)}</td>
+                  <td style="padding: 3px; font-weight: 800; color: ${m.netFlow >= 0 ? '#059669' : '#dc2626'};">${m.netFlow >= 0 ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)}</td>
+                  <td style="padding: 3px; font-weight: 800; color: #0f172a;">${new Intl.NumberFormat('en-US').format(m.cumulativeNet)}</td>
+                  <td style="padding: 3px; font-size: 8px;">${m.statusAr || m.status}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -218,33 +251,35 @@ class PMPdfExporter {
         <div style="margin-bottom: 14px;">
           
           <div style="font-size: 11.5px; font-weight: 900; color: #090a0f; margin-bottom: 6px;">
-            🚢 التوريدات الحرجة طويلة الأجل (Critical Procurement Items)
+            🚢 التوريدات الحرجة وتتبع دورة أوامر الشراء والميزانية (Critical Procurement & BO Register)
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #cbd5e1;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1px solid #cbd5e1;">
             <thead style="background: #1e293b; color: #ffffff;">
               <tr>
-                <th style="padding: 4px; text-align: right;">البند والمادة المطلوبة</th>
-                <th style="padding: 4px; text-align: center;">تقديم الاعتماد</th>
-                <th style="padding: 4px; text-align: center;">كود الاعتماد</th>
-                <th style="padding: 4px; text-align: center;">المطلوب بالموقع</th>
-                <th style="padding: 4px; text-align: center;">طلب PO</th>
-                <th style="padding: 4px; text-align: center;">اعتماد PO</th>
-                <th style="padding: 4px; text-align: center;">إصدار PO</th>
-                <th style="padding: 4px; text-align: center;">حالة أمر الشراء (PO)</th>
+                <th style="padding: 3.5px; text-align: right;">البند والمادة المطلوبة</th>
+                <th style="padding: 3.5px; text-align: center;">تقديم الاعتماد</th>
+                <th style="padding: 3.5px; text-align: center;">كود MTS</th>
+                <th style="padding: 3.5px; text-align: center;">مطلوب بالموقع</th>
+                <th style="padding: 3.5px; text-align: center;">طلب PO</th>
+                <th style="padding: 3.5px; text-align: center;">اعتماد PO</th>
+                <th style="padding: 3.5px; text-align: center;">إصدار PO</th>
+                <th style="padding: 3.5px; text-align: center;">حالة PO</th>
+                <th style="padding: 3.5px; text-align: center;">حالة أمر الميزانية (BO)</th>
               </tr>
             </thead>
             <tbody>
               ${criticalProcurement.map((m, idx) => `
                 <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 4px 6px; font-weight: 700; color: #0f172a;">${m.item}</td>
-                  <td style="padding: 4px; text-align: center; color: #64748b;">${m.submissionDate || '-'}</td>
-                  <td style="padding: 4px; text-align: center;"><strong style="color: ${m.status === 'A' ? '#059669' : m.status === 'B' ? '#d97706' : '#dc2626'};">Code ${m.status || 'B'}</strong></td>
-                  <td style="padding: 4px; text-align: center; font-weight: 800; color: #0f172a;">${m.requiredSite || '-'}</td>
-                  <td style="padding: 4px; text-align: center; color: #1e40af; font-family: monospace;">${m.poRequestDate || '-'}</td>
-                  <td style="padding: 4px; text-align: center; color: #b45309; font-family: monospace;">${m.poApprovalDate || '-'}</td>
-                  <td style="padding: 4px; text-align: center; color: #047857; font-family: monospace; font-weight: 700;">${m.poIssuanceDate || '-'}</td>
-                  <td style="padding: 4px; text-align: center; font-weight: 700; color: ${m.poStatus === 'Issued' || m.poStatus === 'Delivered to Site' ? '#059669' : m.poStatus === 'Pending Approval' ? '#d97706' : '#dc2626'};">${m.poStatus || 'Planned'}</td>
+                  <td style="padding: 3.5px 5px; font-weight: 700; color: #0f172a;">${m.item}</td>
+                  <td style="padding: 3.5px; text-align: center; color: #64748b;">${m.submissionDate || '-'}</td>
+                  <td style="padding: 3.5px; text-align: center;"><strong style="color: ${m.status === 'A' ? '#059669' : m.status === 'B' ? '#d97706' : '#dc2626'};">Code ${m.status || 'B'}</strong></td>
+                  <td style="padding: 3.5px; text-align: center; font-weight: 800; color: #0f172a;">${m.requiredSite || '-'}</td>
+                  <td style="padding: 3.5px; text-align: center; color: #1e40af; font-family: monospace;">${m.poRequestDate || '-'}</td>
+                  <td style="padding: 3.5px; text-align: center; color: #b45309; font-family: monospace;">${m.poApprovalDate || '-'}</td>
+                  <td style="padding: 3.5px; text-align: center; color: #047857; font-family: monospace; font-weight: 700;">${m.poIssuanceDate || '-'}</td>
+                  <td style="padding: 3.5px; text-align: center; font-weight: 700; color: ${m.poStatus === 'Issued' || m.poStatus === 'Delivered to Site' ? '#059669' : m.poStatus === 'Pending Approval' ? '#d97706' : '#dc2626'};">${m.poStatus || 'Planned'}</td>
+                  <td style="padding: 3.5px; text-align: center; font-weight: 700; color: ${m.boStatus === 'Approved' ? '#059669' : m.boStatus === 'Committed' ? '#0284c7' : '#b45309'};">${m.boStatus || 'Pending BO'}</td>
                 </tr>
               `).join('')}
             </tbody>

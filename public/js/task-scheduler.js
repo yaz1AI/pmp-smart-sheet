@@ -466,6 +466,9 @@ class PMTaskScheduler {
         poStatus = "Pending Revision";
       }
 
+      const boStatus = isIssued ? "Approved" : (isPendingApproval ? "Allocated" : (s.code === 'C' ? "Pending BO" : "Under Revision"));
+      const boStatusDate = isIssued ? poApprovalDate : poRequestDate;
+
       return {
         sn: idx + 1,
         item: s.item,
@@ -479,6 +482,8 @@ class PMTaskScheduler {
         poIssuanceDate,
         poStatusDate,
         poStatus,
+        boStatusDate,
+        boStatus,
         critical: s.critical
       };
     });
@@ -551,6 +556,68 @@ class PMTaskScheduler {
       facilities: selectedPreset.facilities,
       scopeSystems: selectedPreset.scopeSystems,
       keyMilestones,
+      contractPaymentTerms: [
+        {
+          id: "PT-01",
+          termNameAr: "الدفعة المقدمة (Down Payment)",
+          termNameEn: "Advance Down Payment",
+          percentage: 20,
+          triggerType: "contract_award",
+          triggerNameAr: "تعميد وتوقيع العقد وانطلاق المشروع",
+          linkedMilestoneId: keyMilestones[0]?.id || "M-01",
+          applicableScope: "إجمالي قيمة العقد (Total Contract)",
+          status: "Paid",
+          notes: "تُصرف عند توقيع العقد والبدء الميداني"
+        },
+        {
+          id: "PT-02",
+          termNameAr: "دفعة توريد المواد والأنظمة (Upon Delivery)",
+          termNameEn: "Procurement & Delivery Payment",
+          percentage: 30,
+          triggerType: "material_delivery",
+          triggerNameAr: "وصول وتوريد المواد والأنظمة للموقع",
+          linkedMilestoneId: keyMilestones[1]?.id || "M-02",
+          applicableScope: "حزم التوريدات والمشتريات (Procurement Packages)",
+          status: "In Progress",
+          notes: "تُصرف بموجب محاضر استلام المواد MIR المعتمدة"
+        },
+        {
+          id: "PT-03",
+          termNameAr: "دفعة أعمال التركيبات والتنفيذ (Upon Installation)",
+          termNameEn: "Installation & Execution Payment",
+          percentage: 30,
+          triggerType: "site_installation",
+          triggerNameAr: "إنجاز أعمال التركيب والتنفيذ الميداني",
+          linkedMilestoneId: keyMilestones[2]?.id || "M-03",
+          applicableScope: "أعمال التركيب والتنفيذ في الموقع",
+          status: "Planned",
+          notes: "تُصرف بنسب الإنجاز الميداني المعتمدة من الاستشاري"
+        },
+        {
+          id: "PT-04",
+          termNameAr: "دفعة الفحص والتشغيل والتسليم (Testing & Commissioning)",
+          termNameEn: "Testing, Commissioning & Handover Payment",
+          percentage: 15,
+          triggerType: "handover_completion",
+          triggerNameAr: "التشغيل التجريبي والفحص والتسليم النهائي",
+          linkedMilestoneId: keyMilestones[keyMilestones.length - 1]?.id || "M-04",
+          applicableScope: "حزمة الفحص والاختبارات والتسليم الابتدائي",
+          status: "Planned",
+          notes: "تُصرف عند توقيع محضر التسليم الابتدائي"
+        },
+        {
+          id: "PT-05",
+          termNameAr: "إفراج محجوز الضمان النهائي (Retention Release)",
+          termNameEn: "Retention Release Payment",
+          percentage: 5,
+          triggerType: "retention_release",
+          triggerNameAr: "انتهاء فترة الضمان والتسليم النهائي",
+          linkedMilestoneId: keyMilestones[keyMilestones.length - 1]?.id || "M-04",
+          applicableScope: "محجوز الضمان التعاقدي (Contract Retention)",
+          status: "Planned",
+          notes: "تُصرف بعد صدور شهادة الإغلاق النهائي"
+        }
+      ],
       materialSubmittals,
       actionItems: [
         { id: "ACT-01", task: `Coordinate kick-off protocols and approve baseline schedule`, taskAr: `اعتماد خطة العمل والجدول الزمني الأساسي (Baseline Schedule)`, owner: "Project Manager", targetDate: startDate, status: "Open", priority: "High" },
@@ -617,112 +684,260 @@ class PMTaskScheduler {
     };
   }
 
-  // PMP Cash Flow & S-Curve Financial Engine
+  // PMP Dynamic Contract-Linked Cash Flow & S-Curve Financial Engine
   getCashFlowForecast(config = {}) {
     const info = this.project.projectInfo || {};
     const budgetConfig = this.project.financialConfig || config;
     
     const contractValue = parseFloat(budgetConfig.contractValue || info.budget || 5400000);
     const currency = budgetConfig.currency || "SAR";
-    const advancePaymentPct = parseFloat(budgetConfig.advancePaymentPct !== undefined ? budgetConfig.advancePaymentPct : 10);
-    const retentionPct = parseFloat(budgetConfig.retentionPct !== undefined ? budgetConfig.retentionPct : 10);
     const costRatio = parseFloat(budgetConfig.costRatio !== undefined ? budgetConfig.costRatio : 0.80);
 
-    const startDateStr = info.startDate || "2026-01-01";
-    const finishDateStr = info.finishDate || "2026-06-30";
+    const startDateStr = info.startDate || "2025-10-01";
+    const finishDateStr = info.finishDate || "2027-04-15";
     const start = new Date(startDateStr);
     const finish = new Date(finishDateStr);
-    
-    let totalMonths = (finish.getFullYear() - start.getFullYear()) * 12 + (finish.getMonth() - start.getMonth()) + 1;
-    if (totalMonths < 2) totalMonths = 6;
-    if (totalMonths > 36) totalMonths = 36;
 
-    // S-Curve Bell Curve weights
-    let rawWeights = [];
-    let weightSum = 0;
-    for (let i = 0; i < totalMonths; i++) {
-      const angle = (Math.PI * (i + 0.5)) / totalMonths;
-      const w = Math.sin(angle) ** 1.8;
-      rawWeights.push(w);
-      weightSum += w;
+    // 1. Contract Payment Terms: Load from project or create standard contractual terms
+    let rawTerms = this.project.contractPaymentTerms;
+    if (!rawTerms || !Array.isArray(rawTerms) || rawTerms.length === 0) {
+      rawTerms = [
+        {
+          id: "PT-01",
+          termNameAr: "الدفعة المقدمة (Down Payment)",
+          termNameEn: "Advance Down Payment",
+          percentage: 20,
+          triggerType: "contract_award",
+          triggerNameAr: "تعميد وتوقيع العقد وانطلاق المشروع",
+          linkedMilestoneId: "M-01",
+          applicableScope: "إجمالي قيمة العقد (Total Contract)",
+          status: "Paid"
+        },
+        {
+          id: "PT-02",
+          termNameAr: "دفعة توريد المواد والأنظمة (Upon Delivery)",
+          termNameEn: "Procurement & Delivery Payment",
+          percentage: 30,
+          triggerType: "material_delivery",
+          triggerNameAr: "وصول وتوريد المواد والأنظمة للموقع",
+          linkedMilestoneId: "M-05",
+          applicableScope: "حزم التوريدات والمشتريات (Procurement Packages)",
+          status: "In Progress"
+        },
+        {
+          id: "PT-03",
+          termNameAr: "دفعة أعمال التركيبات والتنفيذ (Upon Installation)",
+          termNameEn: "Installation & Execution Payment",
+          percentage: 30,
+          triggerType: "site_installation",
+          triggerNameAr: "إنجاز أعمال التركيبات والتنفيذ الميداني",
+          linkedMilestoneId: "M-07",
+          applicableScope: "أعمال التركيب والتنفيذ",
+          status: "Planned"
+        },
+        {
+          id: "PT-04",
+          termNameAr: "دفعة الفحص والتشغيل والتسليم (Testing & Commissioning)",
+          termNameEn: "Testing, Commissioning & Handover Payment",
+          percentage: 15,
+          triggerType: "handover_completion",
+          triggerNameAr: "التشغيل التجريبي والفحص والتسليم النهائي",
+          linkedMilestoneId: "M-08",
+          applicableScope: "حزمة الفحص والاختبارات والتسليم",
+          status: "Planned"
+        },
+        {
+          id: "PT-05",
+          termNameAr: "إفراج محجوز الضمان النهائي (Retention Release)",
+          termNameEn: "Retention Release Payment",
+          percentage: 5,
+          triggerType: "retention_release",
+          triggerNameAr: "انتهاء فترة الضمان والتسليم النهائي",
+          linkedMilestoneId: "M-09",
+          applicableScope: "محجوز الضمان التعاقدي (Contract Retention)",
+          status: "Planned"
+        }
+      ];
     }
 
-    const monthlyPct = rawWeights.map(w => (w / weightSum) * 100);
-    const advancePaymentAmount = (contractValue * advancePaymentPct) / 100;
-    const totalRetentionAmount = (contractValue * retentionPct) / 100;
-    const recoveryMonths = Math.max(1, totalMonths - 2);
-    const monthlyAdvanceRecovery = advancePaymentAmount / recoveryMonths;
+    const milestones = this.project.keyMilestones || [];
+    const submittals = this.project.materialSubmittals || [];
 
-    let cumulativePlannedValue = 0;
+    // 2. Link each payment term dynamically to the project plan and calculate planned dates
+    const resolvedTerms = rawTerms.map((term, idx) => {
+      let linkedMilestone = null;
+      if (term.linkedMilestoneId) {
+        linkedMilestone = milestones.find(m => m.id === term.linkedMilestoneId);
+      }
+      if (!linkedMilestone && milestones.length > 0) {
+        const milestoneIdx = Math.min(idx, milestones.length - 1);
+        linkedMilestone = milestones[milestoneIdx];
+      }
+
+      // Determine planned date based on trigger type and project plan
+      let plannedDate = startDateStr;
+      if (term.triggerType === "contract_award" || term.triggerType === "down_payment") {
+        plannedDate = linkedMilestone?.startDate || startDateStr;
+      } else if (term.triggerType === "material_delivery" || term.triggerType === "delivery" || term.triggerType === "supply") {
+        const validDates = submittals.map(s => s.requiredSite).filter(d => d && d !== '-');
+        if (validDates.length > 0) {
+          plannedDate = validDates[Math.floor(validDates.length / 2)] || linkedMilestone?.finishDate || startDateStr;
+        } else {
+          plannedDate = linkedMilestone?.finishDate || startDateStr;
+        }
+      } else if (term.triggerType === "retention_release") {
+        const baseDate = linkedMilestone?.finishDate || finishDateStr;
+        const d = new Date(baseDate);
+        d.setMonth(d.getMonth() + 1);
+        plannedDate = d.toISOString().split('T')[0];
+      } else {
+        plannedDate = linkedMilestone?.finishDate || finishDateStr;
+      }
+
+      const applicableVal = term.applicableValue ? parseFloat(term.applicableValue) : contractValue;
+      const paymentVal = Math.round((applicableVal * term.percentage) / 100);
+      const cashFlowMonth = plannedDate.substring(0, 7); // YYYY-MM
+
+      const termNameAr = term.termNameAr || term.description || `الدفعة التعاقدية (${term.id || idx + 1})`;
+      const termNameEn = term.termNameEn || term.titleEn || `Contract Payment (${term.id || idx + 1})`;
+
+      return {
+        ...term,
+        termNameAr,
+        termNameEn,
+        description: termNameAr,
+        linkedMilestoneName: linkedMilestone ? linkedMilestone.name : "الجدول الزمني العام للمشروع",
+        plannedDate,
+        cashFlowMonth,
+        applicableValue: applicableVal,
+        paymentValue: paymentVal,
+        termValue: paymentVal
+      };
+    });
+
+    // 3. Determine full calendar span (months)
+    let minDate = new Date(start);
+    let maxDate = new Date(finish);
+    resolvedTerms.forEach(t => {
+      const d = new Date(t.plannedDate);
+      if (d < minDate) minDate = d;
+      if (d > maxDate) maxDate = d;
+    });
+
+    let totalMonths = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + (maxDate.getMonth() - minDate.getMonth()) + 1;
+    if (totalMonths < 2) totalMonths = 6;
+    if (totalMonths > 48) totalMonths = 48;
+
+    // 4. Precompute month activity weights to distribute the total contractor cost budget realistically
+    const totalCostBudget = Math.round(contractValue * costRatio);
+    const fixedCostPortion = totalCostBudget * 0.35;
+    const variableCostPortion = totalCostBudget * 0.65;
+    const fixedMonthlyCost = fixedCostPortion / totalMonths;
+
+    // First pass: scan months and calculate activity weights
+    const monthDataArray = [];
+    let totalActivityWeight = 0;
+
+    for (let m = 0; m < totalMonths; m++) {
+      const monthDate = new Date(minDate.getFullYear(), minDate.getMonth() + m, 1);
+      const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = monthDate.toLocaleDateString('ar-SA', { month: 'short', year: 'numeric' });
+      const monthLabelEn = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      const activeMilestonesInMonth = resolvedTerms.filter(t => t.cashFlowMonth === monthKey);
+      const materialsInMonth = submittals.filter(s => {
+        return (s.requiredSite && s.requiredSite.startsWith(monthKey)) || 
+               (s.poIssuanceDate && s.poIssuanceDate.startsWith(monthKey));
+      });
+
+      // Weight based on operational activity
+      const weight = 1.0 + (activeMilestonesInMonth.length * 2.5) + (materialsInMonth.length * 1.5);
+      totalActivityWeight += weight;
+
+      monthDataArray.push({
+        m,
+        monthDate,
+        monthKey,
+        monthLabel,
+        monthLabelEn,
+        activeMilestonesInMonth,
+        materialsInMonth,
+        weight
+      });
+    }
+
+    // Second pass: generate monthly breakdown with balanced inflows and outflows
     let cumulativeInflow = 0;
     let cumulativeOutflow = 0;
     let cumulativeNet = 0;
-    let cumulativeProgressPct = 0;
-
     const monthlyBreakdown = [];
 
     for (let m = 0; m < totalMonths; m++) {
-      const monthDate = new Date(start.getFullYear(), start.getMonth() + m, 1);
-      const monthLabel = monthDate.toLocaleDateString('ar-SA', { month: 'short', year: 'numeric' });
-      const monthLabelEn = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      const pct = monthlyPct[m];
-      cumulativeProgressPct += pct;
+      const md = monthDataArray[m];
+      const monthDate = md.monthDate;
+      const monthKey = md.monthKey;
+      const monthLabel = md.monthLabel;
+      const monthLabelEn = md.monthLabelEn;
+      const activeMilestonesInMonth = md.activeMilestonesInMonth;
+      const materialsInMonth = md.materialsInMonth;
 
-      const plannedValue = (contractValue * pct) / 100;
-      cumulativePlannedValue += plannedValue;
+      const plannedCashIn = activeMilestonesInMonth.reduce((sum, t) => sum + t.paymentValue, 0);
+      const monthPct = activeMilestonesInMonth.reduce((sum, t) => sum + t.percentage, 0);
 
-      // Inflow calculation
-      let grossIPC = plannedValue;
-      let advanceRecovery = (m > 0 && m <= recoveryMonths) ? monthlyAdvanceRecovery : 0;
-      let retentionDeduction = (grossIPC * retentionPct) / 100;
-      let monthlyInflow = grossIPC - advanceRecovery - retentionDeduction;
+      // Outflow calculation: fixed overhead + weighted direct execution/procurement
+      const variableCost = totalActivityWeight > 0 ? (variableCostPortion * (md.weight / totalActivityWeight)) : (variableCostPortion / totalMonths);
+      let monthlyOutflow = Math.round(fixedMonthlyCost + variableCost);
 
-      if (m === 0 && advancePaymentAmount > 0) {
-        monthlyInflow += advancePaymentAmount;
-      }
-      if (m === totalMonths - 1 && totalRetentionAmount > 0) {
-        monthlyInflow += totalRetentionAmount;
-      }
-
-      let monthlyOutflow = plannedValue * costRatio;
-      if (m === 0) monthlyOutflow += advancePaymentAmount * 0.35;
-
-      const netMonthlyCashFlow = monthlyInflow - monthlyOutflow;
-      cumulativeInflow += monthlyInflow;
+      cumulativeInflow += plannedCashIn;
       cumulativeOutflow += monthlyOutflow;
-      cumulativeNet += netMonthlyCashFlow;
+      const netMonthlyCashFlow = plannedCashIn - monthlyOutflow;
+      cumulativeNet = cumulativeInflow - cumulativeOutflow;
 
+      // Status determination
       const today = new Date();
-      let status = "Planned";
-      let statusAr = "مخطط";
-      if (monthDate <= today) {
-        status = "Paid / Invoiced";
-        statusAr = "معتمد ومفوتر";
-      } else if (m === 0 || m === 1) {
-        status = "Under Review";
-        statusAr = "قيد المعالجة";
+      let status = "Projected";
+      let statusAr = "مجدول بالخطة";
+      if (monthDate < today) {
+        status = plannedCashIn > 0 ? "Billed / Collected" : "Completed";
+        statusAr = plannedCashIn > 0 ? "معتمد ومفوتر" : "منتهي";
+      } else if (activeMilestonesInMonth.length > 0) {
+        status = "Due by Milestone";
+        statusAr = "مستحق بالمعلم التعاقدي";
       }
+
+      const progressPct = totalMonths > 0 ? Math.round(((m + 1) / totalMonths) * 100) : 0;
 
       monthlyBreakdown.push({
         monthIndex: m + 1,
-        monthDate: monthDate.toISOString().split('T')[0],
+        monthKey,
+        monthDate: `${monthKey}-01`,
         monthLabel: `${monthLabel} (${monthLabelEn})`,
-        progressPct: Math.round(pct * 10) / 10,
-        cumulativeProgressPct: Math.min(100, Math.round(cumulativeProgressPct * 10) / 10),
-        plannedValue: Math.round(plannedValue),
-        inflow: Math.round(monthlyInflow),
-        outflow: Math.round(monthlyOutflow),
-        netFlow: Math.round(netMonthlyCashFlow),
+        progressPct: Math.round(monthPct * 10) / 10,
+        cumulativeProgressPct: Math.min(100, progressPct),
+        inflow: plannedCashIn,
+        plannedCashIn: plannedCashIn,
+        outflow: monthlyOutflow,
+        plannedCashOut: monthlyOutflow,
+        netFlow: netMonthlyCashFlow,
+        netCashFlow: netMonthlyCashFlow,
         cumulativeInflow: Math.round(cumulativeInflow),
         cumulativeOutflow: Math.round(cumulativeOutflow),
         cumulativeNet: Math.round(cumulativeNet),
+        milestones: activeMilestonesInMonth,
+        milestoneNames: activeMilestonesInMonth.map(t => t.termNameAr || t.description || t.linkedMilestoneName),
+        milestonesSummaryAr: activeMilestonesInMonth.length > 0 
+          ? activeMilestonesInMonth.map(t => `${t.termNameAr || t.description} (${t.percentage}%)`).join(" + ")
+          : "أعمال تنفيذية ومتابعة دورية",
+        relatedItemsSummary: activeMilestonesInMonth.length > 0
+          ? activeMilestonesInMonth.map(t => t.applicableScope || "عقد المشروع").join(" | ")
+          : (materialsInMonth.length > 0 ? `توريدات: ${materialsInMonth.map(x => x.item).slice(0, 2).join('، ')}` : "بنود العقد العام"),
         status,
         statusAr
       });
     }
 
     const totalProfit = cumulativeInflow - cumulativeOutflow;
-    const profitMarginPct = Math.round((totalProfit / contractValue) * 100);
+    const profitMarginPct = contractValue > 0 ? Math.round((totalProfit / contractValue) * 100) : 20;
 
     return {
       currency,
@@ -732,10 +947,7 @@ class PMTaskScheduler {
       netCashFlow: Math.round(cumulativeNet),
       totalProfit: Math.round(totalProfit),
       profitMarginPct,
-      advancePaymentAmount,
-      advancePaymentPct,
-      totalRetentionAmount,
-      retentionPct,
+      contractPaymentTerms: resolvedTerms,
       totalMonths,
       monthlyBreakdown
     };

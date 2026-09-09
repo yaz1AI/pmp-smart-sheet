@@ -107,7 +107,7 @@ class PMExcelExporter {
     wsMilestones['!cols'] = [{ wch: 12 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsMilestones, "Milestones_المعالم");
 
-    // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات وتتبع دورة أوامر الشراء)
+    // 4. Material Submittals & Procurement Tab (الاعتمادات والمشتريات وتتبع دورة أوامر الشراء والميزانية MTS & PO & BO)
     const mtsHeaders = [
       "م", 
       "اسم المادة / النظام (Material Submittal)", 
@@ -119,8 +119,10 @@ class PMExcelExporter {
       "تاريخ طلب PO (PO Request Date)",
       "تاريخ اعتماد PO (PO Approval Date)",
       "تاريخ إصدار PO (PO Issuance Date)",
-      "تاريخ الحالة (Status Date)",
+      "تاريخ حالة PO (PO Status Date)",
       "حالة أمر الشراء (PO Status)", 
+      "تاريخ حالة BO (BO Status Date)",
+      "حالة أمر الميزانية (BO Status)",
       "حرج (Critical)"
     ];
     const mtsRows = (projectData.materialSubmittals || []).map(m => [
@@ -136,6 +138,8 @@ class PMExcelExporter {
       m.poIssuanceDate || "-",
       m.poStatusDate || "-",
       m.poStatus || "Planned",
+      m.boStatusDate || "-",
+      m.boStatus || "Pending BO",
       m.critical ? "نعم (حرج)" : "عادي"
     ]);
     const wsMTS = XLSX.utils.aoa_to_sheet([mtsHeaders, ...mtsRows]);
@@ -150,8 +154,10 @@ class PMExcelExporter {
       { wch: 22 }, // طلب PO
       { wch: 22 }, // اعتماد PO
       { wch: 22 }, // إصدار PO
-      { wch: 18 }, // تاريخ الحالة
+      { wch: 18 }, // تاريخ حالة PO
       { wch: 22 }, // حالة أمر الشراء
+      { wch: 20 }, // تاريخ حالة BO
+      { wch: 22 }, // حالة أمر الميزانية
       { wch: 14 }  // حرج
     ];
     XLSX.utils.book_append_sheet(wb, wsMTS, "MTS_Procurement_المشتريات");
@@ -171,29 +177,54 @@ class PMExcelExporter {
     wsAction['!cols'] = [{ wch: 10 }, { wch: 45 }, { wch: 45 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, wsAction, "Action_Items_القرارات_المعلقة");
 
-    // 6. Cash Flow & Financial S-Curve Tab (التدفقات النقدية ومنحنى S-Curve)
+    // 6. Cash Flow & Financial S-Curve Tab (التدفقات النقدية المربوطة بالشروط التعاقدية ومعالم الخطة)
     if (scheduler && typeof scheduler.getCashFlowForecast === 'function') {
       const cf = scheduler.getCashFlowForecast();
       const sym = cf.currency || "SAR";
 
       const cfData = [
-        ["تقرير وجدول التدفقات النقدية ومنحنى S-Curve المالي للمشروع", ""],
+        ["تقرير وجدول التدفقات النقدية ومنحنى S-Curve المالي المربوط بالعقد والجدول الزمني", ""],
         ["", ""],
         ["قيمة العقد / الميزانية الإجمالية:", `${cf.contractValue.toLocaleString()} ${sym}`],
-        ["إجمالي التدفقات الداخلة (Inflows):", `${cf.totalInflow.toLocaleString()} ${sym}`],
-        ["إجمالي المصروفات والتكاليف (Outflows):", `${cf.totalOutflow.toLocaleString()} ${sym}`],
+        ["إجمالي التدفقات الداخلة المخططة (Total Inflows):", `${cf.totalInflow.toLocaleString()} ${sym}`],
+        ["إجمالي المصروفات والتوريد (Total Outflows):", `${cf.totalOutflow.toLocaleString()} ${sym}`],
         ["صافي السيولة النقدية (Net Cash Flow):", `${cf.netCashFlow.toLocaleString()} ${sym}`],
         ["صافي الربح المتوقع:", `${cf.totalProfit.toLocaleString()} ${sym}`],
         ["هامش الربح المستهدف:", `${cf.profitMarginPct}%`],
-        ["الدفعة المقدمة:", `${cf.advancePaymentPct}% (${cf.advancePaymentAmount.toLocaleString()} ${sym})`],
-        ["نسبة الاستقطاع والضمان (Retention):", `${cf.retentionPct}% (${cf.totalRetentionAmount.toLocaleString()} ${sym})`],
         ["", ""],
+        ["جدول الشروط التعاقدية للدفعات ومحفزات الاستحقاق (Contract Payment Terms):", ""],
+        [
+          "رمز الدفعة",
+          "اسم الدفعة التعاقدية",
+          "شرط الاستحقاق التعاقدي (Trigger)",
+          "المعلم المرتبط في الخطة (Linked Milestone)",
+          "النسبة %",
+          "القيمة المطبقة",
+          `المستخلص المستحق (${sym})`,
+          "التاريخ المخطط",
+          "الشهر المستهدف",
+          "الحالة"
+        ],
+        ...(cf.contractPaymentTerms || []).map(t => [
+          t.id,
+          t.termNameAr || t.termNameEn,
+          t.triggerNameAr || t.triggerType,
+          t.linkedMilestoneName || t.linkedMilestoneId,
+          `${t.percentage}%`,
+          `${(t.applicableValue || cf.contractValue).toLocaleString()} ${sym}`,
+          t.paymentValue,
+          t.plannedDate,
+          t.cashFlowMonth,
+          t.status
+        ]),
+        ["", ""],
+        ["جدول توقعات التدفقات النقدية الشهرية المربوط بالمعالم (Monthly Milestone-Linked Cash Flow):", ""],
         [
           "الشهر (Month)",
           "الفترة الزمنية (Period)",
-          "نسبة الإنجاز الشهري %",
-          "منحنى S-Curve التراكمي %",
-          `القيمة المخططة PV (${sym})`,
+          "الدفعات والمعالم المستحقة (Milestones Trigger)",
+          "العقد / الحزمة / BO المرتبط",
+          "النسبة المستحقة %",
           `المستخلص الداخل Inflow (${sym})`,
           `المصروفات والتكاليف Outflow (${sym})`,
           `صافي التدفق الشهري Net (${sym})`,
@@ -205,9 +236,9 @@ class PMExcelExporter {
         ...cf.monthlyBreakdown.map(m => [
           `M${String(m.monthIndex).padStart(2, '0')}`,
           m.monthLabel,
+          m.milestonesSummaryAr || "-",
+          m.relatedItemsSummary || "العقد العام",
           `${m.progressPct}%`,
-          `${m.cumulativeProgressPct}%`,
-          m.plannedValue,
           m.inflow,
           m.outflow,
           m.netFlow,
@@ -222,9 +253,9 @@ class PMExcelExporter {
       wsCF['!cols'] = [
         { wch: 14 },
         { wch: 25 },
-        { wch: 20 },
-        { wch: 22 },
-        { wch: 22 },
+        { wch: 35 },
+        { wch: 30 },
+        { wch: 16 },
         { wch: 22 },
         { wch: 22 },
         { wch: 22 },

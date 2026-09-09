@@ -69,7 +69,14 @@ class GeminiPMService {
     { "id": "M-01", "name": "اسم المعلم الرئيسي", "startDate": "YYYY-MM-DD", "finishDate": "YYYY-MM-DD", "weight": "10%", "status": "In Progress", "owner": "اسم الدور المسؤول" }
   ],
   "materialSubmittals": [
-    { "sn": 1, "item": "اسم المادة أو النظام", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "critical": true }
+    { "sn": 1, "item": "اسم المادة أو النظام", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "boStatus": "Approved", "boStatusDate": "YYYY-MM-DD", "critical": true }
+  ],
+  "contractPaymentTerms": [
+    { "id": "PT-01", "description": "الدفعة المقدمة (Advance Payment)", "percentage": 20, "triggerEvent": "contract_award", "linkedMilestoneId": "M-01", "applicableScope": "قيمة العقد الإجمالية", "status": "Paid" },
+    { "id": "PT-02", "description": "دفعة توريد واعتماد المواد والمعدات (Material Supply)", "percentage": 30, "triggerEvent": "material_delivery", "linkedMilestoneId": "M-05", "applicableScope": "أوامر شراء المواد والمعدات (BOs & POs)", "status": "Pending" },
+    { "id": "PT-03", "description": "دفعة إنجاز التركيبات والأعمال الإنشائية (Installation & Execution)", percentage: 30, "triggerEvent": "site_installation", "linkedMilestoneId": "M-07", "applicableScope": "المستخلصات الجارية للأعمال المنجزة", "status": "Pending" },
+    { "id": "PT-04", "description": "دفعة الاختبارات والتشغيل والتسليم المبدئي (Testing & Handover)", "percentage": 15, "triggerEvent": "handover_completion", "linkedMilestoneId": "M-08", "applicableScope": "شهادة الإنجاز والتسليم الابتدائي (TOC)", "status": "Pending" },
+    { "id": "PT-05", "description": "إطلاق محجوز الضمان النهائي (Retention Release)", "percentage": 5, "triggerEvent": "retention_release", "linkedMilestoneId": "M-09", "applicableScope": "المخالصة النهائية وفترة الضمان (DLP)", "status": "Pending" }
   ],
   "actionItems": [
     { "id": "ACT-01", "task": "Task in English", "taskAr": "المهمة بالعربية", "owner": "المسؤول (المالك/المقاول)", "targetDate": "YYYY-MM-DD", "status": "Open", "priority": "High" }
@@ -82,9 +89,11 @@ class GeminiPMService {
 ملاحظات مهمة:
 1. استخرج التواريخ بدقة بصيغة YYYY-MM-DD.
 2. تتبع دورة المشتريات وأوامر الشراء (PO Tracking) بالكامل لكل مادة: تاريخ طلب الـ PO (poRequestDate)، تاريخ اعتماد الـ PO (poApprovalDate)، تاريخ إصدار الـ PO (poIssuanceDate)، تاريخ الحالة الحالية (poStatusDate)، وحالة أمر الشراء (poStatus: Issued, Delivered to Site, Pending Approval, Pending Revision, Planned).
-3. إذا كانت الوثيقة تحتوي على نطاق العمل أو المواصفات فقط دون وجود خطة عمل أو جدول زمني مفصل، قم بتوليد خطة عمل هندسية وجدول مهام يومي PMP متكامل يغطي كافة مراحل المشروع (Mobilization, Engineering, Procurement, Site Execution, Testing & Handover).
-4. احرص على استخراج كافة المواد ذات فترات التوريد الطويلة (Long Lead Items: 8-12 weeks) لتضمينها في جدول المشتريات.
-5. قم بتعريب المسميات بطريقة هندسية احترافية ملائمة لمدراء المشاريع في الشرق الأوسط والسعودية.
+3. تتبع أوامر الميزانية والشراء BO (Budget / Buyout Orders): استخرج حالة أمر الميزانية (boStatus: Approved, Committed, Allocated, Pending BO, Pending Revision) وتاريخ الحالة (boStatusDate بصيغة YYYY-MM-DD) لتوثيق تاريخ آخر تحديث لحالة أمر الشراء الداخلي.
+4. التدفقات النقدية والشروط التعاقدية (Contract Payment Terms & Cash Flow): استخرج الشروط التعاقدية للدفعات ومراحلها من الوثيقة، واربط كل دفعة بالمعلم الرئيسي المقابل (linkedMilestoneId) ونسبة الدفعة والحدث المحفز (triggerEvent: contract_award, material_delivery, site_installation, handover_completion, retention_release) والنطاق المالي المعني.
+5. إذا كانت الوثيقة تحتوي على نطاق العمل أو المواصفات فقط دون وجود خطة عمل أو جدول زمني مفصل، قم بتوليد خطة عمل هندسية وجدول مهام يومي PMP متكامل يغطي كافة مراحل المشروع (Mobilization, Engineering, Procurement, Site Execution, Testing & Handover).
+6. احرص على استخراج كافة المواد ذات فترات التوريد الطويلة (Long Lead Items: 8-12 weeks) لتضمينها في جدول المشتريات.
+7. قم بتعريب المسميات بطريقة هندسية احترافية ملائمة لمدراء المشاريع في الشرق الأوسط والسعودية.
 `;
 
     const userPrompt = `

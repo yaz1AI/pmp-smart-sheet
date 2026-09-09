@@ -285,8 +285,11 @@ async function callGeminiAI(documentText, apiKey) {
   "keyMilestones": [
     { "id": "M-01", "name": "اسم المعلم الرئيسي", "startDate": "YYYY-MM-DD", "finishDate": "YYYY-MM-DD", "weight": "15%", "status": "In Progress", "owner": "الدور المسؤول" }
   ],
+  "contractPaymentTerms": [
+    { "id": "PT-01", "termNameAr": "الدفعة المقدمة (Down Payment)", "termNameEn": "Advance Payment", "percentage": 20, "triggerType": "contract_award", "triggerNameAr": "توقيع العقد والبدء الميداني", "linkedMilestoneId": "M-01", "applicableScope": "إجمالي قيمة العقد", "status": "Paid" }
+  ],
   "materialSubmittals": [
-    { "sn": 1, "item": "اسم المادة أو الاعتماد من جدول الكميات BOQ", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "critical": true }
+    { "sn": 1, "item": "اسم المادة أو الاعتماد من جدول الكميات BOQ", "submissionDate": "YYYY-MM-DD", "status": "B", "codeName": "Approved as Noted", "leadTime": "8-12 weeks", "requiredSite": "YYYY-MM-DD", "poRequestDate": "YYYY-MM-DD", "poApprovalDate": "YYYY-MM-DD", "poIssuanceDate": "YYYY-MM-DD", "poStatusDate": "YYYY-MM-DD", "poStatus": "Issued", "boStatusDate": "YYYY-MM-DD", "boStatus": "Approved", "critical": true }
   ],
   "actionItems": [
     { "id": "ACT-01", "task": "Task in English", "taskAr": "المهمة بالعربية", "owner": "المسؤول", "targetDate": "YYYY-MM-DD", "status": "Open", "priority": "High" }
@@ -440,6 +443,8 @@ function parseProjectTextHeuristically(text, filename) {
         poIssuanceDate: midStr,
         poStatusDate: midStr,
         poStatus: "Issued",
+        boStatus: "Approved",
+        boStatusDate: midStr,
         critical: true
       });
     }
@@ -448,8 +453,8 @@ function parseProjectTextHeuristically(text, filename) {
   // If no materials detected, add standard project submittals
   if (materialSubmittals.length === 0) {
     materialSubmittals.push(
-      { sn: 1, item: `اعتماد المخططات والمواصفات لـ (${cleanName})`, submissionDate: todayStr, status: "A", codeName: "Approved", leadTime: "2-4 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: midStr, poIssuanceDate: midStr, poStatusDate: midStr, poStatus: "Issued", critical: false },
-      { sn: 2, item: `توريدات المواد الرئيسية ذات الفترات الحرجة (Long Lead Items)`, submissionDate: todayStr, status: "B", codeName: "Approved as Noted", leadTime: "8-12 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: "-", poIssuanceDate: "-", poStatusDate: todayStr, poStatus: "Pending Approval", critical: true }
+      { sn: 1, item: `اعتماد المخططات والمواصفات لـ (${cleanName})`, submissionDate: todayStr, status: "A", codeName: "Approved", leadTime: "2-4 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: midStr, poIssuanceDate: midStr, poStatusDate: midStr, poStatus: "Issued", boStatus: "Approved", boStatusDate: midStr, critical: false },
+      { sn: 2, item: `توريدات المواد الرئيسية ذات الفترات الحرجة (Long Lead Items)`, submissionDate: todayStr, status: "B", codeName: "Approved as Noted", leadTime: "8-12 weeks", requiredSite: midStr, poRequestDate: todayStr, poApprovalDate: "-", poIssuanceDate: "-", poStatusDate: todayStr, poStatus: "Pending Approval", boStatus: "Committed", boStatusDate: todayStr, critical: true }
     );
   }
 
@@ -540,6 +545,13 @@ function parseProjectTextHeuristically(text, filename) {
     actionItems: [
       { id: "ACT-01", task: `Review and align project requirements from ${filename}`, taskAr: `مراجعة واعتماد بنود ومخرجات وثيقة ${filename}`, owner: "Project Team", targetDate: todayStr, status: "Open", priority: "High" },
       { id: "ACT-02", task: `Finalize procurement packages and long lead orders`, taskAr: `اعتماد طلبات الشراء للمواد ذات فترات التوريد الحرجة`, owner: "Procurement Lead", targetDate: midStr, status: "Open", priority: "High" }
+    ],
+    contractPaymentTerms: [
+      { id: "PT-01", description: "الدفعة المقدمة (Advance Payment)", percentage: 20, triggerEvent: "contract_award", linkedMilestoneId: "M-01", applicableScope: "قيمة العقد الإجمالية", status: "Paid" },
+      { id: "PT-02", description: "دفعة توريد واعتماد المواد والمعدات (Material Supply)", percentage: 30, triggerEvent: "material_delivery", linkedMilestoneId: "M-05", applicableScope: "أوامر شراء المواد والمعدات (BOs & POs)", status: "Pending" },
+      { id: "PT-03", description: "دفعة إنجاز التركيبات والأعمال الإنشائية (Installation & Execution)", percentage: 30, triggerEvent: "site_installation", linkedMilestoneId: "M-07", applicableScope: "المستخلصات الجارية للأعمال المنجزة", status: "Pending" },
+      { id: "PT-04", description: "دفعة الاختبارات والتشغيل والتسليم المبدئي (Testing & Handover)", percentage: 15, triggerEvent: "handover_completion", linkedMilestoneId: "M-08", applicableScope: "شهادة الإنجاز والتسليم الابتدائي (TOC)", status: "Pending" },
+      { id: "PT-05", description: "إطلاق محجوز الضمان النهائي (Retention Release)", percentage: 5, triggerEvent: "retention_release", linkedMilestoneId: "M-09", applicableScope: "المخالصة النهائية وفترة الضمان (DLP)", status: "Pending" }
     ],
     teamMembers: [
       { role: "Project Manager", name: "مدير المشروع", location: "On-Site" },

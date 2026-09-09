@@ -759,7 +759,7 @@ function renderMTSView() {
   }
 
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="13" class="text-center py-8 text-xs text-zinc-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-xs text-zinc-400">لا توجد سجلات اعتمادات مواد أو مشتريات مدخلة في هذا المشروع حتى الآن.</td></tr>`;
     return;
   }
 
@@ -785,6 +785,26 @@ function renderMTSView() {
     } else if (m.poStatus === 'Under Resubmission') {
       poBadgeClass = 'bg-orange-50 text-orange-700 border-orange-300 font-semibold';
       poIcon = '🔄';
+    }
+
+    // BO Status styling badge (Budget / Buyout Order)
+    let boBadgeClass = 'bg-zinc-100 text-zinc-700 border-zinc-200';
+    let boIcon = '🏷️';
+    if (m.boStatus === 'Approved') {
+      boBadgeClass = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold';
+      boIcon = '✅';
+    } else if (m.boStatus === 'Committed') {
+      boBadgeClass = 'bg-blue-50 text-blue-800 border-blue-300 font-semibold';
+      boIcon = '💼';
+    } else if (m.boStatus === 'Allocated') {
+      boBadgeClass = 'bg-teal-50 text-teal-800 border-teal-300 font-semibold';
+      boIcon = '📌';
+    } else if (m.boStatus === 'Pending BO') {
+      boBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300 font-semibold';
+      boIcon = '⏳';
+    } else if (m.boStatus === 'Pending Revision' || m.boStatus === 'Under Revision') {
+      boBadgeClass = 'bg-rose-50 text-rose-800 border-rose-300 font-semibold';
+      boIcon = '⚠️';
     }
 
     // Mini Cycle status visual
@@ -834,6 +854,18 @@ function renderMTSView() {
             <span>${m.poStatus || 'Planned'}</span>
           </span>
         </td>
+
+        <!-- BO Tracking Columns (Budget / Buyout Order) -->
+        <td class="font-mono text-xs text-center py-2.5 px-2.5 bg-amber-50/30 border-x border-amber-50 whitespace-nowrap text-zinc-700">
+          ${m.boStatusDate && m.boStatusDate !== '-' ? `<span class="text-amber-900 font-semibold">${m.boStatusDate}</span>` : '<span class="text-zinc-300">-</span>'}
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap bg-amber-50/20">
+          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full border ${boBadgeClass}">
+            <span>${boIcon}</span>
+            <span>${m.boStatus || 'Pending BO'}</span>
+          </span>
+        </td>
+
         <td class="text-center font-bold text-xs py-2.5 px-2">
           ${m.critical ? '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🚨 حرج</span>' : '<span class="text-zinc-400 font-normal">عادي</span>'}
         </td>
@@ -935,11 +967,54 @@ function renderCashFlowView() {
   if (profitEl) profitEl.innerText = `${new Intl.NumberFormat('en-US').format(cf.totalProfit)} ${sym}`;
   if (currBadge) currBadge.innerText = `العملة: ${cf.currency} (${sym})`;
   if (marginBadge) marginBadge.innerText = `هامش الربح: ${cf.profitMarginPct}% (${new Intl.NumberFormat('en-US').format(cf.totalProfit)} ${sym})`;
-  if (inflowNote) inflowNote.innerText = `المستخلصات + الدفعة المقدمة (${cf.advancePaymentPct}%)`;
-  if (costRatioBadge) costRatioBadge.innerText = `تكاليف التنفيذ والتوريد (${Math.round((cf.totalOutflow / cf.contractValue) * 100)}%)`;
+  if (inflowNote) inflowNote.innerText = `الدفعات التعاقدية (${cf.contractPaymentTerms?.length || 5} دفعات)`;
+  if (costRatioBadge) costRatioBadge.innerText = `تكاليف التنفيذ والتوريدات (${Math.round((cf.totalOutflow / cf.contractValue) * 100)}%)`;
 
+  renderContractPaymentTerms(cf);
   renderCashFlowChart(cf);
   renderCashFlowTable(cf);
+}
+
+function renderContractPaymentTerms(cf) {
+  const container = document.getElementById("contract-payment-terms-container");
+  if (!container) return;
+
+  const terms = cf.contractPaymentTerms || [];
+  const sym = CURRENCY_SYMBOLS[cf.currency] || cf.currency || "ر.س";
+
+  if (terms.length === 0) {
+    container.innerHTML = `<div class="text-center py-6 text-zinc-400 text-xs">لا توجد شروط دفع تعاقدية محددة. يمكنك إضافة شروط الدفع بالضغط على "تعديل الشروط التعاقدية".</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      ${terms.map((t, idx) => `
+        <div class="bg-zinc-50/80 p-4 rounded-2xl border border-zinc-200 hover:border-zinc-300 transition space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-zinc-200/80 text-zinc-700">${t.id || `PT-0${idx + 1}`}</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${t.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' : t.status === 'In Progress' ? 'bg-amber-100 text-amber-800' : 'bg-zinc-200 text-zinc-700'}">
+              ${t.status === 'Paid' ? 'تم الصرف ✅' : t.status === 'In Progress' ? 'قيد المعالجة ⏳' : 'مجدول 📅'}
+            </span>
+          </div>
+
+          <div class="font-bold text-xs sm:text-sm text-zinc-950">${t.termNameAr || t.termNameEn}</div>
+
+          <div class="flex items-baseline justify-between pt-1 border-t border-zinc-200/60">
+            <span class="text-base sm:text-lg font-black text-emerald-700">${new Intl.NumberFormat('en-US').format(t.paymentValue)} ${sym}</span>
+            <span class="text-xs font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">${t.percentage}% من العقد</span>
+          </div>
+
+          <div class="text-[11px] text-zinc-600 space-y-1 pt-1 bg-white/70 p-2.5 rounded-xl border border-zinc-200/60">
+            <div><span class="text-zinc-400">⚡ شرط الاستحقاق: </span><strong class="text-zinc-800">${t.triggerNameAr || t.triggerType}</strong></div>
+            <div><span class="text-zinc-400">🚩 المعلم المرتبط: </span><strong class="text-zinc-800">${t.linkedMilestoneName || t.linkedMilestoneId}</strong></div>
+            <div><span class="text-zinc-400">📅 التاريخ المتوقع: </span><span class="font-mono font-bold text-blue-700">${t.plannedDate}</span> <span class="text-[10px] text-zinc-400 font-mono">(${t.cashFlowMonth})</span></div>
+            <div><span class="text-zinc-400">📦 النطاق: </span><span class="text-zinc-700 font-medium">${t.applicableScope || 'العقد العام'}</span></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderCashFlowChart(cf) {
@@ -1009,7 +1084,7 @@ function renderCashFlowTable(cf) {
   if (!tbody) return;
 
   const months = cf.monthlyBreakdown || [];
-  if (countBadge) countBadge.innerText = `(إجمالي دورات المشروع: ${months.length} أشهر مالية)`;
+  if (countBadge) countBadge.innerText = `(إجمالي فترات المشروع: ${months.length} أشهر مالية)`;
 
   if (months.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-xs text-zinc-400">لا توجد بيانات تدفقات نقدية مسجلة.</td></tr>`;
@@ -1021,36 +1096,194 @@ function renderCashFlowTable(cf) {
   tbody.innerHTML = months.map(m => {
     const isNetPositive = m.netFlow >= 0;
     const isCumulativePositive = m.cumulativeNet >= 0;
-    const statusClass = m.status.includes('Paid') ? 'badge-completed' : m.status.includes('Review') ? 'badge-inprogress' : 'badge-pending';
+    const statusClass = m.status.includes('Paid') ? 'badge-completed' : m.status.includes('Milestone') ? 'badge-inprogress' : 'badge-pending';
+
+    // Milestones badges for this month
+    const milestonesContent = (m.milestones && m.milestones.length > 0)
+      ? m.milestones.map(t => `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
+            <span>✨</span>
+            <span>${t.termNameAr || t.termNameEn}</span>
+            <span class="bg-blue-200/80 px-1 rounded text-[10px]">${t.percentage}%</span>
+          </span>
+        `).join('')
+      : `<span class="text-[11px] text-zinc-400 font-normal">متابعة تنفيذية ومصاريف تشغيل</span>`;
 
     return `
-      <tr class="hover:bg-zinc-50 transition">
-        <td class="text-center font-mono text-xs font-bold text-zinc-400">M${String(m.monthIndex).padStart(2, '0')}</td>
-        <td class="text-xs font-bold text-zinc-900 whitespace-nowrap">${m.monthLabel}</td>
-        <td class="text-center font-bold text-xs text-zinc-700">${m.progressPct}%</td>
-        <td class="text-center">
-          <div class="inline-flex items-center gap-1.5">
-            <div class="w-12 bg-zinc-200 h-1.5 rounded-full overflow-hidden">
-              <div class="bg-amber-500 h-full rounded-full" style="width: ${m.cumulativeProgressPct}%"></div>
-            </div>
-            <span class="text-xs font-black text-amber-800">${m.cumulativeProgressPct}%</span>
-          </div>
+      <tr class="hover:bg-zinc-50/80 transition border-b border-zinc-100">
+        <td class="text-center font-mono text-xs font-bold text-zinc-400 py-2.5 px-2">M${String(m.monthIndex).padStart(2, '0')}</td>
+        <td class="text-xs font-bold text-zinc-900 whitespace-nowrap py-2.5 px-3">${m.monthLabel}</td>
+        
+        <td class="py-2.5 px-3 min-w-[220px]">
+          <div class="flex flex-wrap gap-1.5">${milestonesContent}</div>
         </td>
-        <td class="font-mono text-xs font-medium text-zinc-600 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.plannedValue)} ${sym}</td>
-        <td class="font-mono text-xs font-bold text-emerald-700 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.inflow)} ${sym}</td>
-        <td class="font-mono text-xs font-bold text-rose-700 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(m.outflow)} ${sym}</td>
-        <td class="font-mono text-xs font-black whitespace-nowrap ${isNetPositive ? 'text-emerald-700' : 'text-rose-700'}">
+
+        <td class="py-2.5 px-3 min-w-[180px] text-xs text-zinc-700 font-medium">
+          ${m.relatedItemsSummary || 'العقد العام'}
+        </td>
+
+        <td class="text-center font-bold text-xs py-2.5 px-2">
+          ${m.progressPct > 0 ? `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold text-xs border border-emerald-200">${m.progressPct}%</span>` : '<span class="text-zinc-300">-</span>'}
+        </td>
+
+        <td class="font-mono text-xs font-bold text-emerald-700 whitespace-nowrap text-center py-2.5 px-3 bg-emerald-50/30 border-x border-emerald-50">
+          ${new Intl.NumberFormat('en-US').format(m.inflow)} ${sym}
+        </td>
+
+        <td class="font-mono text-xs font-bold text-rose-700 whitespace-nowrap text-center py-2.5 px-3 bg-rose-50/30 border-x border-rose-50">
+          ${new Intl.NumberFormat('en-US').format(m.outflow)} ${sym}
+        </td>
+
+        <td class="font-mono text-xs font-black whitespace-nowrap text-center py-2.5 px-3 ${isNetPositive ? 'text-emerald-700' : 'text-rose-700'}">
           ${isNetPositive ? '+' : ''}${new Intl.NumberFormat('en-US').format(m.netFlow)} ${sym}
         </td>
-        <td class="font-mono text-xs font-bold whitespace-nowrap ${isCumulativePositive ? 'text-zinc-900' : 'text-rose-600'}">
+
+        <td class="font-mono text-xs font-bold whitespace-nowrap text-center py-2.5 px-3 ${isCumulativePositive ? 'text-zinc-900' : 'text-rose-600'}">
           ${new Intl.NumberFormat('en-US').format(m.cumulativeNet)} ${sym}
         </td>
-        <td class="text-center">
+
+        <td class="text-center py-2.5 px-2 whitespace-nowrap">
           <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${statusClass}">${m.statusAr || m.status}</span>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+// Payment Terms Modal & Editor Controller
+let activeEditingPaymentTerms = [];
+
+function openPaymentTermsModal() {
+  const modal = document.getElementById("payment-terms-modal");
+  if (!modal || !currentProject) return;
+
+  const existingTerms = currentProject.contractPaymentTerms;
+  if (existingTerms && Array.isArray(existingTerms) && existingTerms.length > 0) {
+    activeEditingPaymentTerms = JSON.parse(JSON.stringify(existingTerms));
+  } else {
+    const cf = scheduler ? scheduler.getCashFlowForecast() : null;
+    activeEditingPaymentTerms = cf?.contractPaymentTerms ? JSON.parse(JSON.stringify(cf.contractPaymentTerms)) : [];
+  }
+
+  renderPaymentTermsEditorList();
+  modal.classList.remove("hidden");
+}
+
+function renderPaymentTermsEditorList() {
+  const listContainer = document.getElementById("payment-terms-editor-list");
+  const totalBadge = document.getElementById("payment-terms-total-pct");
+  if (!listContainer) return;
+
+  const milestones = currentProject.keyMilestones || [];
+
+  const totalPct = activeEditingPaymentTerms.reduce((sum, t) => sum + (parseFloat(t.percentage) || 0), 0);
+  if (totalBadge) {
+    totalBadge.innerText = `الإجمالي: ${totalPct}%`;
+    totalBadge.className = totalPct === 100 
+      ? 'text-xs font-black px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800' 
+      : 'text-xs font-black px-2.5 py-0.5 rounded-lg bg-rose-100 text-rose-800 animate-pulse';
+  }
+
+  listContainer.innerHTML = activeEditingPaymentTerms.map((t, idx) => {
+    return `
+      <div class="bg-zinc-50 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/80 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-zinc-900">دفعة #${idx + 1} (${t.id || `PT-0${idx + 1}`})</span>
+          <button type="button" onclick="deletePaymentTermRow(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 transition">
+            <span>✕</span> حذف الدفعة
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-bold text-zinc-600 mb-1">اسم الدفعة التعاقدية (عربي)</label>
+            <input type="text" value="${t.termNameAr || ''}" onchange="updatePaymentTermField(${idx}, 'termNameAr', this.value)" class="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 font-medium">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-zinc-600 mb-1">نسبة الدفعة (%)</label>
+            <input type="number" min="1" max="100" value="${t.percentage || 0}" onchange="updatePaymentTermField(${idx}, 'percentage', parseFloat(this.value) || 0)" class="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 font-bold text-center">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[11px] font-bold text-zinc-600 mb-1">المعلم المرتبط في خطة المشروع</label>
+            <select onchange="updatePaymentTermField(${idx}, 'linkedMilestoneId', this.value)" class="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white font-medium">
+              ${milestones.map(m => `
+                <option value="${m.id}" ${t.linkedMilestoneId === m.id ? 'selected' : ''}>${m.id}: ${m.name}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-zinc-600 mb-1">شرط الاستحقاق التعاقدي (Trigger)</label>
+            <input type="text" value="${t.triggerNameAr || t.triggerType || ''}" onchange="updatePaymentTermField(${idx}, 'triggerNameAr', this.value)" class="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 font-medium">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updatePaymentTermField(idx, field, value) {
+  if (activeEditingPaymentTerms[idx]) {
+    activeEditingPaymentTerms[idx][field] = value;
+    if (field === 'percentage') {
+      const totalBadge = document.getElementById("payment-terms-total-pct");
+      const totalPct = activeEditingPaymentTerms.reduce((sum, t) => sum + (parseFloat(t.percentage) || 0), 0);
+      if (totalBadge) {
+        totalBadge.innerText = `الإجمالي: ${totalPct}%`;
+        totalBadge.className = totalPct === 100 
+          ? 'text-xs font-black px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800' 
+          : 'text-xs font-black px-2.5 py-0.5 rounded-lg bg-rose-100 text-rose-800 animate-pulse';
+      }
+    }
+  }
+}
+
+function addNewPaymentTermRow() {
+  const milestones = currentProject.keyMilestones || [];
+  const nextIdx = activeEditingPaymentTerms.length + 1;
+  activeEditingPaymentTerms.push({
+    id: `PT-${String(nextIdx).padStart(2, '0')}`,
+    termNameAr: `دفعة مرحلية جديدة #${nextIdx}`,
+    termNameEn: `Progress Payment #${nextIdx}`,
+    percentage: 10,
+    triggerType: "progress_milestone",
+    triggerNameAr: "إنجاز الأعمال وفق المعلم",
+    linkedMilestoneId: milestones[0]?.id || "M-01",
+    applicableScope: "العقد العام",
+    status: "Planned"
+  });
+  renderPaymentTermsEditorList();
+}
+
+function deletePaymentTermRow(idx) {
+  if (activeEditingPaymentTerms.length <= 1) {
+    alert("يجب الإبقاء على دفعة تعاقدية واحدة على الأقل.");
+    return;
+  }
+  activeEditingPaymentTerms.splice(idx, 1);
+  renderPaymentTermsEditorList();
+}
+
+function savePaymentTermsFromModal() {
+  const totalPct = activeEditingPaymentTerms.reduce((sum, t) => sum + (parseFloat(t.percentage) || 0), 0);
+  if (totalPct !== 100) {
+    if (!confirm(`⚠️ مجموع نسب الدفعات التعاقدية الحالية هو ${totalPct}% (المطلوب 100%).\n\nهل تريد المتابعة والحفظ على أي حال؟`)) {
+      return;
+    }
+  }
+
+  currentProject.contractPaymentTerms = activeEditingPaymentTerms;
+  saveActiveProjectState();
+
+  if (scheduler) {
+    scheduler.project = currentProject;
+  }
+
+  renderCashFlowView();
+  document.getElementById("payment-terms-modal")?.classList.add("hidden");
+  alert("✅ تم حفظ الشروط التعاقدية وتحديث التدفقات النقدية تلقائياً!");
 }
 
 // Filter Logic

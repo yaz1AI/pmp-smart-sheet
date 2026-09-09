@@ -16,6 +16,68 @@ const SAMPLE_PROJECT_DATA = {
     status: "Active Execution / جاري التنفيذ",
     description: "مشروع متكامل لإنشاء وتجهيز برج أعمال وفندقة ذكي يضم 40 طابقاً، يشمل تنفيذ البنية التحتية للاتصالات، شبكات التيار الخفيف ELV، أنظمة المراقبة والذكاء الاصطناعي، وإنترنت الأشياء IoT."
   },
+  contractPaymentTerms: [
+    {
+      id: "PT-01",
+      termNameAr: "الدفعة المقدمة (Down Payment)",
+      termNameEn: "Advance Down Payment",
+      percentage: 20,
+      triggerType: "contract_award",
+      triggerNameAr: "تعميد وتوقيع العقد وانطلاق المشروع",
+      linkedMilestoneId: "M-01",
+      applicableScope: "إجمالي قيمة العقد (Total Contract)",
+      status: "Paid",
+      notes: "تُصرف عند توقيع العقد والبدء الميداني"
+    },
+    {
+      id: "PT-02",
+      termNameAr: "دفعة توريد المواد والأنظمة الرئيسية (Upon Delivery)",
+      termNameEn: "Procurement & Delivery Payment",
+      percentage: 30,
+      triggerType: "material_delivery",
+      triggerNameAr: "وصول وتوريد المواد والأنظمة الذكية للموقع",
+      linkedMilestoneId: "M-05",
+      applicableScope: "حزم التوريدات والمشتريات (Procurement Packages)",
+      status: "In Progress",
+      notes: "تُصرف بموجب محاضر استلام المواد MIR المعتمدة"
+    },
+    {
+      id: "PT-03",
+      termNameAr: "دفعة أعمال التركيبات والتنفيذ الميداني (Upon Installation)",
+      termNameEn: "Installation & Execution Payment",
+      percentage: 30,
+      triggerType: "site_installation",
+      triggerNameAr: "إنجاز أعمال التأسيسات والتركيبات الميدانية",
+      linkedMilestoneId: "M-07",
+      applicableScope: "أعمال التركيبات في الأبراج والمكاتب",
+      status: "Planned",
+      notes: "تُصرف بنسب الإنجاز الميداني المعتمدة من الاستشاري"
+    },
+    {
+      id: "PT-04",
+      termNameAr: "دفعة الفحص والتشغيل والتسليم (Testing & Commissioning)",
+      termNameEn: "Testing, Commissioning & Handover Payment",
+      percentage: 15,
+      triggerType: "handover_completion",
+      triggerNameAr: "التشغيل التجريبي والفحص والتكامل بين الأنظمة",
+      linkedMilestoneId: "M-08",
+      applicableScope: "حزمة الفحص والاختبارات والتسليم النهائي",
+      status: "Planned",
+      notes: "تُصرف عند توقيع محضر التسليم الابتدائي"
+    },
+    {
+      id: "PT-05",
+      termNameAr: "إفراج محجوز الضمان النهائي (Retention Release)",
+      termNameEn: "Retention Release Payment",
+      percentage: 5,
+      triggerType: "retention_release",
+      triggerNameAr: "انتهاء فترة الضمان والتسليم النهائي",
+      linkedMilestoneId: "M-09",
+      applicableScope: "محجوز الضمان التعاقدي (Contract Retention)",
+      status: "Planned",
+      notes: "تُصرف بعد صدور شهادة الإغلاق النهائي"
+    }
+  ],
   facilities: [
     { id: "TWR-A", name: "برج الأعمال والمكاتب الذكية (Tower A - Corporate)", floors: "40 طابقاً + 3 أدوار قبو", rooms: 140, type: "Smart Offices & HQ" },
     { id: "TWR-B", name: "برج الأجنحة الفندقية الفاخرة (Tower B - Hotel Suites)", floors: "25 طابقاً", rooms: 220, type: "Luxury Hotel Suites" },
@@ -80,6 +142,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-03-05", 
       poStatusDate: "2026-03-05", 
       poStatus: "Issued", 
+      boStatusDate: "2026-02-28",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -95,6 +159,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-03-25", 
       poStatusDate: "2026-03-25", 
       poStatus: "Issued", 
+      boStatusDate: "2026-03-20",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -110,6 +176,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "-", 
       poStatusDate: "2026-03-15", 
       poStatus: "Pending Revision", 
+      boStatusDate: "2026-03-15",
+      boStatus: "Pending Revision",
       critical: true 
     },
     { 
@@ -125,6 +193,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-04-10", 
       poStatusDate: "2026-04-10", 
       poStatus: "Issued", 
+      boStatusDate: "2026-04-05",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -140,6 +210,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-04-12", 
       poStatusDate: "2026-04-12", 
       poStatus: "Issued", 
+      boStatusDate: "2026-04-08",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -155,6 +227,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-02-01", 
       poStatusDate: "2026-08-20", 
       poStatus: "Delivered to Site", 
+      boStatusDate: "2026-01-30",
+      boStatus: "Committed",
       critical: false 
     },
     { 
@@ -170,6 +244,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-06-18", 
       poStatusDate: "2026-06-18", 
       poStatus: "Issued", 
+      boStatusDate: "2026-06-12",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -185,6 +261,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-03-08", 
       poStatusDate: "2026-03-08", 
       poStatus: "Issued", 
+      boStatusDate: "2026-03-01",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -200,6 +278,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-04-28", 
       poStatusDate: "2026-04-28", 
       poStatus: "Issued", 
+      boStatusDate: "2026-04-22",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -215,6 +295,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "-", 
       poStatusDate: "2026-05-18", 
       poStatus: "Under Resubmission", 
+      boStatusDate: "2026-05-18",
+      boStatus: "Pending BO",
       critical: false 
     },
     { 
@@ -230,6 +312,8 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "2026-06-02", 
       poStatusDate: "2026-06-02", 
       poStatus: "Issued", 
+      boStatusDate: "2026-05-28",
+      boStatus: "Approved",
       critical: true 
     },
     { 
@@ -245,7 +329,66 @@ const SAMPLE_PROJECT_DATA = {
       poIssuanceDate: "-", 
       poStatusDate: "2026-06-15", 
       poStatus: "Under Resubmission", 
+      boStatusDate: "2026-06-15",
+      boStatus: "Under Revision",
       critical: true 
+    }
+  ],
+  contractPaymentTerms: [
+    {
+      id: "PT-01",
+      termNameAr: "دفعة مقدمة عند توقيع العقد (Down Payment)",
+      termNameEn: "Advance Payment upon Contract Signing",
+      percentage: 20,
+      triggerType: "contract_award",
+      triggerNameAr: "توقيع العقد والمباشرة الميدانية",
+      linkedMilestoneId: "M-01",
+      applicableScope: "قيمة العقد الكلية",
+      status: "Paid"
+    },
+    {
+      id: "PT-02",
+      termNameAr: "دفعة اعتماد وتوريد المواد للموقع (Delivery & Supply)",
+      termNameEn: "Material Approval & Delivery Payment",
+      percentage: 30,
+      triggerType: "material_delivery",
+      triggerNameAr: "اعتماد وتوريد المواد ذات التوريد الحرج للموقع",
+      linkedMilestoneId: "M-05",
+      applicableScope: "حزم المشتريات ومواد المشروع (BOs & POs)",
+      status: "In Progress"
+    },
+    {
+      id: "PT-03",
+      termNameAr: "دفعة إنجاز أعمال التركيبات والتشييد (Installation)",
+      termNameEn: "Installation & Execution Milestone Payment",
+      percentage: 30,
+      triggerType: "site_installation",
+      triggerNameAr: "اكتمال أعمال التركيبات للأبراج والمكاتب",
+      linkedMilestoneId: "M-07",
+      applicableScope: "الأعمال الإنشائية والتركيبات الميدانية",
+      status: "Planned"
+    },
+    {
+      id: "PT-04",
+      termNameAr: "دفعة الفحص والتشغيل والتسليم (Testing & Commissioning)",
+      termNameEn: "Testing, Commissioning & Handover Payment",
+      percentage: 15,
+      triggerType: "handover_completion",
+      triggerNameAr: "التشغيل التجريبي والفحص والتسليم النهائي",
+      linkedMilestoneId: "M-08",
+      applicableScope: "حزمة الفحص والاختبارات والتسليم",
+      status: "Planned"
+    },
+    {
+      id: "PT-05",
+      termNameAr: "إفراج محجوز الضمان النهائي (Retention Release)",
+      termNameEn: "Retention Release Payment",
+      percentage: 5,
+      triggerType: "retention_release",
+      triggerNameAr: "انتهاء فترة الضمان والتسليم النهائي",
+      linkedMilestoneId: "M-09",
+      applicableScope: "محجوز الضمان التعاقدي (Contract Retention)",
+      status: "Planned"
     }
   ],
   actionItems: [

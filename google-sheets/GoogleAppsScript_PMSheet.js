@@ -176,13 +176,14 @@ function buildCompleteProjectSheet(data) {
     mtsSheet.clear();
     mtsSheet.setRightToLeft(true);
     
-    const mtsHeaders = ['م', 'اسم المادة / النظام', 'تاريخ التقديم', 'كود الاعتماد', 'فترة التوريد (Lead Time)', 'مطلوب بالموقع', 'طلب PO', 'اعتماد PO', 'إصدار PO', 'تاريخ الحالة', 'حالة أمر الشراء (PO)'];
+    const mtsHeaders = ['م', 'اسم المادة / النظام', 'تاريخ التقديم', 'كود الاعتماد', 'فترة التوريد (Lead Time)', 'مطلوب بالموقع', 'طلب PO', 'اعتماد PO', 'إصدار PO', 'تاريخ حالة PO', 'حالة أمر الشراء (PO)', 'تاريخ حالة BO', 'حالة أمر الميزانية (BO)'];
     mtsSheet.getRange(1, 1, 1, mtsHeaders.length).setValues([mtsHeaders])
       .setFontWeight('bold').setBackground('#0284c7').setFontColor('#ffffff');
 
     const mtsRows = data.materialSubmittals.map(m => [
       m.sn, m.item, m.submissionDate, m.status, m.leadTime, m.requiredSite,
-      m.poRequestDate || '-', m.poApprovalDate || '-', m.poIssuanceDate || '-', m.poStatusDate || '-', m.poStatus || 'Planned'
+      m.poRequestDate || '-', m.poApprovalDate || '-', m.poIssuanceDate || '-', m.poStatusDate || '-', m.poStatus || 'Planned',
+      m.boStatusDate || '-', m.boStatus || 'Pending BO'
     ]);
     mtsSheet.getRange(2, 1, mtsRows.length, mtsHeaders.length).setValues(mtsRows);
     mtsSheet.autoResizeColumns(1, mtsHeaders.length);
