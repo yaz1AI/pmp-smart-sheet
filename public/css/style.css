@@ -212,4 +212,11 @@ tr:hover td {
     font-size: 0.75rem;
   }
 }
+/* Interface icons use one consistent icon family instead of platform emoji glyphs. */
+.fa-solid, .fa-regular, .fa-brands {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
 

@@ -32,6 +32,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Public Supabase settings only.  The anon key is intentionally a browser key;
+// permissions must be enforced by the Row Level Security policies in supabase-schema.sql.
+app.get('/api/cloud/config', (req, res) => {
+  const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+  const anonKey = String(process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+  res.json({ enabled: Boolean(url && anonKey), url: url || null, anonKey: anonKey || null });
+});
+
 // Helper: Extract text from any file buffer
 async function extractTextFromFile(file) {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -82,6 +90,39 @@ async function extractTextFromFile(file) {
   return text.trim();
 }
 
+// Every AI result must be reviewable.  Keep a small, human-readable provenance
+// record with each planning item rather than presenting an inference as a fact.
+function attachReviewMetadata(projectData, files, mode = 'ai_synthesis') {
+  if (!projectData || typeof projectData !== 'object') return projectData;
+
+  const sourceFiles = (files || []).map(file => file.originalname || file.name).filter(Boolean);
+  const collections = ['dailyTasks', 'keyMilestones', 'materialSubmittals', 'actionItems', 'scopeSystems'];
+
+  collections.forEach(collectionName => {
+    if (!Array.isArray(projectData[collectionName])) return;
+    projectData[collectionName] = projectData[collectionName].map(item => ({
+      ...item,
+      review: item.review || {
+        status: 'pending_review',
+        sourceType: mode,
+        sourceFiles,
+        confidence: mode === 'document_extract' ? 'high' : 'medium',
+        note: mode === 'document_extract'
+          ? 'مستخرج من مستندات المشروع ويحتاج تحققاً سريعاً.'
+          : 'اقتراح مولّد من تحليل الذكاء الاصطناعي للمستندات ويحتاج اعتماد مدير المشروع.'
+      }
+    }));
+  });
+
+  projectData.reviewSummary = {
+    status: 'pending_review',
+    sourceFiles,
+    generatedAt: new Date().toISOString(),
+    note: 'راجع العناصر المقترحة واعتمدها قبل استخدامها كأساس تشغيلي أو تعاقدي.'
+  };
+  return projectData;
+}
+
 // Endpoint 1: Multi-File Upload & AI Project Synthesis & Cross-Correlation
 app.post('/api/analyze-file', upload.any(), async (req, res) => {
   try {
@@ -130,6 +171,7 @@ ${content.substring(0, 40000)}
       projectData = parseProjectTextHeuristically(combinedDossierText, files[0].originalname);
     }
 
+    projectData = attachReviewMetadata(projectData, files, geminiApiKey ? 'ai_synthesis' : 'heuristic_synthesis');
     projectData.uploadedFilesInfo = files.map(f => ({
       name: f.originalname,
       size: (f.size / 1024).toFixed(1) + ' KB',
@@ -224,6 +266,7 @@ ${combinedNewText}
       size: (f.size / 1024).toFixed(1) + ' KB',
       ext: path.extname(f.originalname).toLowerCase()
     }));
+    enrichedData = attachReviewMetadata(enrichedData, [...(existingProject?.uploadedFilesInfo || []), ...files], 'ai_synthesis');
     enrichedData.uploadedFilesInfo = [...(existingProject?.uploadedFilesInfo || []), ...newFilesList];
 
     return res.json({ success: true, projectData: enrichedData, warning, addedFilesCount: files.length });
@@ -380,12 +423,15 @@ ${documentText.substring(0, 70000)}
 // Smart Document Heuristic Engine (Extracts real tasks, milestones, and dates from document content)
 function parseProjectTextHeuristically(text, filename) {
   const cleanName = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-  const rawLines = text.split('\n')
-    .map(l => l.replace(/[\r\t]/g, ' ').trim())
-    .filter(l => l.length > 3 && !l.startsWith('http') && !l.includes('undefined function'));
-
-  // Clean lines for task generation
-  const validLines = rawLines.filter(l => l.length > 5 && l.length < 150);
+  const rawLines = text.split('\n').map(line => line.replace(/[\r\t]/g, ' ').trim());
+  const isDocumentMetadata = line =>
+    !line || line.length < 8 || line.length > 180 || /^[=\-_*#\s]+$/.test(line) ||
+    line.startsWith('http') || line.includes('undefined function') ||
+    line.includes('مستند المشروع رقم') || line.includes('وثيقة إضافية جديدة') ||
+    /(?:نوع المستند|file type|\.(?:pdf|docx?|xlsx?|xls|csv)\b|\b(?:KB|MB)\b)/i.test(line);
+  const validLines = rawLines.filter(line => !isDocumentMetadata(line));
+  const workItemPattern = /(?:توريد|تنفيذ|اعتماد|مراجعة|تسليم|إصدار|تركيب|اختبار|تنسيق|إعداد|استلام|تقديم|شراء|اجتماع|تصميم|مخططات|فحص|تشغيل|install|submit|review|approve|procure|deliver|test|commission|meeting|action|milestone|schedule|inspection)/i;
+  const workItemLines = validLines.filter(line => workItemPattern.test(line));
   
   // Dates calculation
   const today = new Date();
@@ -397,8 +443,8 @@ function parseProjectTextHeuristically(text, filename) {
 
   // Look for potential project title in first lines
   let extractedProjectName = cleanName;
-  for (let i = 0; i < Math.min(5, rawLines.length); i++) {
-    const l = rawLines[i];
+  for (let i = 0; i < Math.min(5, validLines.length); i++) {
+    const l = validLines[i];
     if (l.length > 5 && l.length < 60 && !l.includes('{') && !l.includes(':')) {
       extractedProjectName = l;
       break;
@@ -411,7 +457,7 @@ function parseProjectTextHeuristically(text, filename) {
   ];
 
   // Extract scope items from document lines
-  const scopeItems = validLines.slice(0, 8);
+  const scopeItems = workItemLines.slice(0, 8);
   const scopeSystems = [
     { code: "SYS-01", title: "حزم الأعمال والأنظمة المعتمدة في الوثيقة", items: scopeItems.length > 0 ? scopeItems : ["مراجعة نطاق العمل", "تنفيذ البنود الأساسية", "الفحص والاعتماد"] }
   ];
@@ -428,7 +474,7 @@ function parseProjectTextHeuristically(text, filename) {
   const materialSubmittals = [];
   const materialKeywords = ['توريد', 'مادة', 'نظام', 'معدات', 'شراء', 'اعتماد', 'material', 'equipment', 'hvac', 'electrical', 'procurement', 'submittal'];
   let sn = 1;
-  for (const line of validLines) {
+  for (const line of workItemLines) {
     if (materialKeywords.some(k => line.toLowerCase().includes(k)) && materialSubmittals.length < 6) {
       materialSubmittals.push({
         sn: sn++,
@@ -488,7 +534,8 @@ function parseProjectTextHeuristically(text, filename) {
   });
 
   // 2. Add tasks derived directly from file text lines
-  const selectedLines = validLines.slice(0, 15);
+  // Never turn file names, page headings, separators, or general prose into tasks.
+  const selectedLines = workItemLines.slice(0, 15);
   selectedLines.forEach((line, i) => {
     const phaseInfo = phases[(i + 1) % phases.length];
     const taskDate = new Date(Date.now() + (i * 10 + 3) * 86400000).toISOString().split('T')[0];
@@ -504,7 +551,15 @@ function parseProjectTextHeuristically(text, filename) {
       priority: phaseInfo.prio,
       status: i === 0 ? "In Progress" : "Pending",
       progress: i === 0 ? 30 : 0,
-      deliverable: `تقرير إنجاز ومحضر اعتماد البند (${i + 1})`
+      deliverable: `تقرير إنجاز ومحضر اعتماد البند (${i + 1})`,
+      review: {
+        status: 'pending_review',
+        sourceType: 'document_extract',
+        sourceFiles: [filename],
+        confidence: 'high',
+        evidence: line,
+        note: 'مستخرج من نص المستند المرفوع ويحتاج تحقق مدير المشروع.'
+      }
     });
   });
 

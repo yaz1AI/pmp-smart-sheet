@@ -8,6 +8,8 @@
   <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome: consistent interface icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <!-- SheetJS CDN for Excel Generation -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <!-- html2pdf CDN for High-Quality Executive PDF Export -->
@@ -56,25 +58,25 @@
       <!-- Quick Action Buttons & User Menu -->
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         <a href="landing.html" class="px-2.5 py-1.5 text-zinc-400 hover:text-white text-xs font-bold rounded-xl hover:bg-[#14161f] transition hidden lg:inline">
-          🏠 الرئيسية
+          <i class="fa-solid fa-house" aria-hidden="true"></i> الرئيسية
         </a>
         <button id="btn-open-new-project" class="px-2.5 sm:px-3 py-1.5 bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-black rounded-xl transition flex items-center gap-1 shadow-sm">
-          <span>➕</span> <span class="hidden sm:inline">مشروع جديد</span>
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> <span class="hidden sm:inline">مشروع جديد</span>
         </button>
         <button id="btn-export-excel" class="px-2.5 sm:px-3 py-1.5 bg-[#122b1f] hover:bg-[#183a2a] text-emerald-300 border border-emerald-700/50 text-xs font-bold rounded-xl transition flex items-center gap-1" title="تصدير Excel">
-          <span>📥</span> <span class="hidden sm:inline">تصدير Excel</span>
+          <i class="fa-solid fa-file-excel" aria-hidden="true"></i> <span class="hidden sm:inline">تصدير Excel</span>
         </button>
         <button id="btn-export-pdf" onclick="openPdfReportModal()" class="px-2.5 sm:px-3 py-1.5 bg-[#2a1c12] hover:bg-[#3d2719] text-amber-300 border border-amber-600/50 text-xs font-bold rounded-xl transition flex items-center gap-1 shadow-sm" title="تصدير تقرير تنفيذي PDF">
-          <span>📄</span> <span class="hidden sm:inline">تقرير PDF</span>
+          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> <span class="hidden sm:inline">تقرير PDF</span>
         </button>
         <button id="btn-open-pricing" onclick="openSubscriptionModal()" class="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 text-xs font-black rounded-xl transition flex items-center gap-1 shadow-sm" title="باقات الاشتراك والترقية">
-          <span>💎</span> <span class="hidden sm:inline">الاشتراكات</span>
+          <i class="fa-solid fa-crown" aria-hidden="true"></i> <span class="hidden sm:inline">الاشتراكات</span>
         </button>
         <button onclick="openShareModal()" class="p-1.5 sm:px-3 sm:py-1.5 bg-[#14161f] hover:bg-[#1f2230] text-zinc-300 border border-[#242736] text-xs font-bold rounded-xl transition flex items-center gap-1" title="مشاركة المشروع">
-          <span>👥</span> <span class="hidden md:inline">مشاركة</span>
+          <i class="fa-solid fa-users" aria-hidden="true"></i> <span class="hidden md:inline">مشاركة</span>
         </button>
         <button id="btn-open-settings" class="p-1.5 bg-[#14161f] hover:bg-[#1f2230] text-zinc-300 border border-[#242736] rounded-xl text-xs font-bold transition" title="إعدادات الذكاء الاصطناعي">
-          ⚙️
+          <i class="fa-solid fa-gear" aria-hidden="true"></i>
         </button>
 
         <!-- User Profile Component -->
@@ -111,16 +113,16 @@
             </div>
             <div class="flex items-center gap-2 pt-1 sm:pt-0 flex-wrap sm:flex-nowrap">
               <button onclick="openAttachFilesModal()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 rounded-xl text-xs font-semibold transition border border-blue-500/30 flex items-center justify-center gap-1.5" title="إرفاق ملفات إضافية لهذا المشروع لدمج النطاق أو جداول BOQ">
-                📎 إرفاق ملفات
+                <i class="fa-solid fa-paperclip" aria-hidden="true"></i> إرفاق ملفات
               </button>
               <button onclick="openWorkPlanGeneratorModal()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold transition border border-amber-400/30 flex items-center justify-center gap-1.5" title="توليد أو إعادة جدولة خطة العمل بالذكاء الاصطناعي">
-                🪄 توليد خطة العمل (AI Plan)
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> توليد خطة العمل (AI Plan)
               </button>
               <button onclick="exportCurrentProject()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition border border-white/10 flex items-center justify-center gap-1.5" title="تصدير هذا المشروع إلى Excel">
-                📊 تصدير Excel
+                <i class="fa-solid fa-file-excel" aria-hidden="true"></i> تصدير Excel
               </button>
               <button onclick="handleDeleteCurrentProject()" class="flex-1 sm:flex-initial px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 hover:text-rose-200 rounded-xl text-xs font-semibold transition border border-rose-500/30 flex items-center justify-center gap-1.5" title="حذف هذا المشروع">
-                🗑️ حذف المشروع
+                <i class="fa-solid fa-trash" aria-hidden="true"></i> حذف المشروع
               </button>
             </div>
           </div>
@@ -140,28 +142,34 @@
     <!-- Navigation Tabs Bar (Scrollable on mobile) -->
     <div id="project-tabs-bar" class="bg-[#e9ecef] rounded-2xl p-1.5 flex overflow-x-auto no-scrollbar gap-1.5 border border-zinc-200/70 touch-pan-x scroll-smooth">
       <button class="tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="projects">
-        📁 لوحة مشاريعي (My Projects)
+        <i class="fa-solid fa-folder" aria-hidden="true"></i> لوحة مشاريعي (My Projects)
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="daily">
-        📅 المهام اليومية (Daily Agenda)
+        <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> المهام اليومية (Daily Agenda)
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="grid">
-        📊 شيت البيانات التفاعلي (Spreadsheet Grid)
+        <i class="fa-solid fa-table" aria-hidden="true"></i> شيت البيانات التفاعلي (Spreadsheet Grid)
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="mts">
-        📑 سجل الاعتمادات والمشتريات (MTS & POs)
+        <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> سجل الاعتمادات والمشتريات (MTS & POs)
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="milestones">
-        📈 المعالم والمسار الزمني (Milestones)
+        <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> المعالم والمسار الزمني (Milestones)
+      </button>
+      <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="review">
+        <i class="fa-solid fa-list-check" aria-hidden="true"></i> مراجعة الاعتمادات (AI Review)
+      </button>
+      <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="risks">
+        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> المخاطر والتنبيهات
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="cashflow">
-        💵 التدفقات النقدية (Cash Flow)
+        <i class="fa-solid fa-chart-line" aria-hidden="true"></i> التدفقات النقدية (Cash Flow)
       </button>
       <button class="tab-btn project-specific-tab px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:text-zinc-950 transition flex-shrink-0" data-tab="actions">
-        ⚡ القرارات وبنود العمل (Action Items)
+        <i class="fa-solid fa-bolt" aria-hidden="true"></i> القرارات وبنود العمل (Action Items)
       </button>
       <button class="tab-btn active px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-zinc-950 bg-white shadow-sm border border-zinc-200 transition flex-shrink-0 mr-auto" data-tab="upload">
-        📂 رفع ملف مشروع جديد (AI Analyzer)
+        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> رفع ملف مشروع جديد (AI Analyzer)
       </button>
     </div>
 
@@ -174,7 +182,7 @@
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button onclick="handleLoadDemoProject()" class="flex-1 sm:flex-initial px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition text-center">
-            📂 تجربة مشروع تجريبي
+            <i class="fa-solid fa-flask" aria-hidden="true"></i> تجربة مشروع تجريبي
           </button>
           <button onclick="switchTab('upload')" class="flex-1 sm:flex-initial px-4 py-2 bg-zinc-950 hover:bg-black text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
             <span>➕</span> إضافة / رفع مشروع جديد
@@ -209,9 +217,13 @@
           <div class="text-xl sm:text-2xl font-black text-amber-600 mt-1" id="kpi-pending">0</div>
         </div>
         <div class="bg-[#fff1f2] p-3.5 sm:p-4 rounded-2xl border border-rose-200 shadow-sm col-span-2 sm:col-span-1">
-          <span class="text-[10px] sm:text-[11px] font-bold text-rose-800 uppercase tracking-wider flex items-center gap-1">🚨 الحرجة</span>
+          <span class="text-[10px] sm:text-[11px] font-bold text-rose-800 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> الحرجة</span>
           <div class="text-xl sm:text-2xl font-black text-rose-700 mt-1" id="kpi-critical">0</div>
         </div>
+      </div>
+
+      <div id="daily-command-center" class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Rendered via JavaScript -->
       </div>
 
       <!-- Date Selector Toolbar -->
@@ -220,17 +232,17 @@
           <span class="text-xs font-bold text-zinc-500 whitespace-nowrap">اختر التاريخ:</span>
           <input type="date" id="daily-date-picker" class="border border-zinc-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-zinc-900 focus:outline-none bg-zinc-50 flex-1 sm:flex-initial">
           
-          <div class="flex items-center gap-1 border-r border-zinc-200 pr-2 mr-1">
-            <button id="btn-prev-day" class="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold" title="اليوم السابق">
-              ◀
+          <div class="flex items-center gap-1 border-r border-zinc-200 pr-2 mr-1" dir="rtl">
+            <button id="btn-prev-day" class="w-9 h-9 inline-flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-sm transition" title="اليوم السابق" aria-label="اليوم السابق">
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
             </button>
-            <button id="btn-next-day" class="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold" title="اليوم التالي">
-              ▶
+            <button id="btn-next-day" class="w-9 h-9 inline-flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-sm transition" title="اليوم التالي" aria-label="اليوم التالي">
+              <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
             </button>
           </div>
 
           <button id="btn-today" class="px-3 py-1.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition whitespace-nowrap">
-            📍 تاريخ اليوم
+            <i class="fa-solid fa-location-dot" aria-hidden="true"></i> تاريخ اليوم
           </button>
         </div>
 
@@ -249,7 +261,7 @@
     <div id="tab-content-grid" class="hidden space-y-4">
       <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-zinc-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 flex-1 w-full">
-          <input type="text" id="filter-search" placeholder="🔍 بحث في المهام، المسؤول، الرمز..." class="border border-zinc-300 bg-zinc-50 rounded-xl px-3 py-2 text-xs w-full sm:w-64 focus:ring-2 focus:ring-zinc-900 focus:outline-none">
+          <input type="text" id="filter-search" placeholder="بحث في المهام، المسؤول، الرمز..." class="border border-zinc-300 bg-zinc-50 rounded-xl px-3 py-2 text-xs w-full sm:w-64 focus:ring-2 focus:ring-zinc-900 focus:outline-none">
           
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <select id="filter-phase" class="border border-zinc-300 bg-zinc-50 rounded-xl px-2.5 py-2 text-xs font-semibold text-zinc-700 focus:outline-none flex-1 sm:flex-initial">
@@ -270,8 +282,7 @@
             </select>
           </div>
         </div>
-
-        <span id="grid-count" class="text-xs font-bold text-zinc-500 whitespace-nowrap"></span>
+        <div class="flex items-center gap-2"><input id="schedule-import-input" type="file" accept=".csv,.xlsx,.xls" class="hidden"><button type="button" onclick="document.getElementById('schedule-import-input')?.click()" class="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-file-import" aria-hidden="true"></i> استيراد جدول</button><span id="grid-count" class="text-xs font-bold text-zinc-500 whitespace-nowrap"></span></div>
       </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden">
@@ -285,6 +296,7 @@
                 <th>اسم المهمة والتفاصيل</th>
                 <th>المسؤول</th>
                 <th>الموقع</th>
+                <th>التبعيات</th>
                 <th>الأولوية</th>
                 <th>الحالة</th>
                 <th>الإنجاز</th>
@@ -310,7 +322,7 @@
         <div class="p-3.5 sm:p-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-2 bg-zinc-50/50">
           <div>
             <h3 class="text-xs sm:text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <span>📦</span>
+              <i class="fa-solid fa-box" aria-hidden="true"></i>
               سجل اعتمادات المواد وتتبع أوامر الشراء (Approvals & Procurement Register – MTS & PO Lifecycle)
             </h3>
             <p class="text-[11px] text-zinc-500 mt-0.5">تتبع شامل لدورة المشتريات: تقديم المادة ➔ اعتماد MTS ➔ طلب PO ➔ اعتماد PO ➔ إصدار PO ➔ التوريد للموقع</p>
@@ -355,12 +367,42 @@
     <div id="tab-content-milestones" class="hidden space-y-4">
       <div class="bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
         <h3 class="text-sm sm:text-base font-black text-zinc-950 mb-4 flex items-center gap-2">
-          <span>🚩</span> المعالم الرئيسية للمشروع (Key Milestones)
+          <i class="fa-solid fa-flag-checkered text-amber-600" aria-hidden="true"></i> المعالم الرئيسية للمشروع (Key Milestones)
         </h3>
         <div id="milestones-timeline-container">
           <!-- Rendered via JS -->
         </div>
       </div>
+    </div>
+
+    <!-- AI REVIEW QUEUE -->
+    <div id="tab-content-review" class="hidden space-y-4">
+      <div class="bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-zinc-950">مراجعة واعتماد مخرجات الذكاء الاصطناعي</h3>
+            <p class="text-xs text-zinc-500 mt-1">راجع كل عنصر قبل الاعتماد التشغيلي أو التعاقدي. العناصر اليدوية معتمدة تلقائياً.</p>
+          </div>
+          <button onclick="approveAllPendingReviewItems()" id="review-approve-all-btn" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+            <i class="fa-solid fa-check" aria-hidden="true"></i> اعتماد كل العناصر المعلّقة
+          </button>
+        </div>
+        <div id="review-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5"></div>
+      </div>
+      <div id="review-items-list" class="space-y-3"></div>
+    </div>
+
+    <!-- RISKS & ALERTS -->
+    <div id="tab-content-risks" class="hidden space-y-4">
+      <div class="bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950"><i class="fa-solid fa-shield-halved text-rose-600" aria-hidden="true"></i> سجل المخاطر والتنبيهات</h3>
+          <p class="text-xs text-zinc-500 mt-1">تابع المخاطر التي قد تؤثر على الوقت أو التكلفة أو التوريدات، وحدد الإجراء والمسؤول.</p>
+        </div>
+        <button onclick="openRiskModal()" class="px-4 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition"><i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة خطر</button>
+      </div>
+      <div id="risks-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+      <div id="risks-list" class="space-y-3"></div>
     </div>
 
     <!-- TAB 5: ACTION ITEMS -->
@@ -397,17 +439,17 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
         <div>
           <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] mb-1 border border-emerald-200">
-            💵 PMP Financial & Cash Flow Intelligence
+            <i class="fa-solid fa-chart-line" aria-hidden="true"></i> PMP Financial & Cash Flow Intelligence
           </div>
           <h3 class="text-base sm:text-lg font-black text-zinc-950">التدفقات النقدية ومنحنى S-Curve المالي</h3>
           <p class="text-xs text-zinc-500">تحليل وتوقع المستخلصات المعتمدة، التكاليف التشغيلية، وصافي السيولة النقدية شهرياً</p>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button onclick="openBudgetModal()" class="flex-1 sm:flex-initial px-3.5 py-2 bg-zinc-950 hover:bg-black text-amber-300 font-bold text-xs rounded-xl transition shadow-sm flex items-center justify-center gap-1.5">
-            <span>⚙️</span> تعديل ميزانية المشروع
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i> تعديل ميزانية المشروع
           </button>
           <button onclick="exportCurrentProject()" class="flex-1 sm:flex-initial px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
-            <span>📊</span> تصدير Excel
+            <i class="fa-solid fa-file-excel" aria-hidden="true"></i> تصدير Excel
           </button>
         </div>
       </div>
@@ -444,7 +486,7 @@
         <div class="flex flex-wrap justify-between items-center gap-2 border-b border-zinc-100 pb-3">
           <div>
             <h4 class="text-sm sm:text-base font-black text-zinc-950 flex items-center gap-2">
-              <span>📈</span> المخطط البياني للتدفقات الشهرية ومنحنى S-Curve
+            <i class="fa-solid fa-chart-area" aria-hidden="true"></i> المخطط البياني للتدفقات الشهرية ومنحنى S-Curve
             </h4>
             <p class="text-[11px] text-zinc-400">مقارنة التدفقات الداخلة بالمصروفات التشغيلية لكل شهر</p>
           </div>
@@ -482,7 +524,7 @@
           </div>
           <div class="flex items-center gap-2">
             <button onclick="openPaymentTermsModal()" class="px-3.5 py-2 bg-zinc-950 hover:bg-black text-amber-300 font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5">
-              <span>✏️</span> تعديل الشروط التعاقدية
+              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> تعديل الشروط التعاقدية
             </button>
           </div>
         </div>
@@ -542,7 +584,7 @@
         <div id="drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-800 bg-zinc-50/70 hover:bg-zinc-100/70 rounded-3xl p-6 sm:p-8 cursor-pointer transition flex flex-col items-center justify-center gap-3 group">
           <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.json,.csv">
           <div class="w-12 h-12 rounded-xl bg-white shadow-sm border border-zinc-200 flex items-center justify-center text-2xl group-hover:scale-105 transition">
-            📤
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
           </div>
           <div class="text-xs sm:text-sm font-bold text-zinc-900">اضغط لاختيار ملفات المشروع أو اسحبها وأفلتها هنا دفعة واحدة</div>
           <div class="text-[11px] sm:text-xs text-zinc-400 font-mono">يدعم رفع عدة ملفات معاً: PDF, DOCX, XLSX, XLS, TXT, CSV</div>
@@ -556,7 +598,7 @@
               <span id="selected-files-count-badge" class="px-2.5 py-0.5 rounded-full bg-zinc-950 text-amber-300 text-[11px] font-black shadow-sm">0 ملفات</span>
             </div>
             <button type="button" onclick="clearSelectedFilesQueue()" class="text-xs text-rose-600 hover:text-rose-800 font-bold transition flex items-center gap-1">
-              <span>✕</span> تفريغ القائمة
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i> تفريغ القائمة
             </button>
           </div>
 
@@ -571,7 +613,7 @@
               <span>➕</span> إضافة ملفات أخرى
             </button>
             <button type="button" id="btn-start-multi-analysis" onclick="startMultiFileAnalysis()" class="w-full sm:flex-1 py-3 bg-zinc-950 hover:bg-black text-amber-300 text-xs sm:text-sm font-black rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-              <span>🚀</span> بدء التحليل المدمج والشامل للمشروع بالذكاء الاصطناعي
+              <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> بدء التحليل المدمج والشامل للمشروع بالذكاء الاصطناعي
             </button>
           </div>
         </div>
@@ -583,10 +625,10 @@
         <!-- Work Plan Generator & Demo Options -->
         <div class="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onclick="openWorkPlanGeneratorModal()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-950 hover:bg-black text-amber-300 border border-amber-400/30 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-            <span>🪄</span> توليد خطة عمل وجدول زمني ذكي (بدون ملفات)
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> توليد خطة عمل وجدول زمني ذكي (بدون ملفات)
           </button>
           <button onclick="handleLoadDemoProject()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
-            <span>📂</span> تجربة نموذج استعراضي جاهز
+            <i class="fa-solid fa-flask" aria-hidden="true"></i> تجربة نموذج استعراضي جاهز
           </button>
         </div>
       </div>
@@ -607,7 +649,7 @@
     <div class="bg-white rounded-3xl w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
       <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
         <div>
-          <h3 class="text-base font-black text-zinc-950">👤 تسجيل الدخول / حساب جديد</h3>
+          <h3 class="text-base font-black text-zinc-950"><i class="fa-solid fa-user" aria-hidden="true"></i> تسجيل الدخول / حساب جديد</h3>
           <p class="text-xs text-zinc-400">ادخل بياناتك لحفظ ومزامنة مشاريعك الهندسية</p>
         </div>
         <button id="btn-close-auth" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
@@ -638,7 +680,7 @@
         </div>
 
         <button type="submit" class="w-full py-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm mt-2">
-          🚀 الدخول والبدء في استخدام النظام
+          <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i> الدخول والبدء في استخدام النظام
         </button>
       </form>
     </div>
@@ -648,7 +690,7 @@
   <div id="share-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-white rounded-3xl w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
       <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
-        <h3 class="text-base font-black text-zinc-950">👥 مشاركة المشروع مع الفريق</h3>
+          <h3 class="text-base font-black text-zinc-950"><i class="fa-solid fa-users" aria-hidden="true"></i> مشاركة المشروع مع الفريق</h3>
         <button id="btn-close-share" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
       </div>
 
@@ -785,7 +827,7 @@
   <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-white rounded-3xl w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl space-y-4 text-right border border-zinc-200">
       <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
-        <h3 class="text-base font-black text-zinc-950">⚙️ إعدادات الذكاء الاصطناعي (Gemini AI)</h3>
+          <h3 class="text-base font-black text-zinc-950"><i class="fa-solid fa-gear" aria-hidden="true"></i> إعدادات المنظومة</h3>
         <button id="btn-close-settings" class="text-zinc-400 hover:text-zinc-950 font-bold p-1">✕</button>
       </div>
 
@@ -805,25 +847,23 @@
           </select>
         </div>
 
-        <!-- Payment Gateway Settings Section -->
-        <div class="pt-3 border-t border-zinc-200 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <label class="block font-bold text-zinc-950">💳 بوابة الدفع الإلكتروني (Moyasar):</label>
-            <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">معتمدة في السعودية</span>
-          </div>
+      </div>
+
+      <div class="rounded-2xl border border-zinc-200 bg-zinc-50 p-3.5 text-xs">
+        <div class="flex items-center justify-between gap-3">
           <div>
-            <label class="block text-zinc-600 text-[11px] mb-1">Moyasar Publishable Key:</label>
-            <input type="text" id="input-moyasar-key" placeholder="pk_live_... أو pk_test_..." class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-zinc-950 focus:outline-none">
-            <p class="text-[10px] text-zinc-500 mt-1">
-              احصل على مفاتيحك من لوحة تحكم <a href="https://moyasar.com" target="_blank" class="text-amber-600 underline font-bold">moyasar.com</a> بعد تفعيل حسابك التجاري أو وثيقة العمل الحر.
-            </p>
+            <div class="font-black text-zinc-900"><i class="fa-solid fa-cloud" aria-hidden="true"></i> الحفظ السحابي والحسابات</div>
+            <p id="cloud-status-text" class="text-zinc-500 mt-1">جارٍ التحقق من إعدادات المزامنة…</p>
           </div>
+          <span id="cloud-status-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-300" aria-label="حالة التخزين السحابي"></span>
         </div>
+        <button id="btn-send-magic-link" type="button" class="hidden mt-3 w-full py-2 border border-zinc-300 bg-white hover:bg-zinc-100 rounded-xl font-bold text-zinc-800 transition">إرسال رابط دخول آمن إلى بريدي</button>
+        <p class="text-[10px] text-zinc-400 mt-2">لا تُفعّل المزامنة إلا بعد إعداد Supabase وتسجيل الدخول برابط آمن.</p>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
         <button id="btn-save-settings" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
-          💾 حفظ الإعدادات
+          <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> حفظ الإعدادات
         </button>
       </div>
     </div>
@@ -838,7 +878,7 @@
           <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px] mb-1">
             ⚡ AI Schedule & Work Plan Synthesizer
           </div>
-          <h3 class="text-base sm:text-lg font-black text-zinc-950">🪄 توليد خطة العمل والجدول الزمني بالذكاء الاصطناعي</h3>
+          <h3 class="text-base sm:text-lg font-black text-zinc-950"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> توليد خطة العمل والجدول الزمني بالذكاء الاصطناعي</h3>
           <p class="text-xs text-zinc-500">يقوم النظام بابتكار وتوزيع مهام العمل، المعالم، والمشتريات وفق معايير PMP</p>
         </div>
         <button id="btn-close-workplan-modal" class="text-zinc-400 hover:text-zinc-950 font-bold p-1 text-sm">✕</button>
@@ -854,12 +894,12 @@
           <div>
             <label class="block font-bold text-zinc-800 mb-1">مجال وتخصص المشروع:</label>
             <select id="wp-domain" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5 text-xs font-bold text-zinc-800 focus:outline-none">
-              <option value="construction">🏢 مقاولات عامة وإنشاءات وهيكل خرساني</option>
-              <option value="fitout">🎨 تشطيبات وديكور داخلي وتأثيث</option>
-              <option value="mep">⚡ كهروميكانيك وتكييف وسباكة (MEP)</option>
-              <option value="smart_systems">🔒 أنظمة ذكية وتيار خفيف وشبكات (ICT/ELV)</option>
-              <option value="it_software">💻 برمجيات وأنظمة سحابية وتحول رقمي</option>
-              <option value="general">📊 مشروع هندسي أو استشاري عام</option>
+              <option value="construction">مقاولات عامة وإنشاءات وهيكل خرساني</option>
+              <option value="fitout">تشطيبات وديكور داخلي وتأثيث</option>
+              <option value="mep">كهروميكانيك وتكييف وسباكة (MEP)</option>
+              <option value="smart_systems">أنظمة ذكية وتيار خفيف وشبكات (ICT/ELV)</option>
+              <option value="it_software">برمجيات وأنظمة سحابية وتحول رقمي</option>
+              <option value="general">مشروع هندسي أو استشاري عام</option>
             </select>
           </div>
 
@@ -1174,6 +1214,25 @@
   </div>
 
   <!-- YAZ AI COPILOT FLOATING BUTTON -->
+  <div id="risk-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl w-[94vw] sm:max-w-lg p-5 sm:p-7 shadow-2xl space-y-4 text-right">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <h3 class="text-base font-black text-zinc-950"><i class="fa-solid fa-shield-halved text-rose-600" aria-hidden="true"></i> إضافة خطر للمشروع</h3>
+        <button type="button" onclick="closeRiskModal()" class="text-zinc-400 hover:text-zinc-950 p-1" aria-label="إغلاق"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div><label class="block font-bold text-zinc-700 mb-1">وصف الخطر</label><input id="risk-title-input" type="text" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5" placeholder="مثال: تأخر اعتماد مضخات الحريق"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block font-bold text-zinc-700 mb-1">الاحتمالية</label><select id="risk-probability-input" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5"><option value="Low">منخفضة</option><option value="Medium" selected>متوسطة</option><option value="High">مرتفعة</option></select></div>
+          <div><label class="block font-bold text-zinc-700 mb-1">الأثر</label><select id="risk-impact-input" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5"><option value="Low">منخفض</option><option value="Medium" selected>متوسط</option><option value="High">مرتفع</option></select></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3"><div><label class="block font-bold text-zinc-700 mb-1">المسؤول</label><input id="risk-owner-input" type="text" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5" placeholder="Planning Engineer"></div><div><label class="block font-bold text-zinc-700 mb-1">تاريخ المتابعة</label><input id="risk-due-input" type="date" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5"></div></div>
+        <div><label class="block font-bold text-zinc-700 mb-1">إجراء المعالجة</label><textarea id="risk-action-input" rows="3" class="w-full border border-zinc-300 bg-zinc-50 rounded-xl p-2.5" placeholder="الإجراء الوقائي أو خطة الاستجابة"></textarea></div>
+      </div>
+      <div class="flex gap-2"><button type="button" onclick="saveRiskFromModal()" class="flex-1 py-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold">حفظ الخطر</button><button type="button" onclick="closeRiskModal()" class="px-4 py-3 bg-zinc-100 text-zinc-700 rounded-xl text-xs font-bold">إلغاء</button></div>
+    </div>
+  </div>
+
   <div class="fixed bottom-5 left-5 z-50">
     <button type="button" id="copilot-floating-btn" onclick="window.yazCopilot?.toggleDrawer()" class="group flex items-center gap-2.5 bg-gradient-to-r from-zinc-950 via-zinc-900 to-[#0e111a] hover:to-cyan-950 text-white border border-cyan-500/40 hover:border-cyan-400 px-4 py-3 rounded-full shadow-2xl shadow-cyan-500/20 transition-all duration-300 transform hover:scale-105 active:scale-95">
       <div class="relative">
@@ -1259,6 +1318,7 @@
   <script src="js/sample-project-data.js"></script>
   <script src="js/auth-service.js"></script>
   <script src="js/projects-store.js"></script>
+  <script src="js/cloud-service.js"></script>
   <script src="js/task-scheduler.js"></script>
   <script src="js/gemini-service.js"></script>
   <script src="js/excel-export.js"></script>

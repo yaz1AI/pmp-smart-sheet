@@ -78,20 +78,9 @@ class PaymentService {
   }
 
   loadConfig() {
-    try {
-      return JSON.parse(localStorage.getItem(this.STORAGE_KEY_CONFIG)) || {
-        publishableKey: "",
-        isLive: false,
-        gateway: "moyasar"
-      };
-    } catch {
-      return { publishableKey: "", isLive: false, gateway: "moyasar" };
-    }
-  }
-
-  saveConfig(newConfig) {
-    this.config = { ...this.config, ...newConfig };
-    localStorage.setItem(this.STORAGE_KEY_CONFIG, JSON.stringify(this.config));
+    // Payment configuration belongs to the platform, not to a user's browser.
+    // It is loaded from the server's environment configuration below.
+    return { publishableKey: "", isLive: false, gateway: "moyasar" };
   }
 
   async fetchServerConfig() {

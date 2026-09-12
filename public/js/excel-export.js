@@ -57,7 +57,9 @@ class PMExcelExporter {
       "الأولوية (Priority)",
       "الحالة (Status)",
       "نسبة الإنجاز %",
-      "المخرج والتسليمات (Deliverable)"
+      "المخرج والتسليمات (Deliverable)",
+      "حالة المراجعة (Review Status)",
+      "مصدر السجل (Record Source)"
     ];
 
     const tasksRows = scheduler.tasks.map(t => [
@@ -72,7 +74,9 @@ class PMExcelExporter {
       t.priority,
       t.status,
       `${t.progress || 0}%`,
-      t.deliverable
+      t.deliverable,
+      t.review?.status === 'approved' ? 'Approved / معتمد' : 'Pending Review / بانتظار الاعتماد',
+      t.review?.sourceType || 'legacy'
     ]);
 
     const wsTasks = XLSX.utils.aoa_to_sheet([tasksHeaders, ...tasksRows]);
@@ -88,7 +92,9 @@ class PMExcelExporter {
       { wch: 12 }, // Priority
       { wch: 14 }, // Status
       { wch: 14 }, // Progress
-      { wch: 45 }  // Deliverable
+      { wch: 45 }, // Deliverable
+      { wch: 24 }, // Review status
+      { wch: 22 }  // Record source
     ];
     XLSX.utils.book_append_sheet(wb, wsTasks, "Daily_Schedule_الجدول_اليومي");
 

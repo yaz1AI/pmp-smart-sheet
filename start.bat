@@ -5,7 +5,7 @@ echo =======================================================
 echo    ⚡ AI PM Smart Sheet - نظام الجدولة اليومية الذكي
 echo =======================================================
 echo جاري تشغيل خادم النظام المحلي...
-start "" "http://localhost:3001"
-start "" "http://localhost:3000"
+set PORT=3003
+start "" "http://localhost:3003"
 node server.js
 pause

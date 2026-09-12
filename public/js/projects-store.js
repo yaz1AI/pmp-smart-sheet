@@ -87,6 +87,7 @@ class ProjectsStore {
     all.unshift(newProject);
     this._saveRawProjects(all);
     this.setActiveProjectId(newProject.id);
+    window.cloudService?.notifyLocalChange(newProject);
     return newProject;
   }
 
@@ -102,6 +103,7 @@ class ProjectsStore {
       all[idx].data = updatedProjectData;
       all[idx].updatedAt = new Date().toISOString();
       this._saveRawProjects(all);
+      window.cloudService?.notifyLocalChange(all[idx]);
       return all[idx];
     }
     return null;

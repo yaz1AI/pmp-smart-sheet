@@ -18,6 +18,51 @@ let filters = {
 
 const geminiService = new GeminiPMService();
 
+// AI-produced plans remain drafts until a project professional approves them.
+// This also upgrades projects created before the review feature existed.
+function normalizeReviewMetadata(projectData) {
+  if (!projectData || typeof projectData !== 'object') return projectData;
+  // Remove legacy tasks generated from document separators or upload metadata.
+  // These are never real project activities and should not reach the schedule.
+  if (Array.isArray(projectData.dailyTasks)) {
+    projectData.dailyTasks = projectData.dailyTasks.filter(task => {
+      const title = String(task?.titleAr || task?.titleEn || '');
+      return !/(?:تنفيذ ومتابعة:\s*)?(?:[=\-_*\s]{8,}|.*(?:مستند المشروع رقم|نوع المستند|\.(?:pdf|docx?|xlsx?|xls|csv)\b).*)/i.test(title);
+    });
+  }
+  const sourceFiles = (projectData.uploadedFilesInfo || []).map(file => file.name).filter(Boolean);
+  projectData.risks = Array.isArray(projectData.risks) ? projectData.risks : [];
+  projectData.scheduleSettings = projectData.scheduleSettings || {
+    baselineStatus: 'Draft', workingDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'], calendar: 'Saudi Standard'
+  };
+  (projectData.dailyTasks || []).forEach(task => {
+    task.dependencies = Array.isArray(task.dependencies) ? task.dependencies : [];
+    task.plannedStart = task.plannedStart || task.date;
+  });
+  ['dailyTasks', 'keyMilestones', 'materialSubmittals', 'actionItems', 'scopeSystems'].forEach(collectionName => {
+    if (!Array.isArray(projectData[collectionName])) return;
+    projectData[collectionName] = projectData[collectionName].map(item => ({
+      ...item,
+      review: item.review || {
+        status: 'pending_review', sourceType: 'ai_synthesis', sourceFiles, confidence: 'medium',
+        note: 'عنصر مقترح من تحليل الذكاء الاصطناعي. راجعه واعتمده قبل استخدامه تشغيلياً.'
+      }
+    }));
+  });
+  return projectData;
+}
+
+function getTaskReview(task) {
+  return task?.review || { status: 'pending_review', sourceType: 'ai_synthesis', confidence: 'medium' };
+}
+
+function renderReviewBadge(task) {
+  const review = getTaskReview(task);
+  if (review.status === 'approved') return '<span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> معتمد</span>';
+  if (review.sourceType === 'document_extract') return '<span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-bold">مستخرج من ملف · بانتظار الاعتماد</span>';
+  return '<span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-bold">اقتراح AI · بانتظار الاعتماد</span>';
+}
+
 // DOM Initialization
 document.addEventListener("DOMContentLoaded", () => {
   renderUserBadge();
@@ -25,8 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initDateControls();
   initFilterControls();
+  initScheduleImport();
   initUploadHandlers();
   initSettingsModal();
+  initCloudStatus();
   initAuthModals();
   initNewProjectModal();
   initShareModal();
@@ -38,6 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function refreshAppState() {
   activeProjectRecord = window.projectsStore ? window.projectsStore.getActiveProject() : null;
   currentProject = activeProjectRecord ? activeProjectRecord.data : null;
+  if (currentProject) {
+    const taskCount = currentProject.dailyTasks?.length || 0;
+    normalizeReviewMetadata(currentProject);
+    if ((currentProject.dailyTasks?.length || 0) !== taskCount && activeProjectRecord && window.projectsStore) {
+      window.projectsStore.updateProject(activeProjectRecord.id, currentProject);
+    }
+  }
   scheduler = currentProject ? new PMTaskScheduler(currentProject) : null;
 
   renderProjectSelector();
@@ -74,6 +128,31 @@ function refreshAppState() {
   if (window.yazCopilot) {
     window.yazCopilot.setProjectContext(currentProject, scheduler);
   }
+}
+
+function initCloudStatus() {
+  const render = () => {
+    const status = window.cloudService?.getStatus?.() || { configured: false, connected: false, label: 'تخزين محلي' };
+    const label = document.getElementById('cloud-status-text');
+    const dot = document.getElementById('cloud-status-dot');
+    const magicLinkButton = document.getElementById('btn-send-magic-link');
+    if (label) label.textContent = status.label;
+    if (dot) dot.className = `w-2.5 h-2.5 rounded-full ${status.connected ? 'bg-emerald-500' : status.configured ? 'bg-amber-400' : 'bg-zinc-300'}`;
+    if (magicLinkButton) magicLinkButton.classList.toggle('hidden', !status.configured || status.connected);
+  };
+  render();
+  window.cloudService?.ready?.then(render);
+  window.addEventListener('cloud-status-changed', render);
+  document.getElementById('btn-send-magic-link')?.addEventListener('click', async () => {
+    const email = window.authService?.getCurrentUser?.()?.email;
+    if (!email) return alert('سجّل دخولك بالبريد أولاً، ثم أرسل رابط الدخول الآمن.');
+    try {
+      await window.cloudService.sendMagicLink(email);
+      alert('أرسلنا رابط الدخول الآمن إلى بريدك. افتحه لإتمام ربط الحساب السحابي.');
+    } catch (error) {
+      alert(error.message || 'تعذر إرسال رابط الدخول.');
+    }
+  });
 }
 
 // 1. User Badge & Profile & Subscription
@@ -344,6 +423,7 @@ function renderKPIs() {
   document.getElementById("kpi-critical").innerText = kpis.criticalTasks;
   document.getElementById("kpi-progress-bar").style.width = `${kpis.completionRate}%`;
   document.getElementById("kpi-progress-text").innerText = `${kpis.completionRate}%`;
+  renderCommandCenter();
 }
 
 // 5. Tab Switching
@@ -370,7 +450,7 @@ function switchTab(tabName) {
 }
 
 function renderCurrentTab() {
-  const sections = ["projects", "daily", "grid", "mts", "milestones", "cashflow", "actions", "upload"];
+  const sections = ["projects", "daily", "grid", "mts", "milestones", "review", "risks", "cashflow", "actions", "upload"];
   sections.forEach(s => {
     const el = document.getElementById(`tab-content-${s}`);
     if (el) el.classList.toggle("hidden", s !== activeTab);
@@ -381,8 +461,147 @@ function renderCurrentTab() {
   else if (activeTab === "grid") renderGridView();
   else if (activeTab === "mts") renderMTSView();
   else if (activeTab === "milestones") renderMilestonesView();
+  else if (activeTab === "review") renderReviewView();
+  else if (activeTab === "risks") renderRisksView();
   else if (activeTab === "cashflow") renderCashFlowView();
   else if (activeTab === "actions") renderActionsView();
+}
+
+function getProjectAlerts() {
+  if (!currentProject || !scheduler) return [];
+  const today = new Date().toISOString().slice(0, 10);
+  const alerts = [];
+  scheduler.getAllTasks().filter(task => task.status !== 'Completed' && task.date < today).forEach(task => alerts.push({ level: 'high', type: 'مهمة متأخرة', title: task.titleAr || task.titleEn, detail: `استحقاق ${task.date} · ${task.owner || 'غير محدد'}` }));
+  scheduler.getAllTasks().filter(task => task.status !== 'Completed' && task.priority === 'Critical').forEach(task => alerts.push({ level: 'critical', type: 'مهمة حرجة', title: task.titleAr || task.titleEn, detail: `تاريخ ${task.date} · ${task.status}` }));
+  (currentProject.materialSubmittals || []).filter(item => item.critical && !['Issued', 'Delivered to Site'].includes(item.poStatus)).forEach(item => alerts.push({ level: 'high', type: 'توريد حرج', title: item.item, detail: `حالة أمر الشراء: ${item.poStatus || 'غير محددة'}` }));
+  (currentProject.risks || []).filter(risk => risk.status !== 'Closed' && (risk.impact === 'High' || risk.probability === 'High')).forEach(risk => alerts.push({ level: 'critical', type: 'خطر مفتوح', title: risk.title, detail: `${risk.owner || 'غير محدد'} · ${risk.dueDate || 'لا يوجد تاريخ متابعة'}` }));
+  return alerts;
+}
+
+function renderCommandCenter() {
+  const container = document.getElementById('daily-command-center');
+  if (!container || !currentProject || !scheduler) return;
+  const alerts = getProjectAlerts();
+  const risks = currentProject.risks || [];
+  const dependencies = scheduler.getAllTasks().reduce((count, task) => count + (task.dependencies?.length || 0), 0);
+  const visibleAlerts = alerts.slice(0, 4);
+  container.innerHTML = `
+    <section class="lg:col-span-2 bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-sm font-black text-zinc-950"><i class="fa-solid fa-bell text-amber-600" aria-hidden="true"></i> مركز المتابعة اليومي</h3><button onclick="switchTab('risks')" class="text-xs font-bold text-zinc-700 hover:text-zinc-950">عرض المخاطر</button></div>
+      ${visibleAlerts.length ? `<div class="space-y-2">${visibleAlerts.map(alert => `<div class="flex items-start gap-2 p-2.5 rounded-xl ${alert.level === 'critical' ? 'bg-rose-50 border border-rose-100' : 'bg-amber-50 border border-amber-100'}"><i class="fa-solid ${alert.level === 'critical' ? 'fa-triangle-exclamation text-rose-600' : 'fa-clock text-amber-600'} mt-0.5" aria-hidden="true"></i><div><div class="text-xs font-bold text-zinc-900">${escapeReviewHtml(alert.type)}: ${escapeReviewHtml(alert.title)}</div><div class="text-[11px] text-zinc-600 mt-0.5">${escapeReviewHtml(alert.detail)}</div></div></div>`).join('')}</div>` : '<div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-800">لا توجد تنبيهات تشغيلية مفتوحة حاليًا.</div>'}
+    </section>
+    <section class="bg-zinc-950 rounded-2xl p-4 text-white shadow-sm"><h3 class="text-sm font-black"><i class="fa-solid fa-diagram-project text-amber-300" aria-hidden="true"></i> ضوابط الخطة</h3><div class="mt-4 space-y-3 text-xs"><div class="flex justify-between"><span class="text-zinc-400">حالة Baseline</span><strong>${escapeReviewHtml(currentProject.scheduleSettings?.baselineStatus || 'Draft')}</strong></div><div class="flex justify-between"><span class="text-zinc-400">تبعيات مسجلة</span><strong>${dependencies}</strong></div><div class="flex justify-between"><span class="text-zinc-400">مخاطر مفتوحة</span><strong>${risks.filter(risk => risk.status !== 'Closed').length}</strong></div><button onclick="switchTab('grid')" class="w-full mt-2 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-amber-200 font-bold">إدارة الجدول والتبعيات</button><button onclick="editScheduleSettings()" class="w-full py-2 rounded-lg border border-white/20 hover:bg-white/10 text-white font-bold">تعديل ضوابط الخطة</button></div></section>`;
+}
+
+function renderRisksView() {
+  const summary = document.getElementById('risks-summary');
+  const list = document.getElementById('risks-list');
+  if (!summary || !list || !currentProject) return;
+  const risks = currentProject.risks || [];
+  const open = risks.filter(risk => risk.status !== 'Closed');
+  const high = open.filter(risk => risk.impact === 'High' || risk.probability === 'High');
+  summary.innerHTML = [['إجمالي المخاطر', risks.length, 'zinc'], ['مخاطر مفتوحة', open.length, 'amber'], ['مرتفعة الأولوية', high.length, 'rose'], ['مغلقة', risks.length - open.length, 'emerald']].map(([label, value, color]) => `<div class="bg-${color}-50 border border-${color}-200 rounded-xl p-3"><div class="text-[11px] font-bold text-${color}-800">${label}</div><div class="text-xl font-black text-${color}-900 mt-1">${value}</div></div>`).join('');
+  if (!risks.length) { list.innerHTML = '<div class="bg-white border border-dashed border-zinc-300 rounded-2xl p-8 text-center text-sm font-bold text-zinc-500">لم تتم إضافة مخاطر بعد.</div>'; return; }
+  list.innerHTML = risks.map((risk, index) => `<article class="bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-4"><div class="flex flex-col sm:flex-row gap-3 justify-between"><div><div class="flex gap-2 items-center"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${risk.impact === 'High' || risk.probability === 'High' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}">${risk.impact === 'High' || risk.probability === 'High' ? 'أولوية مرتفعة' : 'أولوية متابعة'}</span><span class="text-[10px] text-zinc-500">${escapeReviewHtml(risk.status || 'Open')}</span></div><h4 class="text-sm font-black text-zinc-950 mt-2">${escapeReviewHtml(risk.title)}</h4><p class="text-xs text-zinc-600 mt-1">${escapeReviewHtml(risk.action || 'لم يحدد إجراء معالجة بعد.')}</p><p class="text-[11px] text-zinc-500 mt-2">المسؤول: ${escapeReviewHtml(risk.owner || 'غير محدد')} · المتابعة: ${escapeReviewHtml(risk.dueDate || '-')}</p></div><button onclick="toggleRiskStatus(${index})" class="self-start px-3 py-2 rounded-xl text-xs font-bold ${risk.status === 'Closed' ? 'bg-zinc-100 text-zinc-600' : 'bg-emerald-600 text-white hover:bg-emerald-700'}">${risk.status === 'Closed' ? 'إعادة فتح' : 'إغلاق الخطر'}</button></div></article>`).join('');
+}
+
+function openRiskModal() { document.getElementById('risk-modal')?.classList.replace('hidden', 'flex'); }
+function closeRiskModal() { document.getElementById('risk-modal')?.classList.replace('flex', 'hidden'); }
+function saveRiskFromModal() {
+  const title = document.getElementById('risk-title-input')?.value.trim();
+  if (!title || !currentProject) return alert('أدخل وصف الخطر أولاً.');
+  currentProject.risks.push({ id: `RSK-${String(currentProject.risks.length + 1).padStart(3, '0')}`, title, probability: document.getElementById('risk-probability-input')?.value || 'Medium', impact: document.getElementById('risk-impact-input')?.value || 'Medium', owner: document.getElementById('risk-owner-input')?.value.trim() || 'Project Manager', dueDate: document.getElementById('risk-due-input')?.value || '', action: document.getElementById('risk-action-input')?.value.trim() || '', status: 'Open', createdAt: new Date().toISOString() });
+  saveActiveProjectState(); closeRiskModal(); renderRisksView(); renderCommandCenter();
+}
+function toggleRiskStatus(index) { const risk = currentProject?.risks?.[index]; if (!risk) return; risk.status = risk.status === 'Closed' ? 'Open' : 'Closed'; saveActiveProjectState(); renderRisksView(); renderCommandCenter(); }
+
+function editScheduleSettings() {
+  if (!currentProject) return;
+  const current = currentProject.scheduleSettings || {};
+  const baselineStatus = prompt('حالة الجدول الأساسي (Draft / Submitted / Approved)', current.baselineStatus || 'Draft');
+  if (baselineStatus === null) return;
+  const calendar = prompt('اسم تقويم العمل للمشروع', current.calendar || 'Saudi Standard');
+  if (calendar === null) return;
+  currentProject.scheduleSettings = { ...current, baselineStatus: baselineStatus.trim() || 'Draft', calendar: calendar.trim() || 'Saudi Standard' };
+  saveActiveProjectState(); renderCommandCenter();
+}
+
+function escapeReviewHtml(value) {
+  return String(value || '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+}
+
+function collectReviewItems() {
+  if (!currentProject) return [];
+  const definitions = [
+    { collection: 'dailyTasks', type: 'مهمة يومية', title: item => item.titleAr || item.titleEn || item.id, detail: item => `${item.date || '-'} · ${item.owner || 'غير محدد'}` },
+    { collection: 'keyMilestones', type: 'معلم رئيسي', title: item => item.name || item.id, detail: item => `${item.startDate || '-'} إلى ${item.finishDate || '-'}` },
+    { collection: 'materialSubmittals', type: 'اعتماد / توريد', title: item => item.item || `بند ${item.sn}`, detail: item => `${item.leadTime || 'مدة توريد غير محددة'} · ${item.poStatus || 'غير محدد'}` },
+    { collection: 'actionItems', type: 'بند عمل', title: item => item.taskAr || item.task || item.id, detail: item => `${item.targetDate || '-'} · ${item.owner || 'غير محدد'}` },
+    { collection: 'scopeSystems', type: 'نطاق أعمال', title: item => item.title || item.code, detail: item => (item.items || []).slice(0, 2).join('، ') }
+  ];
+  return definitions.flatMap(definition => (currentProject[definition.collection] || []).map((item, index) => ({
+    ...definition, item, index, review: getTaskReview(item)
+  })));
+}
+
+function renderReviewView() {
+  const summary = document.getElementById('review-summary');
+  const list = document.getElementById('review-items-list');
+  const bulkButton = document.getElementById('review-approve-all-btn');
+  if (!summary || !list || !currentProject) return;
+
+  const items = collectReviewItems();
+  const pending = items.filter(entry => entry.review.status !== 'approved');
+  const extracted = pending.filter(entry => entry.review.sourceType === 'document_extract');
+  const aiSuggested = pending.filter(entry => entry.review.sourceType !== 'document_extract' && entry.review.sourceType !== 'manual');
+  const approved = items.length - pending.length;
+  const cards = [
+    ['إجمالي العناصر', items.length, 'bg-zinc-50 text-zinc-800 border-zinc-200'],
+    ['بانتظار المراجعة', pending.length, 'bg-amber-50 text-amber-800 border-amber-200'],
+    ['مستخرج من مستند', extracted.length, 'bg-blue-50 text-blue-800 border-blue-200'],
+    ['معتمد', approved, 'bg-emerald-50 text-emerald-800 border-emerald-200']
+  ];
+  summary.innerHTML = cards.map(([label, value, style]) => `<div class="p-3 rounded-xl border ${style}"><div class="text-[11px] font-bold">${label}</div><div class="text-xl font-black mt-1">${value}</div></div>`).join('');
+  if (bulkButton) bulkButton.disabled = pending.length === 0;
+  if (bulkButton) bulkButton.classList.toggle('opacity-50', pending.length === 0);
+
+  if (pending.length === 0) {
+    list.innerHTML = '<div class="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl p-8 text-center font-bold text-sm">كل مخرجات المشروع تمت مراجعتها واعتمادها.</div>';
+    return;
+  }
+  list.innerHTML = pending.map(entry => {
+    const sourceLabel = entry.review.sourceType === 'document_extract' ? 'مستخرج من المستند' : 'اقتراح AI';
+    const sourceFiles = (entry.review.sourceFiles || []).join('، ') || 'ملفات المشروع المرفوعة';
+    return `<article class="bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-4 flex flex-col sm:flex-row gap-4 sm:items-start sm:justify-between">
+      <div class="min-w-0 space-y-1.5">
+        <div class="flex flex-wrap gap-2 items-center"><span class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700">${escapeReviewHtml(entry.type)}</span><span class="text-[10px] font-bold px-2 py-0.5 rounded-lg ${entry.review.sourceType === 'document_extract' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'}">${sourceLabel}</span><span class="text-[10px] text-zinc-500">ثقة ${entry.review.confidence === 'high' ? 'مرتفعة' : 'متوسطة'}</span></div>
+        <h4 class="text-sm font-black text-zinc-950">${escapeReviewHtml(entry.title(entry.item))}</h4>
+        <p class="text-xs text-zinc-600">${escapeReviewHtml(entry.detail(entry.item))}</p>
+        <p class="text-[11px] text-zinc-500">الملف: ${escapeReviewHtml(sourceFiles)}</p>
+        ${entry.review.evidence ? `<p class="text-[11px] text-blue-800 bg-blue-50 border border-blue-100 rounded-lg p-2">المقتطف: ${escapeReviewHtml(entry.review.evidence)}</p>` : ''}
+      </div>
+      <button onclick="approveReviewItem('${entry.collection}', ${entry.index})" class="w-full sm:w-auto shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">اعتماد</button>
+    </article>`;
+  }).join('');
+}
+
+function approveReviewItem(collection, index) {
+  const item = currentProject?.[collection]?.[index];
+  if (!item) return;
+  item.review = { ...getTaskReview(item), status: 'approved', reviewedAt: new Date().toISOString(), reviewedBy: window.authService?.getCurrentUser()?.name || 'مدير المشروع' };
+  saveActiveProjectState();
+  renderReviewView();
+}
+
+function approveAllPendingReviewItems() {
+  const reviewer = window.authService?.getCurrentUser()?.name || 'مدير المشروع';
+  collectReviewItems().forEach(entry => {
+    if (entry.review.status !== 'approved') {
+      entry.item.review = { ...entry.review, status: 'approved', reviewedAt: new Date().toISOString(), reviewedBy: reviewer };
+    }
+  });
+  saveActiveProjectState();
+  renderReviewView();
 }
 
 // 6. MY PROJECTS DASHBOARD TAB
@@ -398,14 +617,14 @@ function renderProjectsDashboard() {
   const planBanner = isFree ? `
     <div class="col-span-full p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-400/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-right">
       <div class="flex items-center gap-3">
-        <span class="text-xl">🌱</span>
+        <i class="fa-solid fa-seedling text-xl text-emerald-700" aria-hidden="true"></i>
         <div>
           <div class="text-xs font-black text-zinc-900">أنت حالياً في التجربة المجانية (${projects.length} من 1 مشروع مسموح)</div>
           <div class="text-[11px] text-zinc-600">لإضافة مشاريع غير محدودة وتفعيل كافة مزايا التحليل والتصدير، اشترك في الباقة الشاملة.</div>
         </div>
       </div>
       <button onclick="openSubscriptionModal()" class="px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 rounded-xl text-xs font-black transition shadow whitespace-nowrap">
-        💎 الترقية للاشتراك الشامل (174 ر.س/شهرياً)
+        <i class="fa-solid fa-crown" aria-hidden="true"></i> الترقية للاشتراك الشامل (174 ر.س/شهرياً)
       </button>
     </div>
   ` : '';
@@ -413,17 +632,17 @@ function renderProjectsDashboard() {
   if (projects.length === 0) {
     container.innerHTML = planBanner + `
       <div class="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-zinc-300 space-y-4 shadow-sm">
-        <div class="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-2xl flex items-center justify-center text-3xl mx-auto border border-zinc-200">📁</div>
+        <div class="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-2xl flex items-center justify-center text-2xl mx-auto border border-zinc-200"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></div>
         <h3 class="text-lg font-black text-zinc-950">ليس لديك أي مشروع محفوظ حالياً</h3>
         <p class="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
           ابدأ برفع ملف مشروعك الأول (PDF / Word / Excel) ليقوم المحلل الذكي بدراسته وبناء خطة المهام اليومية وجداول المشتريات.
         </p>
         <div class="flex flex-wrap justify-center gap-3 pt-2">
           <button onclick="switchTab('upload')" class="px-5 py-2.5 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
-            ➕ رفع ملف مشروعي الأول
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> رفع ملف مشروعي الأول
           </button>
           <button onclick="handleLoadDemoProject()" class="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold transition">
-            📂 تجربة نموذج استعراضي
+            <i class="fa-solid fa-flask" aria-hidden="true"></i> تجربة نموذج استعراضي
           </button>
         </div>
       </div>
@@ -503,16 +722,16 @@ function renderProjectsDashboard() {
 
         <div class="flex items-center gap-2 pt-3 border-t border-zinc-100">
           <button onclick="handleSelectProject('${p.id}')" class="flex-1 py-2 px-3 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold transition shadow-sm">
-            ⚡ فتح الشيت الذكي
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> فتح الشيت الذكي
           </button>
           <button onclick="openPdfReportModal('${p.id}')" class="p-2 bg-zinc-100 hover:bg-amber-50 hover:text-amber-800 text-zinc-700 rounded-xl text-xs font-bold transition border border-zinc-200" title="تقرير تنفيذي PDF">
-            📄
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
           </button>
           <button onclick="exportSingleProject('${p.id}')" class="p-2 bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 text-zinc-700 rounded-xl text-xs font-bold transition border border-zinc-200" title="تصدير Excel">
-            📊
+            <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
           </button>
           <button onclick="handleDeleteProject('${p.id}')" class="p-2 bg-zinc-100 hover:bg-rose-50 hover:text-rose-600 text-zinc-400 rounded-xl text-xs font-bold transition border border-zinc-200" title="حذف المشروع">
-            🗑️
+            <i class="fa-solid fa-trash" aria-hidden="true"></i>
           </button>
         </div>
       </div>
@@ -698,16 +917,16 @@ function renderDailyView() {
     
     container.innerHTML = `
       <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-zinc-300 shadow-sm">
-        <div class="text-4xl mb-3">☕</div>
+        <div class="text-3xl mb-3 text-zinc-400"><i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i></div>
         <h3 class="text-base font-bold text-zinc-800 mb-1">لا توجد مهام مجدولة بالتحديد في تاريخ ${selectedDate}</h3>
         <p class="text-xs text-zinc-500 mb-4">يمكنك إضافة مهمة جديدة لهذا اليوم أو استعراض أقرب المهام القادمة أدناه:</p>
         <button onclick="openAddTaskModal('${selectedDate}')" class="px-4 py-2 bg-zinc-950 hover:bg-black text-white rounded-xl text-xs font-bold shadow-sm transition">
-          ➕ إضافة مهمة جديدة لهذا اليوم
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة مهمة جديدة لهذا اليوم
         </button>
       </div>
       ${upcoming.length > 0 ? `
         <div class="mt-6">
-          <h4 class="text-xs font-bold text-zinc-500 mb-3">📌 أقرب المهام القادمة في الجدول الزمني:</h4>
+          <h4 class="text-xs font-bold text-zinc-500 mb-3"><i class="fa-solid fa-thumbtack" aria-hidden="true"></i> أقرب المهام القادمة في الجدول الزمني:</h4>
           <div class="space-y-3">
             ${upcoming.map(t => renderSingleTaskCard(t)).join('')}
           </div>
@@ -721,7 +940,7 @@ function renderDailyView() {
     <div class="flex justify-between items-center mb-4">
       <span class="text-xs font-bold text-zinc-600">عدد المهام اليومية: ${tasks.length}</span>
       <button onclick="openAddTaskModal('${selectedDate}')" class="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold transition border border-zinc-200">
-        ➕ إضافة مهمة لهذا اليوم
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة مهمة لهذا اليوم
       </button>
     </div>
     <div class="space-y-3">
@@ -744,20 +963,23 @@ function renderSingleTaskCard(task) {
             <span class="text-xs font-mono font-bold text-zinc-400">${task.id}</span>
             <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${task.priority}</span>
             <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg ${statusClass}">${task.status}</span>
-            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 font-medium">📅 ${task.date}</span>
+            <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 font-medium"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> ${task.date}</span>
             <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-800 font-medium border border-zinc-200">${task.phase}</span>
+            ${renderReviewBadge(task)}
           </div>
           <h4 class="text-sm sm:text-base font-bold text-zinc-950 leading-snug break-words ${task.status === 'Completed' ? 'line-through text-zinc-400' : ''}">${task.titleAr || task.titleEn}</h4>
           ${task.titleEn && task.titleAr ? `<p class="text-[11px] sm:text-xs text-zinc-400 font-mono truncate">${task.titleEn}</p>` : ''}
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-xs text-zinc-500 pt-1">
-            <span>👤 <strong>المسؤول:</strong> ${task.owner}</span>
-            <span>📍 <strong>الموقع:</strong> ${task.facility}</span>
-            <span>📦 <strong>المخرج:</strong> ${task.deliverable}</span>
+            <span><i class="fa-solid fa-user" aria-hidden="true"></i> <strong>المسؤول:</strong> ${task.owner}</span>
+            <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> <strong>الموقع:</strong> ${task.facility}</span>
+            <span><i class="fa-solid fa-box" aria-hidden="true"></i> <strong>المخرج:</strong> ${task.deliverable}</span>
           </div>
+          ${getTaskReview(task).evidence ? `<p class="text-[11px] text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2 py-1 mt-2">المصدر: ${getTaskReview(task).evidence}</p>` : ''}
         </div>
       </div>
 
       <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
+        ${getTaskReview(task).status !== 'approved' ? `<button onclick="setTaskReviewStatus('${task.id}', 'approved')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition">اعتماد</button>` : ''}
         <div class="flex items-center gap-2 flex-1 md:flex-initial md:w-28 text-left">
           <span class="text-[11px] text-zinc-500 whitespace-nowrap">الإنجاز: <strong class="text-zinc-950">${task.progress || 0}%</strong></span>
           <input type="range" min="0" max="100" value="${task.progress || 0}" onchange="updateTaskProgress('${task.id}', this.value)" class="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-950">
@@ -787,9 +1009,11 @@ function renderGridView() {
         <td class="text-xs font-medium text-zinc-950">
           <div>${t.titleAr || t.titleEn}</div>
           <div class="text-[11px] text-zinc-400 font-mono">${t.titleEn || ''}</div>
+          <div class="mt-1">${renderReviewBadge(t)}</div>
         </td>
         <td class="text-xs font-medium text-zinc-700 whitespace-nowrap">${t.owner}</td>
         <td class="text-xs text-zinc-600 whitespace-nowrap">${t.facility}</td>
+        <td class="text-xs text-zinc-600 min-w-32"><div>${(t.dependencies || []).join('، ') || 'لا يوجد'}</div><button onclick="editTaskDependencies('${t.id}')" class="mt-1 text-[10px] text-blue-700 font-bold hover:underline"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> تعديل</button></td>
         <td><span class="text-xs px-2 py-0.5 rounded-lg ${priorityClass}">${t.priority}</span></td>
         <td>
           <select onchange="updateTaskStatusDirect('${t.id}', this.value)" class="text-xs font-bold rounded-lg px-2 py-1 border border-zinc-300 focus:ring-zinc-950 ${statusClass}">
@@ -803,6 +1027,68 @@ function renderGridView() {
       </tr>
     `;
   }).join('');
+}
+
+function editTaskDependencies(taskId) {
+  const task = scheduler?.tasks.find(item => item.id === taskId);
+  if (!task) return;
+  const current = (task.dependencies || []).join(', ');
+  const response = prompt('أدخل رموز المهام السابقة المفصولة بفاصلة، مثال: TSK-0001, TSK-0003', current);
+  if (response === null) return;
+  const allowedIds = new Set(scheduler.tasks.map(item => item.id));
+  task.dependencies = response.split(',').map(value => value.trim()).filter(id => id && id !== taskId && allowedIds.has(id));
+  saveActiveProjectState(); renderGridView(); renderCommandCenter();
+}
+
+function initScheduleImport() {
+  document.getElementById('schedule-import-input')?.addEventListener('change', event => {
+    const file = event.target.files?.[0];
+    if (file) importScheduleFile(file);
+    event.target.value = '';
+  });
+}
+
+function importScheduleFile(file) {
+  if (!currentProject || typeof XLSX === 'undefined') return alert('تعذر استيراد الجدول. تأكد من تحميل ملف Excel أو CSV صالح.');
+  const reader = new FileReader();
+  reader.onload = event => {
+    try {
+      const workbook = XLSX.read(event.target.result, { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '', raw: false });
+      if (!rows.length) throw new Error('الملف لا يحتوي على صفوف بيانات.');
+      const getValue = (row, candidates) => {
+        const key = Object.keys(row).find(name => candidates.some(candidate => name.toLowerCase().trim() === candidate || name.toLowerCase().includes(candidate)));
+        return key ? row[key] : '';
+      };
+      const importedTasks = rows.map((row, index) => {
+        const title = getValue(row, ['task name', 'task', 'activity name', 'name', 'اسم المهمة', 'النشاط']);
+        const date = getValue(row, ['start date', 'start', 'date', 'تاريخ البدء', 'التاريخ']);
+        if (!title || !date) return null;
+        const parsedDate = date instanceof Date ? date.toISOString().slice(0, 10) : String(date).slice(0, 10);
+        return {
+          id: String(getValue(row, ['task id', 'activity id', 'id', 'رمز المهمة', 'كود']) || `IMP-${String(index + 1).padStart(4, '0')}`),
+          date: parsedDate, plannedStart: parsedDate,
+          phase: String(getValue(row, ['phase', 'wbs', 'المرحلة']) || 'Imported Schedule'),
+          category: 'Imported', titleAr: String(title), titleEn: String(title),
+          owner: String(getValue(row, ['owner', 'responsible', 'المسؤول']) || 'Planning Engineer'),
+          facility: String(getValue(row, ['facility', 'location', 'الموقع']) || 'Project Site'),
+          priority: String(getValue(row, ['priority', 'الأولوية']) || 'Medium'),
+          status: String(getValue(row, ['status', 'الحالة']) || 'Pending'),
+          progress: Number(getValue(row, ['progress', 'completion', 'الإنجاز']) || 0),
+          deliverable: String(getValue(row, ['deliverable', 'المخرج']) || 'Imported schedule activity'),
+          dependencies: String(getValue(row, ['predecessors', 'dependencies', 'التبعيات']) || '').split(/[,;]+/).map(value => value.trim()).filter(Boolean),
+          review: { status: 'approved', sourceType: 'schedule_import', confidence: 'high', note: `مستورد من ${file.name}`, reviewedAt: new Date().toISOString() }
+        };
+      }).filter(Boolean);
+      if (!importedTasks.length) throw new Error('لم نجد أعمدة صالحة للمهمة والتاريخ. استخدم Task Name وStart Date أو الاسم المكافئ بالعربية.');
+      if (!confirm(`تم العثور على ${importedTasks.length} مهمة. هل تريد استبدال الجدول الحالي بها؟`)) return;
+      currentProject.dailyTasks = importedTasks;
+      currentProject.uploadedFilesInfo = [...(currentProject.uploadedFilesInfo || []), { name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, ext: file.name.slice(file.name.lastIndexOf('.')).toLowerCase(), type: 'schedule_import' }];
+      scheduler = new PMTaskScheduler(currentProject); saveActiveProjectState(); refreshAppState(); switchTab('grid');
+      alert(`تم استيراد ${importedTasks.length} مهمة من الجدول بنجاح.`);
+    } catch (error) { alert(`تعذر استيراد الجدول: ${error.message}`); }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // 10. MTS View (Approvals & Procurement Register with Full PO Tracking)
@@ -1455,6 +1741,21 @@ function updateTaskStatusDirect(taskId, newStatus) {
   }
 }
 
+function setTaskReviewStatus(taskId, reviewStatus) {
+  if (!scheduler) return;
+  const task = scheduler.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.review = {
+    ...getTaskReview(task),
+    status: reviewStatus,
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: window.authService?.getCurrentUser()?.name || 'مدير المشروع'
+  };
+  saveActiveProjectState();
+  renderDailyView();
+  renderGridView();
+}
+
 function saveActiveProjectState() {
   if (activeProjectRecord && window.projectsStore) {
     window.projectsStore.updateProject(activeProjectRecord.id, currentProject);
@@ -1466,11 +1767,11 @@ let selectedUploadFiles = [];
 
 function getFileIcon(filename) {
   const ext = (filename || '').split('.').pop().toLowerCase();
-  if (ext === 'pdf') return '📄';
-  if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') return '📊';
-  if (ext === 'docx' || ext === 'doc') return '📝';
-  if (ext === 'txt' || ext === 'json') return '📑';
-  return '📁';
+  if (ext === 'pdf') return '<i class="fa-solid fa-file-pdf text-rose-600" aria-hidden="true"></i>';
+  if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') return '<i class="fa-solid fa-file-excel text-emerald-600" aria-hidden="true"></i>';
+  if (ext === 'docx' || ext === 'doc') return '<i class="fa-solid fa-file-word text-blue-600" aria-hidden="true"></i>';
+  if (ext === 'txt' || ext === 'json') return '<i class="fa-solid fa-file-lines text-zinc-600" aria-hidden="true"></i>';
+  return '<i class="fa-solid fa-file text-zinc-600" aria-hidden="true"></i>';
 }
 
 function getFileCategoryLabel(filename) {
@@ -1521,7 +1822,7 @@ function renderUploadFilesQueue() {
 
   queueContainer.classList.remove("hidden");
   if (countBadge) countBadge.innerText = `${selectedUploadFiles.length} ملفات`;
-  if (startBtn) startBtn.innerHTML = `<span>🚀</span> بدء التحليل والدمج الذكي (${selectedUploadFiles.length} ملفات)`;
+  if (startBtn) startBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> بدء التحليل والدمج الذكي (${selectedUploadFiles.length} ملفات)`;
 
   listEl.innerHTML = selectedUploadFiles.map((file, idx) => {
     const sizeKB = (file.size / 1024).toFixed(1);
@@ -1544,7 +1845,7 @@ function renderUploadFilesQueue() {
           </div>
         </div>
         <button type="button" onclick="removeFileFromUploadQueue(${idx})" class="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0 font-bold" title="إزالة الملف">
-          ✕
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
       </div>
     `;
@@ -1642,7 +1943,7 @@ async function startMultiFileAnalysis() {
     }
 
     const data = await res.json();
-    const newProjectRecord = window.projectsStore?.createProject(data.projectData);
+    const newProjectRecord = window.projectsStore?.createProject(normalizeReviewMetadata(data.projectData));
 
     // Clear queue after success
     clearSelectedFilesQueue();
@@ -1744,11 +2045,9 @@ function initSettingsModal() {
   const closeBtn = document.getElementById("btn-close-settings");
   const saveBtn = document.getElementById("btn-save-settings");
   const apiKeyInput = document.getElementById("input-gemini-key");
-  const moyasarKeyInput = document.getElementById("input-moyasar-key");
 
   openBtn?.addEventListener("click", () => {
     if (apiKeyInput) apiKeyInput.value = geminiService.getApiKey();
-    if (moyasarKeyInput && window.paymentService) moyasarKeyInput.value = window.paymentService.config.publishableKey || "";
     modal.classList.remove("hidden");
   });
 
@@ -1758,11 +2057,7 @@ function initSettingsModal() {
     if (apiKeyInput) {
       geminiService.setApiKey(apiKeyInput.value);
     }
-    if (moyasarKeyInput && window.paymentService) {
-      const key = moyasarKeyInput.value.trim();
-      window.paymentService.saveConfig({ publishableKey: key, isLive: key.startsWith("pk_live_") });
-    }
-    alert("✅ تم حفظ إعدادات الذكاء الاصطناعي وبوابة الدفع بنجاح!");
+    alert("تم حفظ إعدادات الذكاء الاصطناعي بنجاح.");
     modal.classList.add("hidden");
   });
 }
@@ -1785,7 +2080,12 @@ function openAddTaskModal(date) {
     priority: "High",
     status: "Pending",
     progress: 0,
-    deliverable: "Inspection Report / Deliverable"
+    deliverable: "Inspection Report / Deliverable",
+    review: {
+      status: "approved", sourceType: "manual", confidence: "high",
+      note: "أضافها المستخدم يدوياً.", reviewedAt: new Date().toISOString(),
+      reviewedBy: window.authService?.getCurrentUser()?.name || "مدير المشروع"
+    }
   });
 
   saveActiveProjectState();
@@ -2105,7 +2405,7 @@ async function handleEnrichCurrentProject() {
 
     const data = await res.json();
     if (data.projectData) {
-      currentProject = data.projectData;
+      currentProject = normalizeReviewMetadata(data.projectData);
       scheduler = new PMTaskScheduler(currentProject);
       saveActiveProjectState();
       refreshAppState();
